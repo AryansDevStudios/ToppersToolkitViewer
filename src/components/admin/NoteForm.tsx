@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -36,7 +37,7 @@ const formSchema = z.object({
 
 interface NoteFormProps {
   chapters: { id: string; name: string }[];
-  note?: Note & { chapterId?: string }; // Make note optional
+  note?: Note & { chapterId?: string };
 }
 
 export function NoteForm({ chapters, note }: NoteFormProps) {
@@ -67,7 +68,6 @@ export function NoteForm({ chapters, note }: NoteFormProps) {
           description: result.message,
         });
         router.push("/admin/notes");
-        router.refresh();
       } else {
         toast({
           title: "Operation Failed",

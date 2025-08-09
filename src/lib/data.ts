@@ -2,11 +2,12 @@
 'use server';
 
 import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
-import type { Subject, Note, Chapter, SubSubject, User } from "./types";
+import type { Subject, Note, Chapter, User } from "./types";
 import { revalidatePath } from "next/cache";
-
-// Using local data as a fallback since Firebase Admin SDK is not available.
+import { db } from './firebase';
+import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, runTransaction } from "firebase/firestore";
 import seedData from '../../subjects-seed.json';
+import { v4 as uuidv4 } from 'uuid';
 
 const iconMap: { [key: string]: React.FC<any> } = {
   FlaskConical,
@@ -20,21 +21,56 @@ const iconMap: { [key: string]: React.FC<any> } = {
   Globe,
 };
 
-// Helper function to simulate deep cloning of the seed data to avoid mutation across requests.
-const getClonedSeedData = () => JSON.parse(JSON.stringify(seedData));
+// This function seeds the database from the JSON file.
+// It's designed to be run once, manually, if needed.
+export const seedSubjects = async () => {
+    console.log("Seeding subjects...");
+    const subjectsCollection = collection(db, 'subjects');
+    const subjectsSnapshot = await getDocs(subjectsCollection);
+    if (!subjectsSnapshot.empty) {
+        console.log("Subjects collection already exists. Seeding skipped.");
+        return { success: true, message: "Database already seeded." };
+    }
 
-export const getSubjects = async (): Promise<Subject[]> => {
-  const data = getClonedSeedData();
-  return Object.entries(data).map(([id, subject]: [string, any]) => ({
-    ...subject,
-    id,
-    icon: iconMap[subject.icon] || Book,
-  }));
+    try {
+        const batch: any[] = [];
+        for (const [id, subjectData] of Object.entries(seedData)) {
+            const subjectRef = doc(db, "subjects", id);
+            batch.push(setDoc(subjectRef, subjectData));
+        }
+        // Firestore web SDK doesn't have a batched write, so we'll do them in parallel
+        await Promise.all(batch);
+        console.log("Seeding completed successfully.");
+        return { success: true, message: "Database seeded successfully." };
+    } catch (error) {
+        console.error("Error seeding database:", error);
+        return { success: false, error: "Failed to seed database." };
+    }
 };
 
-export const getUsers = async (): Promise<any[]> => {
-  // User management is disabled as Firebase Admin SDK is not available.
-  return [];
+export const getSubjects = async (): Promise<Subject[]> => {
+    try {
+        const subjectsCollection = collection(db, 'subjects');
+        const subjectsSnapshot = await getDocs(subjectsCollection);
+        if (subjectsSnapshot.empty) {
+            // If the database is empty, seed it with initial data.
+            await seedSubjects();
+            const seededSubjectsSnapshot = await getDocs(subjectsCollection);
+            return seededSubjectsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                icon: iconMap[doc.data().icon] || Book,
+            })) as Subject[];
+        }
+        return subjectsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            icon: iconMap[doc.data().icon] || Book,
+        })) as Subject[];
+    } catch (error) {
+        console.error("Error getting subjects:", error);
+        return [];
+    }
 };
 
 export const findItemBySlug = async (slug: string[]) => {
@@ -92,45 +128,23 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; chapter:
 }
 
 export const getNoteById = async (id: string): Promise<(Note & { chapterId: string; }) | null> => {
+    if (!id) return null;
     const notes = await getAllNotes();
-    const foundNote = notes.find(note => note.id === id);
-    if (!foundNote) return null;
-
-    const allSubjects = await getSubjects();
-    for (const subject of allSubjects) {
-      if (!subject.subSubjects) continue;
-      for (const subSubject of subject.subSubjects) {
-        if (!subSubject.chapters) continue;
-        for (const chapter of subSubject.chapters) {
-          if (chapter.notes?.some(n => n.id === id)) {
-            return {
-              ...foundNote,
-              chapterId: `${subject.id}/${subSubject.id}/${chapter.id}`
-            };
-          }
-        }
-      }
-    }
-    return null;
+    return notes.find(note => note.id === id) || null;
 }
-
 
 export const getDashboardStats = async () => {
     const notes = await getAllNotes();
     const subjects = await getSubjects();
-    const totalNotes = notes.length;
-    const totalSubjects = subjects.length;
-
     return {
-        totalUsers: 0, 
-        totalNotes,
-        totalSubjects,
+        totalNotes: notes.length,
+        totalSubjects: subjects.length,
     };
 }
 
 export const getChapters = async () => {
     const allSubjects = await getSubjects();
-    const chapters: { id: string; name: string; subject: string }[] = [];
+    const chapters: { id: string; name: string; }[] = [];
     allSubjects.forEach(subject => {
         if(!subject.subSubjects) return;
         subject.subSubjects.forEach(subSubject => {
@@ -138,8 +152,7 @@ export const getChapters = async () => {
             subSubject.chapters.forEach(chapter => {
                 chapters.push({
                     id: `${subject.id}/${subSubject.id}/${chapter.id}`,
-                    name: `${subject.name} - ${subSubject.name} - ${chapter.name}`,
-                    subject: subject.id,
+                    name: `${subject.name} / ${subSubject.name} / ${chapter.name}`,
                 });
             });
         });
@@ -148,20 +161,94 @@ export const getChapters = async () => {
 };
 
 export const upsertNote = async (noteData: Omit<Note, 'id'> & {id?: string, chapterId: string}) => {
-    console.log("DEMO MODE: Note data received:", noteData);
-    // This is a demo. In a real application, you would save this to a database.
-    revalidatePath("/admin/notes");
-    return { success: true, message: `This is a demo. The note has been successfully created/updated in memory, but not in a database.` };
-}
+    const { chapterId, ...note } = noteData;
+    const isNew = !note.id;
+    const noteId = isNew ? uuidv4() : note.id!;
+
+    const [subjectId, subSubjectId, chapId] = chapterId.split('/');
+    const subjectDocRef = doc(db, "subjects", subjectId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) {
+                throw new Error("Subject not found!");
+            }
+
+            const subjectData = subjectDoc.data() as Subject;
+            const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
+            if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
+
+            const chapterIndex = subjectData.subSubjects[subSubjectIndex].chapters.findIndex(c => c.id === chapId);
+            if (chapterIndex === -1) throw new Error("Chapter not found!");
+
+            const chapter = subjectData.subSubjects[subSubjectIndex].chapters[chapterIndex];
+            if (!chapter.notes) chapter.notes = [];
+
+            if (isNew) {
+                 chapter.notes.push({ ...note, id: noteId });
+            } else {
+                const noteIndex = chapter.notes.findIndex(n => n.id === noteId);
+                if (noteIndex === -1) {
+                     chapter.notes.push({ ...note, id: noteId });
+                } else {
+                    chapter.notes[noteIndex] = { ...note, id: noteId };
+                }
+            }
+            
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+        revalidatePath("/admin/notes");
+        return { success: true, message: `Note successfully ${isNew ? 'created' : 'updated'}.` };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+};
 
 export const deleteNote = async (noteId: string, chapterId: string) => {
-    console.log(`DEMO MODE: Deleting note ${noteId} from chapter ${chapterId}`);
-    // This is a demo. In a real application, you would delete this from a database.
-    revalidatePath("/admin/notes");
-    return { success: true, message: "This is a demo. The note has been successfully deleted from memory, but not from the database." };
+     if (!noteId || !chapterId) return { success: false, error: "Invalid arguments" };
+
+    const [subjectId, subSubjectId, chapId] = chapterId.split('/');
+    const subjectDocRef = doc(db, "subjects", subjectId);
+
+     try {
+        await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) {
+                throw new Error("Subject not found!");
+            }
+
+            const subjectData = subjectDoc.data() as Subject;
+            const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
+            if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
+
+            const chapterIndex = subjectData.subSubjects[subSubjectIndex].chapters.findIndex(c => c.id === chapId);
+            if (chapterIndex === -1) throw new Error("Chapter not found!");
+            
+            const chapter = subjectData.subSubjects[subSubjectIndex].chapters[chapterIndex];
+            const noteIndex = chapter.notes?.findIndex(n => n.id === noteId);
+
+            if (noteIndex !== -1 && chapter.notes) {
+                chapter.notes.splice(noteIndex, 1);
+            } else {
+                throw new Error("Note not found to delete.");
+            }
+
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+
+        revalidatePath("/admin/notes");
+        return { success: true, message: "Note deleted successfully." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+};
+
+export const getUsers = async (): Promise<any[]> => {
+  return [];
 };
 
 export const updateUserRole = async (userId: string, newRole: User['role']) => {
-    console.warn("updateUserRole is not implemented because Firebase Admin SDK is not available.");
+    console.warn("updateUserRole is not implemented.");
     return { success: false, error: "Feature is disabled." };
 };
