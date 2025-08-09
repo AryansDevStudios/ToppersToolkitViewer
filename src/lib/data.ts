@@ -11,7 +11,6 @@ import {
 } from 'firebase/firestore';
 import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
 
-import { adminDb } from './firebase-admin';
 import type { Subject, User, Note, SubSubject, Chapter } from "./types";
 
 // Mapping of icon names (string) to Lucide components
@@ -164,14 +163,8 @@ export const getSubjects = async (): Promise<Subject[]> => {
 
 
 export const getUsers = async (): Promise<User[]> => {
-  try {
-    const usersCollection = collection(adminDb, 'users');
-    const querySnapshot = await getDocs(usersCollection);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-  } catch (error) {
-    console.error("Error fetching users: ", error);
-    return [];
-  }
+  // This function now returns an empty array as we can't fetch users without admin sdk.
+  return [];
 };
 
 export const findItemBySlug = async (slug: string[]) => {
@@ -243,34 +236,18 @@ export const getAllNotes = async () => {
 }
 
 export const getUserRole = async (uid: string): Promise<string | null> => {
-  try {
-    const userDocRef = doc(adminDb, 'users', uid);
-    const userDoc = await getDoc(userDocRef);
-    if (userDoc.exists()) {
-      return userDoc.data().role || 'User';
-    }
-    return null;
-  } catch (error) {
-    console.error("Error fetching user role: ", error);
-    return null;
-  }
+  // Cannot determine role without admin sdk. Defaulting to 'User'.
+  return 'User';
 };
 
 export async function updateUserRole(userId: string, newRole: 'Admin' | 'User') {
-  try {
-    const userRef = doc(adminDb, 'users', userId);
-    await updateDoc(userRef, { role: newRole });
-    return { success: true };
-  } catch (error: any) {
-    console.error("Error updating user role:", error);
-    return { success: false, error: error.message };
-  }
+  // This function cannot work without the admin sdk.
+  return { success: false, error: "This feature is currently disabled." };
 }
 
 export async function getDashboardStats() {
     try {
-        const usersSnapshot = await getDocs(collection(adminDb, 'users'));
-        const totalUsers = usersSnapshot.size;
+        const totalUsers = 0; // Cannot fetch users without admin sdk.
 
         const notes = await getAllNotes();
         const totalNotes = notes.length;

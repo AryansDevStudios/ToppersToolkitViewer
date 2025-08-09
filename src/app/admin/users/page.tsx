@@ -19,6 +19,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChangeRoleMenuItem } from "@/components/admin/ChangeRoleMenuItem";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Terminal } from "lucide-react";
+
 
 export default async function AdminUsersPage() {
   const users = await getUsers();
@@ -37,6 +40,13 @@ export default async function AdminUsersPage() {
           Add User
         </Button>
       </header>
+       <Alert>
+        <Terminal className="h-4 w-4" />
+        <AlertTitle>Feature Disabled</AlertTitle>
+        <AlertDescription>
+          User management is temporarily disabled due to a configuration issue. Please check back later.
+        </AlertDescription>
+      </Alert>
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
@@ -64,7 +74,7 @@ export default async function AdminUsersPage() {
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button variant="ghost" className="h-8 w-8 p-0" disabled>
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -86,6 +96,13 @@ export default async function AdminUsersPage() {
                 </TableCell>
               </TableRow>
             ))}
+             {users.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  User data is currently unavailable.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
