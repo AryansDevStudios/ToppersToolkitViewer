@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -48,9 +49,9 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
     .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
 
   const isNote = "pdfUrl" in current;
-  const isChapter = "notes" in current;
   const isSubSubject = "chapters" in current;
   const isSubject = "subSubjects" in current;
+  const isChapter = !isNote && !isSubSubject && !isSubject; // This was the bug
 
   let children: any[] = [];
   if (isSubject) children = current.subSubjects;
