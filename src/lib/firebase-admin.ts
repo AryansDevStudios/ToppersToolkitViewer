@@ -1,38 +1,31 @@
-// src/lib/firebase-admin.ts
-import * as admin from "firebase-admin";
+import * as admin from 'firebase-admin';
+import type { App } from 'firebase-admin/app';
 
-const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-};
+// This is a robust singleton pattern for Firebase Admin initialization in a Next.js environment.
+// It ensures that the app is initialized only once per server instance.
+let app: App;
 
-function initializeAdmin() {
-    try {
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-            storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-        });
-        console.log('Firebase Admin SDK initialized successfully.');
-        return admin.app();
-    } catch (error: any) {
-        if (error.code === 'auth/invalid-credential') {
-            console.error('Firebase Admin SDK initialization error: Invalid credentials. Check your service account key.', error.stack);
-        } else if (error.code === 'app/duplicate-app') {
-             // This is expected in development with hot-reloading
-            return admin.app();
-        }
-        else {
-            console.error("Firebase Admin SDK initialization error:", error.stack);
-        }
-    }
-    return admin.app();
+if (!admin.apps.length) {
+  try {
+    app = admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        // The private key must be correctly formatted. The replace function handles the newline characters.
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }),
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    });
+  } catch (error: any) {
+    console.error('Firebase Admin SDK initialization error:', error.stack);
+    // Throwing the error is important to know that something is critically wrong.
+    throw error;
+  }
+} else {
+  app = admin.app();
 }
-
-const app = admin.apps.length ? admin.app() : initializeAdmin();
 
 const adminDb = admin.firestore();
 const adminAuth = admin.auth();
 
-
-export { adminAuth, adminDb };
+export { adminDb, adminAuth };
