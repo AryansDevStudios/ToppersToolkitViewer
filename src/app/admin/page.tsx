@@ -5,22 +5,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Users, FileText, BookCopy } from "lucide-react";
+import { getDashboardStats } from "@/lib/data";
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const { totalUsers, totalNotes, totalSubjects } = await getDashboardStats();
+
   const stats = [
     {
       title: "Total Users",
-      value: "1,254",
+      value: totalUsers,
       icon: Users,
     },
     {
       title: "Total Notes",
-      value: "842",
+      value: totalNotes,
       icon: FileText,
     },
     {
       title: "Total Subjects",
-      value: "12",
+      value: totalSubjects,
       icon: BookCopy,
     },
   ];
@@ -45,9 +48,6 @@ export default function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                +20.1% from last month
-              </p>
             </CardContent>
           </Card>
         ))}

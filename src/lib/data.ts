@@ -7,10 +7,11 @@ import {
   getDocs,
   query,
   where,
+  updateDoc,
 } from 'firebase/firestore';
 import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
 
-import { db } from './firebase';
+import { db } from './firebase-admin';
 import type { Subject, User, Note, SubSubject, Chapter } from "./types";
 
 // Mapping of icon names (string) to Lucide components
@@ -26,32 +27,139 @@ const iconMap: { [key: string]: React.FC<any> } = {
   Globe,
 };
 
-// You should create a 'subjects' collection in your Firestore and upload the data from `subjects-seed.json`
-export const getSubjects = async (): Promise<Subject[]> => {
-  try {
-    const subjectsCollection = collection(db, 'subjects');
-    const querySnapshot = await getDocs(subjectsCollection);
-    if (querySnapshot.empty) {
-      console.log('No subjects found in Firestore. Make sure to seed the data.');
-      return [];
+const subjects: Subject[] = [
+    {
+        "id": "science",
+        "name": "Science",
+        "icon": iconMap["FlaskConical"],
+        "subSubjects": [
+            {
+                "id": "physics",
+                "name": "Physics",
+                "chapters": [
+                    { "id": "motion", "name": "Motion", "notes": [] },
+                    { "id": "force-and-laws-of-motion", "name": "Force and Laws of Motion", "notes": [] }
+                ]
+            },
+            {
+                "id": "chemistry",
+                "name": "Chemistry",
+                "chapters": [
+                    { "id": "matter-in-our-surroundings", "name": "Matter in Our Surroundings", "notes": [] },
+                    { "id": "is-matter-around-us-pure", "name": "Is Matter Around Us Pure", "notes": [] }
+                ]
+            },
+            {
+                "id": "biology",
+                "name": "Biology",
+                "chapters": [
+                    { "id": "the-fundamental-unit-of-life", "name": "The Fundamental Unit of Life", "notes": [] },
+                    { "id": "tissues", "name": "Tissues", "notes": [] }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "social-science",
+        "name": "Social Science",
+        "icon": iconMap["Landmark"],
+        "subSubjects": [
+            {
+                "id": "history",
+                "name": "History",
+                "chapters": [
+                    { "id": "the-french-revolution", "name": "The French Revolution", "notes": [] },
+                    { "id": "socialism-in-europe", "name": "Socialism in Europe", "notes": [] }
+                ]
+            },
+            {
+                "id": "geography",
+                "name": "Geography",
+                "chapters": [
+                    { "id": "india-size-and-location", "name": "India - Size and Location", "notes": [] },
+                    { "id": "physical-features-of-india", "name": "Physical Features of India", "notes": [] }
+                ]
+            },
+            {
+                "id": "economics",
+                "name": "Economics",
+                "chapters": [
+                    { "id": "the-story-of-village-palampur", "name": "The Story of Village Palampur", "notes": [] },
+                    { "id": "people-as-resource", "name": "People as Resource", "notes": [] }
+                ]
+            },
+            {
+                "id": "politics",
+                "name": "Politics",
+                "chapters": [
+                    { "id": "what-is-democracy", "name": "What is Democracy? Why Democracy?", "notes": [] },
+                    { "id": "constitutional-design", "name": "Constitutional Design", "notes": [] }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "mathematics",
+        "name": "Mathematics",
+        "icon": iconMap["Sigma"],
+        "subSubjects": [
+            {
+                "id": "maths-main",
+                "name": "Mathematics",
+                "chapters": [
+                    {
+                        "id": "number-systems",
+                        "name": "Number Systems",
+                        "notes": [
+                            {
+                                "id": "ns-notes-1",
+                                "title": "Comprehensive Notes on Number Systems",
+                                "type": "Handwritten Notes",
+                                "pdfUrl": "/placeholder.pdf"
+                            }
+                        ]
+                    },
+                    { "id": "polynomials", "name": "Polynomials", "notes": [] }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "english",
+        "name": "English",
+        "icon": iconMap["Book"],
+        "subSubjects": [
+            {
+                "id": "beehive",
+                "name": "Beehive",
+                "chapters": [
+                    { "id": "the-fun-they-had", "name": "The Fun They Had", "notes": [] },
+                    { "id": "the-sound-of-music", "name": "The Sound of Music", "notes": [] }
+                ]
+            },
+            {
+                "id": "moments",
+                "name": "Moments",
+                "chapters": [
+                    { "id": "the-lost-child", "name": "The Lost Child", "notes": [] },
+                    { "id": "the-adventures-of-toto", "name": "The Adventures of Toto", "notes": [] }
+                ]
+            },
+            {
+                "id": "grammar",
+                "name": "Grammar",
+                "chapters": [
+                    { "id": "tenses", "name": "Tenses", "notes": [] },
+                    { "id": "modals", "name": "Modals", "notes": [] }
+                ]
+            }
+        ]
     }
-    const subjects = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        ...data,
-        id: doc.id,
-        icon: iconMap[data.icon as string] || Book, // Fallback icon
-      } as Subject;
-    });
-    // A simple sort order
-    const sorter = ['science', 'social-science', 'mathematics', 'english'];
-    subjects.sort((a, b) => sorter.indexOf(a.id) - sorter.indexOf(b.id));
+];
 
-    return subjects;
-  } catch (error) {
-    console.error("Error fetching subjects: ", error);
-    return [];
-  }
+
+export const getSubjects = async (): Promise<Subject[]> => {
+  return Promise.resolve(subjects);
 };
 
 
@@ -69,55 +177,43 @@ export const getUsers = async (): Promise<User[]> => {
 export const findItemBySlug = async (slug: string[]) => {
   if (!slug || slug.length === 0) return { current: null, parents: [] };
 
-  try {
-    const subjectId = slug[0];
-    const subjectDocRef = doc(db, 'subjects', subjectId);
-    const subjectDoc = await getDoc(subjectDocRef);
+  const allSubjects = await getSubjects();
 
-    if (!subjectDoc.exists()) {
-      return { current: null, parents: [] };
-    }
+  const subject = allSubjects.find(s => s.id === slug[0]);
 
-    const subjectData = {
-        ...subjectDoc.data(),
-        id: subjectDoc.id,
-        icon: iconMap[subjectDoc.data().icon as string] || Book
-    } as Subject;
-
-    let currentItem: any = subjectData;
-    const parents: any[] = [{ name: "Subjects", href: `/browse`, id: 'root' }];
-
-    for (let i = 1; i < slug.length; i++) {
-        const part = slug[i];
-        let collection;
-        if (currentItem.subSubjects) {
-            collection = currentItem.subSubjects;
-        } else if (currentItem.chapters) {
-            collection = currentItem.chapters;
-        } else if (currentItem.notes) {
-            collection = currentItem.notes;
-        } else {
-            return { current: null, parents };
-        }
-
-        const foundItem = collection.find((item: any) => item.id === part);
-        if (foundItem) {
-            parents.push({
-                name: currentItem.name,
-                href: `/browse/${slug.slice(0, i).join('/')}`,
-                id: currentItem.id,
-            });
-            currentItem = foundItem;
-        } else {
-            return { current: null, parents };
-        }
-    }
-    return { current: currentItem, parents };
-
-  } catch (error) {
-    console.error("Error finding item by slug: ", error);
+  if (!subject) {
     return { current: null, parents: [] };
   }
+
+  let currentItem: any = subject;
+  const parents: any[] = [{ name: "Subjects", href: `/browse`, id: 'root' }];
+
+  for (let i = 1; i < slug.length; i++) {
+      const part = slug[i];
+      let collection;
+      if (currentItem.subSubjects) {
+          collection = currentItem.subSubjects;
+      } else if (currentItem.chapters) {
+          collection = currentItem.chapters;
+      } else if (currentItem.notes) {
+          collection = currentItem.notes;
+      } else {
+          return { current: null, parents };
+      }
+
+      const foundItem = collection.find((item: any) => item.id === part);
+      if (foundItem) {
+          parents.push({
+              name: currentItem.name,
+              href: `/browse/${slug.slice(0, i).join('/')}`,
+              id: currentItem.id,
+          });
+          currentItem = foundItem;
+      } else {
+          return { current: null, parents };
+      }
+  }
+  return { current: currentItem, parents };
 };
 
 export const getAllNotes = async () => {
@@ -159,3 +255,41 @@ export const getUserRole = async (uid: string): Promise<string | null> => {
     return null;
   }
 };
+
+export async function updateUserRole(userId: string, newRole: 'Admin' | 'User') {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { role: newRole });
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error updating user role:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getDashboardStats() {
+    try {
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const totalUsers = usersSnapshot.size;
+
+        const notes = await getAllNotes();
+        const totalNotes = notes.length;
+
+        const subjects = await getSubjects();
+        const totalSubjects = subjects.length;
+
+        return {
+            totalUsers,
+            totalNotes,
+            totalSubjects,
+        };
+
+    } catch (error) {
+        console.error("Error fetching dashboard stats:", error);
+        return {
+            totalUsers: 0,
+            totalNotes: 0,
+            totalSubjects: 0,
+        };
+    }
+}

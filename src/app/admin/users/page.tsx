@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ChangeRoleMenuItem } from "@/components/admin/ChangeRoleMenuItem";
 
 export default async function AdminUsersPage() {
   const users = await getUsers();
@@ -31,7 +32,7 @@ export default async function AdminUsersPage() {
             View and manage all user accounts.
           </p>
         </div>
-        <Button>
+        <Button disabled>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add User
         </Button>
@@ -70,10 +71,14 @@ export default async function AdminUsersPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit User</DropdownMenuItem>
-                      <DropdownMenuItem>Change Role</DropdownMenuItem>
+                      <DropdownMenuItem disabled>Edit User</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive">
+                      <ChangeRoleMenuItem
+                        userId={user.id}
+                        currentRole={user.role}
+                      />
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive" disabled>
                         Delete User
                       </DropdownMenuItem>
                     </DropdownMenuContent>
