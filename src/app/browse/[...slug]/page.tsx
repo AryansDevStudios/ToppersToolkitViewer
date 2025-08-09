@@ -58,25 +58,13 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   const renderContent = () => {
     if (isNote) {
       return (
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>View Document</CardTitle>
-            <CardDescription>
-              This document is available for online viewing. Click the button below
-              to open the PDF.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center mb-4">
-              <FileText className="w-24 h-24 text-muted-foreground" />
-            </div>
-            <Button asChild className="w-full">
-              <Link href={current.pdfUrl} target="_blank">
-                <Eye className="mr-2 h-4 w-4" /> View PDF
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="w-full h-[calc(100vh-12rem)] border rounded-lg">
+             <iframe
+                src={current.pdfUrl}
+                className="w-full h-full"
+                title={current.name}
+             />
+        </div>
       );
     }
 
