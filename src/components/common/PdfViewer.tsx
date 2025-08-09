@@ -30,7 +30,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [count, setCount] = React.useState(0)
   const [error, setError] = useState<string | null>(null);
   const carouselContainerRef = React.useRef<HTMLDivElement>(null);
-  const isScrolling = React.useRef(false);
   const scrollTimeout = React.useRef<NodeJS.Timeout | null>(null);
   const [pageDimensions, setPageDimensions] = useState<{ width: number | undefined, height: number | undefined }>({ width: undefined, height: undefined });
 
@@ -62,28 +61,30 @@ export function PdfViewer({ url }: PdfViewerProps) {
     });
 
     const handleWheel = (e: WheelEvent) => {
-        if (!api || isScrolling.current) return;
-        
-        e.preventDefault();
+        if (!api) return;
 
-        const scrollAction = () => {
-            if (e.deltaY > 0) {
-                if (api.canScrollNext()) api.scrollNext();
-            } else if (e.deltaY < 0) {
-                if(api.canScrollPrev()) api.scrollPrev();
-            }
+        const canScrollPrev = api.canScrollPrev();
+        const canScrollNext = api.canScrollNext();
+        const isScrollingDown = e.deltaY > 0;
+        const isScrollingUp = e.deltaY < 0;
+
+        if ((isScrollingDown && canScrollNext) || (isScrollingUp && canScrollPrev)) {
+           e.preventDefault();
+        } else {
+            return;
         }
         
-        scrollAction();
-        isScrolling.current = true;
-
         if (scrollTimeout.current) {
             clearTimeout(scrollTimeout.current);
         }
 
         scrollTimeout.current = setTimeout(() => {
-            isScrolling.current = false;
-        }, 300);
+            if (isScrollingDown) {
+                if (canScrollNext) api.scrollNext();
+            } else if (isScrollingUp) {
+                if(canScrollPrev) api.scrollPrev();
+            }
+        }, 50); // A short delay to debounce
     };
     
     const carouselEl = carouselContainerRef.current;
