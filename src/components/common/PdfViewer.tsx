@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -32,6 +32,21 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const carouselContainerRef = React.useRef<HTMLDivElement>(null);
   const isScrolling = React.useRef(false);
   const scrollTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  const [pageDimensions, setPageDimensions] = useState<{ width: number | undefined, height: number | undefined }>({ width: undefined, height: undefined });
+
+
+  const handleResize = useCallback(() => {
+    // This function will be called on window resize to trigger a re-render
+    // and recalculate page dimensions.
+    setPageDimensions({ width: undefined, height: undefined });
+  }, []);
+
+  React.useEffect(() => {
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [handleResize]);
 
 
   React.useEffect(() => {
@@ -107,9 +122,26 @@ export function PdfViewer({ url }: PdfViewerProps) {
     };
   }, [api]);
 
-  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
-    setNumPages(numPages);
-  }
+  const onDocumentLoadSuccess = async (pdf: any) => {
+    setNumPages(pdf.numPages);
+    const firstPage = await pdf.getPage(1);
+    const { width: pageWidth, height: pageHeight } = firstPage.getViewport({ scale: 1 });
+
+    if (carouselContainerRef.current) {
+      const { clientWidth: containerWidth, clientHeight: containerHeight } = carouselContainerRef.current;
+      
+      const containerRatio = containerWidth / containerHeight;
+      const pageRatio = pageWidth / pageHeight;
+
+      if (pageRatio > containerRatio) {
+        // Page is wider than container, fit to width
+        setPageDimensions({ width: containerWidth, height: undefined });
+      } else {
+        // Page is taller than container, fit to height
+        setPageDimensions({ width: undefined, height: containerHeight });
+      }
+    }
+  };
   
   function onDocumentLoadError(error: Error) {
     console.error("Failed to load PDF:", error);
@@ -118,8 +150,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center bg-muted/20" ref={carouselContainerRef}>
-      <div className="w-full h-full flex-1 overflow-hidden flex justify-center items-start">
+    <div className="relative w-full h-full flex flex-col items-center justify-center bg-muted/20 p-4" ref={carouselContainerRef}>
+      <div className="w-full h-full flex-1 overflow-hidden flex justify-center items-center">
         <Document
           file={url}
           onLoadSuccess={onDocumentLoadSuccess}
@@ -139,18 +171,19 @@ export function PdfViewer({ url }: PdfViewerProps) {
           }
         >
             {numPages && (
-                 <Carousel setApi={setApi} className="w-full h-full p-12">
+                 <Carousel setApi={setApi} className="w-full h-full">
                     <CarouselContent>
                       {Array.from(new Array(numPages), (el, index) => (
                         <CarouselItem key={`page_${index + 1}`}>
-                          <div className="flex items-start justify-center">
+                          <div className="flex items-center justify-center h-full">
                             <Page
                               pageNumber={index + 1}
                               renderAnnotationLayer={true}
                               renderTextLayer={true}
                               className="shadow-lg"
                               canvasBackground="transparent"
-                              width={carouselContainerRef.current ? carouselContainerRef.current.clientWidth * 0.8 : undefined}
+                              width={pageDimensions.width}
+                              height={pageDimensions.height}
                             />
                           </div>
                         </CarouselItem>
