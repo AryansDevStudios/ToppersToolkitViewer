@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, AlertCircle, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { Loader2, AlertCircle, ZoomIn, ZoomOut, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -30,42 +30,13 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [current, setCurrent] = useState(0)
   const [count, setCount] = useState(0)
   const [error, setError] = useState<string | null>(null);
+  const [scale, setScale] = useState(1);
   const carouselContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
-  const [pageDimensions, setPageDimensions] = useState<{ width: number | undefined, height: number | undefined }>({ width: undefined, height: undefined });
-  const [scale, setScale] = useState(1);
-  const initialPinchDistance = useRef<number | null>(null);
 
-  const onDocumentLoadSuccess = useCallback(async (pdf: any) => {
-    setNumPages(pdf.numPages);
-    const firstPage = await pdf.getPage(1);
-    const { width: pageWidth, height: pageHeight } = firstPage.getViewport({ scale: 1 });
-
-    if (carouselContainerRef.current) {
-      const { clientWidth: containerWidth, clientHeight: containerHeight } = carouselContainerRef.current;
-      
-      const containerRatio = containerWidth / containerHeight;
-      const pageRatio = pageWidth / pageHeight;
-
-      if (pageRatio > containerRatio) {
-        setPageDimensions({ width: containerWidth, height: undefined });
-      } else {
-        setPageDimensions({ width: undefined, height: containerHeight });
-      }
-    }
+  const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
   }, []);
-
-  const resetPageDimensions = useCallback(() => {
-    // This triggers a re-calculation of dimensions based on the new container size
-    setPageDimensions({ width: undefined, height: undefined });
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('resize', resetPageDimensions);
-    return () => {
-      window.removeEventListener('resize', resetPageDimensions);
-    };
-  }, [resetPageDimensions]);
   
   function onDocumentLoadError(error: Error) {
     console.error("Failed to load PDF:", error);
@@ -83,16 +54,15 @@ export function PdfViewer({ url }: PdfViewerProps) {
     });
 
     const handleWheel = (e: WheelEvent) => {
-      // Ctrl + Scroll for zooming
       if (e.ctrlKey) {
         e.preventDefault();
         const zoomFactor = 0.1;
         const newScale = e.deltaY > 0 ? scale - zoomFactor : scale + zoomFactor;
-        setScale(Math.max(0.5, Math.min(newScale, 3))); // Clamp scale between 0.5x and 3x
+        setScale(Math.max(0.5, Math.min(newScale, 3)));
         return;
       }
       
-      if (!api) return;
+      if (!api || e.deltaX !== 0) return;
 
       const canScrollPrev = api.canScrollPrev();
       const canScrollNext = api.canScrollNext();
@@ -115,53 +85,17 @@ export function PdfViewer({ url }: PdfViewerProps) {
           } else if (isScrollingUp) {
               if(canScrollPrev) api.scrollPrev();
           }
-      }, 50); // Debounce to prevent overly sensitive scrolling
-    };
-
-    const getDistance = (touches: TouchList) => {
-        return Math.sqrt(
-            Math.pow(touches[0].clientX - touches[1].clientX, 2) +
-            Math.pow(touches[0].clientY - touches[1].clientY, 2)
-        );
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-        if (e.touches.length === 2) {
-            e.preventDefault();
-            initialPinchDistance.current = getDistance(e.touches);
-        }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-        if (e.touches.length === 2 && initialPinchDistance.current !== null) {
-            e.preventDefault();
-            const newDistance = getDistance(e.touches);
-            const delta = newDistance / initialPinchDistance.current;
-            setScale(prevScale => Math.max(0.5, Math.min(prevScale * delta, 3)));
-            initialPinchDistance.current = newDistance;
-        }
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-        if (e.touches.length < 2) {
-            initialPinchDistance.current = null;
-        }
+      }, 50);
     };
     
     const carouselEl = carouselContainerRef.current;
     if (carouselEl) {
         carouselEl.addEventListener('wheel', handleWheel, { passive: false });
-        carouselEl.addEventListener('touchstart', handleTouchStart, { passive: false });
-        carouselEl.addEventListener('touchmove', handleTouchMove, { passive: false });
-        carouselEl.addEventListener('touchend', handleTouchEnd, { passive: false });
     }
 
     return () => {
       if (carouselEl) {
           carouselEl.removeEventListener('wheel', handleWheel);
-          carouselEl.removeEventListener('touchstart', handleTouchStart);
-          carouselEl.removeEventListener('touchmove', handleTouchMove);
-          carouselEl.removeEventListener('touchend', handleTouchEnd);
       }
       if (scrollTimeout.current) {
           clearTimeout(scrollTimeout.current);
@@ -214,24 +148,26 @@ export function PdfViewer({ url }: PdfViewerProps) {
                  <Carousel setApi={setApi} className="w-full h-full">
                     <CarouselContent>
                       {Array.from(new Array(numPages), (el, index) => (
-                        <CarouselItem key={`page_${index + 1}`}>
-                          <div className="flex items-center justify-center h-full">
+                        <CarouselItem key={`page_${index + 1}`} className="overflow-auto">
+                          <div 
+                            className="flex items-center justify-center h-full"
+                            style={{ transform: `scale(${scale})`, transformOrigin: 'center', transition: 'transform 0.2s ease-in-out' }}
+                          >
                             <Page
                               pageNumber={index + 1}
                               renderAnnotationLayer={true}
                               renderTextLayer={true}
                               className="shadow-lg"
                               canvasBackground="transparent"
-                              width={pageDimensions.width}
-                              height={pageDimensions.height}
-                              scale={scale}
+                              height={carouselContainerRef.current ? carouselContainerRef.current.clientHeight * 0.9 : undefined}
+                              onRenderError={() => {}}
                             />
                           </div>
                         </CarouselItem>
                       ))}
                     </CarouselContent>
-                    <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10" />
-                    <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10" />
+                    <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10" />
+                    <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10" />
                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 shadow-lg border flex items-center gap-2">
                         <TooltipProvider>
                           <Tooltip>
@@ -271,3 +207,5 @@ export function PdfViewer({ url }: PdfViewerProps) {
     </div>
   );
 }
+
+    
