@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, AlertCircle, ZoomIn, ZoomOut, RotateCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, AlertCircle, ZoomIn, ZoomOut, RotateCw, ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -31,6 +31,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [count, setCount] = useState(0)
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const carouselContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -43,6 +44,27 @@ export function PdfViewer({ url }: PdfViewerProps) {
     setError("Failed to load PDF file. Please check the URL and CORS settings.");
   }
   
+  const handleFullscreen = () => {
+    const elem = carouselContainerRef.current;
+    if (!elem) return;
+
+    if (!document.fullscreenElement) {
+      elem.requestFullscreen().catch(err => {
+        alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   useEffect(() => {
     if (!api) return;
  
@@ -166,10 +188,20 @@ export function PdfViewer({ url }: PdfViewerProps) {
                         </CarouselItem>
                       ))}
                     </CarouselContent>
-                    <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10" />
-                    <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10" />
+                    
                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 shadow-lg border flex items-center gap-2">
                         <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => api?.scrollPrev()} disabled={!api?.canScrollPrev()}>
+                                <ChevronLeft className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Previous Page</p></TooltipContent>
+                          </Tooltip>
+
+                          <div className="w-px h-6 bg-border mx-1"></div>
+
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setScale(prev => Math.max(0.5, prev - 0.2))}>
@@ -194,8 +226,30 @@ export function PdfViewer({ url }: PdfViewerProps) {
                             </TooltipTrigger>
                             <TooltipContent><p>Zoom In</p></TooltipContent>
                           </Tooltip>
+                          
+                          <div className="w-px h-6 bg-border mx-1"></div>
+                          
+                           <Tooltip>
+                             <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleFullscreen}>
+                                <Expand className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</p></TooltipContent>
+                          </Tooltip>
+
+                           <div className="w-px h-6 bg-border mx-1"></div>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => api?.scrollNext()} disabled={!api?.canScrollNext()}>
+                                  <ChevronRight className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Next Page</p></TooltipContent>
+                            </Tooltip>
+
                         </TooltipProvider>
-                        <div className="w-px h-6 bg-border mx-1"></div>
                         <p className="text-sm font-medium text-muted-foreground w-24 text-center">
                             Page {current} of {count}
                         </p>
