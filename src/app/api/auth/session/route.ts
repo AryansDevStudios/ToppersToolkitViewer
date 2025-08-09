@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     response.cookies.set(options);
     return response;
 
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create session' }, { status: 401 });
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to create session', details: error.message }, { status: 401 });
   }
 }
 

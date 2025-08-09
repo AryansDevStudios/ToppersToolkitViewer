@@ -16,7 +16,8 @@ async function handleTokenChange(user: User | null) {
     });
 
     if (!response.ok) {
-        console.error("Failed to create session cookie");
+        const errorData = await response.json();
+        console.error("Failed to create session cookie:", errorData.details || 'No details provided.');
     }
   } else {
      await fetch('/api/auth/session', { method: 'DELETE' });
