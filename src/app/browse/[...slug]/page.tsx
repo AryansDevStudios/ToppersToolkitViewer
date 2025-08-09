@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Folder, Eye } from "lucide-react";
+import { FileText, Folder, Eye, Loader2 } from "lucide-react";
 import { findItemBySlug } from "@/lib/data";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { PdfViewer } from "@/components/common/PdfViewer";
+import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
 
 export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
   const { slug } = params;
@@ -62,7 +62,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
     if (isNote) {
       return (
         <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden">
-             <PdfViewer url={current.pdfUrl} />
+             <PdfViewerWrapper url={current.pdfUrl} />
         </div>
       );
     }
