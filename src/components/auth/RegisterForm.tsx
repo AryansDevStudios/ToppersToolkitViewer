@@ -22,10 +22,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
+  name: z.string().min(1, { message: "Full Name is required." }),
+  classAndSection: z.string().min(1, { message: "Class & Section is required."}),
+  username: z.string().min(1, { message: "Username is required."}),
+  srNo: z.string().length(4, { message: "SR. No. must be 4 digits."}).regex(/^\d{4}$/, { message: "SR. No. must be a 4-digit number."}),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
@@ -39,7 +39,9 @@ export function RegisterForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      email: "",
+      classAndSection: "",
+      username: "",
+      srNo: "",
       password: "",
     },
   });
@@ -73,12 +75,38 @@ export function RegisterForm() {
             />
             <FormField
               control={form.control}
-              name="email"
+              name="classAndSection"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Class & Section</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input placeholder="e.g., 10th A" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder="your_username" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="srNo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SR. No.</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 1234" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -31,4 +31,7 @@ export interface User {
   name: string;
   email: string;
   role: "Admin" | "User";
+  classAndSection?: string;
+  username?: string;
+  srNo?: string;
 }
