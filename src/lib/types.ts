@@ -2,8 +2,7 @@ import type { LucideIcon } from "lucide-react";
 
 export interface Note {
   id: string;
-  title: string;
-  type: "Handwritten Notes" | "Question Bank" | "Others";
+  type: string; // Changed from enum to string
   pdfUrl: string;
 }
 

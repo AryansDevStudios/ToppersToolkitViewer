@@ -43,22 +43,20 @@ export default async function AdminNotesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Subject</TableHead>
-              <TableHead>Chapter</TableHead>
+              <TableHead>Chapter Name</TableHead>
+              <TableHead>Note Type</TableHead>
+              <TableHead>Subject / Sub-Subject</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {notes.map((note) => (
               <TableRow key={note.id}>
-                <TableCell className="font-medium">{note.title}</TableCell>
+                <TableCell className="font-medium">{note.chapter}</TableCell>
                 <TableCell>
                   <Badge variant="outline">{note.type}</Badge>
                 </TableCell>
                 <TableCell>{note.subject}</TableCell>
-                <TableCell>{note.chapter}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -1,16 +1,12 @@
-
-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FileText, Folder, Eye, Loader2 } from "lucide-react";
+import { FileText, Folder, ChevronDown } from "lucide-react";
 import { findItemBySlug } from "@/lib/data";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +17,20 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
+import type { Chapter } from "@/lib/types";
+
+// Helper to group notes by chapter name
+const groupNotesByChapter = (chapters: Chapter[]) => {
+  const grouped: { [key: string]: Chapter } = {};
+  chapters.forEach((chapter) => {
+    if (!grouped[chapter.name]) {
+      grouped[chapter.name] = { ...chapter, notes: [] };
+    }
+    grouped[chapter.name].notes.push(...chapter.notes);
+  });
+  return Object.values(grouped);
+};
+
 
 export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
   const { slug } = params;
@@ -36,8 +46,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
       name: p.name,
       href: `/browse/${slug.slice(0, i + 1).join("/")}`,
     }))
-    .concat(slug.length > (parents.length-1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
-
+    .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
 
   const isNote = "pdfUrl" in current;
   const isChapter = "notes" in current;
@@ -46,17 +55,9 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 
   let children: any[] = [];
   if (isSubject) children = current.subSubjects;
-  else if (isSubSubject) children = current.chapters;
+  else if (isSubSubject) children = groupNotesByChapter(current.chapters);
   else if (isChapter) children = current.notes;
 
-  const getIcon = (item: any) => {
-    if (item.type) {
-      return <FileText className="w-8 h-8 text-primary" />;
-    }
-    return <Folder className="w-8 h-8 text-primary" />;
-  };
-
-  const getHref = (itemId: string) => `/browse/${slug.join("/")}/${itemId}`;
 
   const renderContent = () => {
     if (isNote) {
@@ -66,8 +67,9 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
         </div>
       );
     }
-
+    
     if (isSubSubject) {
+      // New Accordion View for Chapters and Notes
       return (
         <Accordion type="multiple" className="w-full max-w-4xl mx-auto">
           {children.map((chapter) => (
@@ -81,7 +83,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
                     {chapter.notes.map((note: any) => (
                       <Link
                         key={note.id}
-                        href={getHref(chapter.id) + '/' + note.id}
+                        href={`/browse/${slug.join("/")}/${note.id}`}
                         className="block"
                       >
                          <Card className="h-full transition-shadow duration-300 hover:shadow-lg">
@@ -90,8 +92,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
                                 <FileText className="w-8 h-8 text-primary" />
                               </div>
                               <div>
-                                <CardTitle className="font-headline text-lg">{note.title}</CardTitle>
-                                <Badge className="mt-1" variant="outline">{note.type}</Badge>
+                                <CardTitle className="font-headline text-lg">{note.type}</CardTitle>
                               </div>
                             </CardHeader>
                          </Card>
@@ -107,27 +108,21 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
             </AccordionItem>
           ))}
         </Accordion>
-      )
+      );
     }
 
+    // Default view for subjects -> sub-subjects
     return (
        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {children.map((item) => (
-          <Link key={item.id} href={getHref(item.id)} className="block">
+          <Link key={item.id} href={`/browse/${slug.join("/")}/${item.id}`} className="block">
             <Card className="h-full transition-shadow duration-300 hover:shadow-lg">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                 <div className="p-3 bg-primary/10 rounded-lg">
-                  {getIcon(item)}
+                  <Folder className="w-8 h-8 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="font-headline text-xl">
-                    {item.name || item.title}
-                  </CardTitle>
-                  {item.type && (
-                    <Badge className="mt-1" variant="outline">
-                      {item.type}
-                    </Badge>
-                  )}
+                  <CardTitle className="font-headline text-xl">{item.name}</CardTitle>
                 </div>
               </CardHeader>
             </Card>
@@ -142,20 +137,12 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
     <div className="container mx-auto px-4 py-8">
       <Breadcrumbs
         items={breadcrumbItems.slice(0,-1)}
-        currentPageName={current.name}
+        currentPageName={current.name || current.type}
       />
       <header className="mb-8">
         <h1 className="font-headline text-4xl font-bold mb-2">
-          {current.name}
+           {isNote ? current.type : current.name}
         </h1>
-        {isNote && (
-          <div className="flex items-center space-x-4">
-            <Badge variant="secondary">{current.type}</Badge>
-            <p className="text-muted-foreground">
-              The final notes for this chapter.
-            </p>
-          </div>
-        )}
          {isSubSubject && (
           <p className="text-muted-foreground text-lg">
             Select a chapter to view its materials.
@@ -163,7 +150,33 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
         )}
       </header>
 
-      {renderContent()}
+      {children.length > 0 ? renderContent() :
+        <p className="text-muted-foreground italic text-center py-12">
+            No materials available here yet.
+        </p>
+      }
     </div>
   );
+}
+
+// Special case for the final leaf node (the note itself)
+export async function generateMetadata({ params }: { params: { slug: string[] } }) {
+  const { slug } = params;
+  const { current } = await findItemBySlug(slug);
+
+  if (!current) {
+    return {
+      title: 'Not Found'
+    }
+  }
+
+  if ('pdfUrl' in current) {
+    return {
+      title: `${current.type} | ${parents[parents.length - 1]?.name || ''}`
+    }
+  }
+
+  return {
+    title: current.name
+  }
 }

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -25,22 +25,23 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { upsertNote } from "@/lib/data";
-import type { Note } from "@/lib/types";
+import type { Note, Subject } from "@/lib/types";
 import { useTransition } from "react";
 
 const formSchema = z.object({
-  title: z.string().min(1, { message: "Title is required." }),
+  subjectId: z.string().min(1, { message: "Please select a subject." }),
+  subSubjectId: z.string().min(1, { message: "Please select a sub-subject." }),
+  chapterName: z.string().min(1, { message: "Chapter Name is required." }),
+  type: z.string().min(1, { message: "Note type is required." }),
   pdfUrl: z.string().url({ message: "Please enter a valid URL." }),
-  type: z.enum(["Handwritten Notes", "Question Bank", "Others"]),
-  chapterId: z.string().min(1, { message: "Please select a chapter." }),
 });
 
 interface NoteFormProps {
-  chapters: { id: string; name: string }[];
-  note?: Note & { chapterId?: string };
+  subjects: Subject[];
+  note?: Note & { chapterId?: string; subjectId?: string; subSubjectId?: string; chapterName?: string; };
 }
 
-export function NoteForm({ chapters, note }: NoteFormProps) {
+export function NoteForm({ subjects, note }: NoteFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -48,12 +49,22 @@ export function NoteForm({ chapters, note }: NoteFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: note?.title || "",
+      subjectId: note?.subjectId || "",
+      subSubjectId: note?.subSubjectId || "",
+      chapterName: note?.chapterName || "",
+      type: note?.type || "",
       pdfUrl: note?.pdfUrl || "",
-      type: note?.type || "Handwritten Notes",
-      chapterId: note?.chapterId || "",
     },
   });
+
+  const selectedSubjectId = useWatch({
+    control: form.control,
+    name: "subjectId",
+  });
+
+  const subSubjects = selectedSubjectId
+    ? subjects.find((s) => s.id === selectedSubjectId)?.subSubjects || []
+    : [];
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
@@ -68,6 +79,7 @@ export function NoteForm({ chapters, note }: NoteFormProps) {
           description: result.message,
         });
         router.push("/admin/notes");
+        router.refresh();
       } else {
         toast({
           title: "Operation Failed",
@@ -85,12 +97,85 @@ export function NoteForm({ chapters, note }: NoteFormProps) {
           <CardContent className="space-y-4 pt-6">
             <FormField
               control={form.control}
-              name="title"
+              name="subjectId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Note Title</FormLabel>
+                  <FormLabel>Subject</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.setValue("subSubjectId", ""); // Reset sub-subject on subject change
+                    }}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a subject" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {subjects.map((subject) => (
+                        <SelectItem key={subject.id} value={subject.id}>
+                          {subject.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {selectedSubjectId && (
+              <FormField
+                control={form.control}
+                name="subSubjectId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sub-Subject</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a sub-subject" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {subSubjects.map((subSubject) => (
+                          <SelectItem key={subSubject.id} value={subSubject.id}>
+                            {subSubject.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            <FormField
+              control={form.control}
+              name="chapterName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Chapter Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Comprehensive Notes on Motion" {...field} />
+                    <Input placeholder="e.g., Motion" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Note Type</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Handwritten Notes, Question Bank" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -109,61 +194,10 @@ export function NoteForm({ chapters, note }: NoteFormProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Note Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a note type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Handwritten Notes">
-                        Handwritten Notes
-                      </SelectItem>
-                      <SelectItem value="Question Bank">Question Bank</SelectItem>
-                      <SelectItem value="Others">Others</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="chapterId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Chapter</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select the chapter this note belongs to" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {chapters.map((chapter) => (
-                        <SelectItem key={chapter.id} value={chapter.id}>
-                          {chapter.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save Note"}
+              {isPending ? "Saving..." : note?.id ? "Save Changes" : "Upload Note"}
             </Button>
           </CardFooter>
         </form>
