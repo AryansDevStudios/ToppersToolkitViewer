@@ -2,9 +2,10 @@
 
 import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
 import type { Subject, Note, Chapter, SubSubject, User } from "./types";
-import seedData from '../../subjects-seed.json';
-import { adminDb } from './firebase-admin';
 import { revalidatePath } from "next/cache";
+
+// NOTE: Using local data as Firebase Admin SDK is not available.
+import seedData from '../../subjects-seed.json';
 
 const iconMap: { [key: string]: React.FC<any> } = {
   FlaskConical,
@@ -18,40 +19,27 @@ const iconMap: { [key: string]: React.FC<any> } = {
   Globe,
 };
 
-const getSeededSubjects = (): Subject[] => {
-    const subjects = seedData as Record<string, Omit<Subject, 'id' | 'icon'> & { icon: string }>;
-    const subjectArray: Subject[] = [];
-    for (const [id, subjectData] of Object.entries(subjects)) {
-        const subSubjects = subjectData.subSubjects?.map((ss: any) => ({
-            ...ss,
-            chapters: ss.chapters?.map((c: any) => ({
-                ...c,
-                notes: c.notes || [],
-            })) || []
-        })) || [];
 
-        subjectArray.push({
-            ...subjectData,
-            id,
-            icon: iconMap[subjectData.icon] || Book,
-            subSubjects,
-        });
-    }
-    return subjectArray;
+const getSeedData = (): Subject[] => {
+  return Object.entries(seedData).map(([id, subjectData]: [string, any]) => ({
+    id,
+    ...subjectData,
+    icon: iconMap[subjectData.icon] || Book,
+  }));
 };
 
-const allSubjects = getSeededSubjects();
-
 export const getSubjects = async (): Promise<Subject[]> => {
-  return allSubjects;
+  return getSeedData();
 };
 
 export const getUsers = async (): Promise<any[]> => {
+  // User management is disabled as Firebase Admin SDK is not available.
   return [];
 };
 
 export const findItemBySlug = async (slug: string[]) => {
   if (!slug || slug.length === 0) return { current: null, parents: [] };
+  const allSubjects = await getSubjects();
   const subject = allSubjects.find(s => s.id === slug[0]);
   if (!subject) return { current: null, parents: [] };
 
@@ -77,8 +65,9 @@ export const findItemBySlug = async (slug: string[]) => {
   return { current: currentItem, parents };
 };
 
-export const getAllNotes = async (): Promise<(Note & { subject: string; chapter: string; })[]> => {
-    const allNotes: (Note & { subject: string; chapter: string; })[] = [];
+export const getAllNotes = async (): Promise<(Note & { subject: string; chapter: string; chapterId: string })[]> => {
+    const allSubjects = await getSubjects();
+    const allNotes: (Note & { subject: string; chapter: string; chapterId: string })[] = [];
     for (const subject of allSubjects) {
         if (subject.subSubjects) {
             for (const subSubject of subject.subSubjects) {
@@ -90,6 +79,7 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; chapter:
                                     ...note,
                                     subject: subject.name,
                                     chapter: chapter.name,
+                                    chapterId: `${subject.id}/${subSubject.id}/${chapter.id}`
                                 });
                             }
                         }
@@ -101,24 +91,43 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; chapter:
     return allNotes;
 }
 
-export const getNoteById = async (id: string) => {
+export const getNoteById = async (id: string): Promise<(Note & { chapterId: string; }) | null> => {
     const notes = await getAllNotes();
-    return notes.find(note => note.id === id) || null;
+    const foundNote = notes.find(note => note.id === id);
+    if (!foundNote) return null;
+
+    const allSubjects = await getSubjects();
+    for (const subject of allSubjects) {
+      for (const subSubject of subject.subSubjects) {
+        for (const chapter of subSubject.chapters) {
+          if (chapter.notes?.some(n => n.id === id)) {
+            return {
+              ...foundNote,
+              chapterId: `${subject.id}/${subSubject.id}/${chapter.id}`
+            };
+          }
+        }
+      }
+    }
+    return null;
 }
+
 
 export const getDashboardStats = async () => {
     const notes = await getAllNotes();
+    const subjects = await getSubjects();
     const totalNotes = notes.length;
-    const totalSubjects = allSubjects.length;
+    const totalSubjects = subjects.length;
 
     return {
-        totalUsers: 0,
+        totalUsers: 0, 
         totalNotes,
         totalSubjects,
     };
 }
 
 export const getChapters = async () => {
+    const allSubjects = await getSubjects();
     const chapters: { id: string; name: string; subject: string }[] = [];
     allSubjects.forEach(subject => {
         subject.subSubjects.forEach(subSubject => {
@@ -135,22 +144,21 @@ export const getChapters = async () => {
 };
 
 export const upsertNote = async (noteData: Omit<Note, 'id'> & {id?: string, chapterId: string}) => {
-    console.log("Upserting note:", noteData);
-    // This is a placeholder as we are working with a JSON file.
-    // In a real Firestore implementation, this would interact with the database.
+    console.warn("upsertNote is not implemented because Firebase Admin SDK is not available.");
+    // This is a placeholder. In a real scenario, this would interact with a database.
     revalidatePath("/admin/notes");
-    return { success: true, message: "Note operation successful (mock)." };
+    return { success: true, message: `Note ${noteData.id ? 'updated' : 'created'} successfully (mock).` };
 }
 
 export const deleteNote = async (noteId: string) => {
-    console.log("Deleting note:", noteId);
-    // This is a placeholder.
+    console.warn("deleteNote is not implemented because Firebase Admin SDK is not available.");
+    // This is a placeholder. In a real scenario, this would interact with a database.
     revalidatePath("/admin/notes");
     return { success: true, message: "Note deleted successfully (mock)." };
 };
 
 
 export const updateUserRole = async (userId: string, newRole: User['role']) => {
-    console.warn("updateUserRole is disabled.");
-    return { success: false, error: "User management is disabled." };
+    console.warn("updateUserRole is not implemented because Firebase Admin SDK is not available.");
+    return { success: false, error: "Feature is disabled." };
 };

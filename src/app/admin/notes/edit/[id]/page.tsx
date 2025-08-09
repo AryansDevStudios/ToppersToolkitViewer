@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 
 export default async function EditNotePage({ params }: { params: { id: string } }) {
   const { id } = params;
-  const note = await getNoteById(id);
-  const chapters = await getChapters();
+  const [note, chapters] = await Promise.all([
+    getNoteById(id),
+    getChapters()
+  ]);
 
   if (!note) {
     notFound();

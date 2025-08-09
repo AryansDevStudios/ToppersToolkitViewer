@@ -15,6 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { DeleteNoteDialog } from "@/components/admin/DeleteNoteDialog";
@@ -71,18 +72,24 @@ export default async function AdminNotesPage() {
                          <Link href={`/admin/notes/edit/${note.id}`}>Edit</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href={note.pdfUrl} target="_blank">
+                        <Link href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
                             View PDF
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                         <DeleteNoteDialog noteId={note.id} />
-                      </DropdownMenuItem>
+                       <DropdownMenuSeparator />
+                      <DeleteNoteDialog noteId={note.id} />
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
+             {notes.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No notes found.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

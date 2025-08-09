@@ -43,7 +43,7 @@ export default async function AdminUsersPage() {
         <Terminal className="h-4 w-4" />
         <AlertTitle>Feature Disabled</AlertTitle>
         <AlertDescription>
-          User management is disabled because the Firebase Admin SDK could not be initialized. User data cannot be fetched or modified.
+          User management is disabled because a server-side database connection is not available. User data cannot be fetched or modified.
         </AlertDescription>
       </Alert>
       <div className="border rounded-lg">
