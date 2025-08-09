@@ -49,14 +49,12 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
     .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
 
   const isNote = "pdfUrl" in current;
-  const isSubSubject = "chapters" in current;
   const isSubject = "subSubjects" in current;
-  const isChapter = !isNote && !isSubSubject && !isSubject; // This was the bug
-
+  const isSubSubject = !isNote && "chapters" in current;
+  
   let children: any[] = [];
   if (isSubject) children = current.subSubjects;
   else if (isSubSubject) children = groupNotesByChapter(current.chapters);
-  else if (isChapter) children = current.notes;
 
 
   const renderContent = () => {
@@ -137,7 +135,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
     <div className="container mx-auto px-4 py-8">
       <Breadcrumbs
         items={breadcrumbItems.slice(0,-1)}
-        currentPageName={current.name || current.type}
+        currentPageName={isNote ? current.type : current.name}
       />
       <header className="mb-8">
         <h1 className="font-headline text-4xl font-bold mb-2">
@@ -150,7 +148,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
         )}
       </header>
 
-      {children.length > 0 ? renderContent() :
+      {children.length > 0 || isNote ? renderContent() :
         <p className="text-muted-foreground italic text-center py-12">
             No materials available here yet.
         </p>
@@ -169,14 +167,19 @@ export async function generateMetadata({ params }: { params: { slug: string[] } 
       title: 'Not Found'
     }
   }
+  
+  const currentTitle = "pdfUrl" in current ? current.type : current.name;
 
-  if ('pdfUrl' in current) {
-    return {
-      title: `${current.type} | ${parents[parents.length - 1]?.name || ''}`
+  if (parents && parents.length > 1) {
+    const parentName = parents[parents.length - 1]?.name;
+    if (parentName) {
+        return {
+            title: `${currentTitle} | ${parentName}`
+        };
     }
   }
 
   return {
-    title: current.name
+    title: currentTitle
   }
 }
