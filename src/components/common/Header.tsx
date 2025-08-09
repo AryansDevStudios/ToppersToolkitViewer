@@ -19,10 +19,13 @@ import { useTheme } from "next-themes";
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 function ThemeToggle() {
     const { setTheme, theme } = useTheme();
@@ -57,9 +60,11 @@ export function AppHeader() {
       <Button variant="ghost" asChild>
         <Link href="/" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
-      <Button variant="ghost" asChild>
-        <Link href="/admin" onClick={inSheet ? closeSheet : undefined}>Admin</Link>
-      </Button>
+      {user && (
+        <Button variant="ghost" asChild>
+          <Link href="/admin" onClick={inSheet ? closeSheet : undefined}>Admin</Link>
+        </Button>
+      )}
     </>
   );
 
@@ -68,7 +73,7 @@ export function AppHeader() {
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <BookOpen className="h-6 w-6 text-primary" />
-          <span className="font-bold inline-block text-lg">
+          <span className="font-bold inline-block font-headline text-lg">
             Topper's Toolkit
           </span>
         </Link>
@@ -131,6 +136,9 @@ export function AppHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right">
+               <SheetHeader>
+                  <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                </SheetHeader>
               <nav className="flex flex-col items-start space-y-4 pt-8">
                 <NavLinks inSheet={true} />
                 <div className="pt-4 border-t w-full">
