@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getUserRole } from '@/lib/data';
-import { auth } from '@/lib/firebase-admin';
+import { adminAuth } from '@/lib/firebase-admin';
 
 async function getRoleFromCookie(req: NextRequest): Promise<string | null> {
   const sessionCookie = req.cookies.get('session')?.value || '';
@@ -10,7 +10,7 @@ async function getRoleFromCookie(req: NextRequest): Promise<string | null> {
   }
 
   try {
-    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
     return await getUserRole(decodedClaims.uid);
   } catch (error) {
     return null;

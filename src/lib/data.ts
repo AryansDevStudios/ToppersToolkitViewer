@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
 
-import { db } from './firebase-admin';
+import { adminDb } from './firebase-admin';
 import type { Subject, User, Note, SubSubject, Chapter } from "./types";
 
 // Mapping of icon names (string) to Lucide components
@@ -165,7 +165,7 @@ export const getSubjects = async (): Promise<Subject[]> => {
 
 export const getUsers = async (): Promise<User[]> => {
   try {
-    const usersCollection = collection(db, 'users');
+    const usersCollection = collection(adminDb, 'users');
     const querySnapshot = await getDocs(usersCollection);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
   } catch (error) {
@@ -244,7 +244,7 @@ export const getAllNotes = async () => {
 
 export const getUserRole = async (uid: string): Promise<string | null> => {
   try {
-    const userDocRef = doc(db, 'users', uid);
+    const userDocRef = doc(adminDb, 'users', uid);
     const userDoc = await getDoc(userDocRef);
     if (userDoc.exists()) {
       return userDoc.data().role || 'User';
@@ -258,7 +258,7 @@ export const getUserRole = async (uid: string): Promise<string | null> => {
 
 export async function updateUserRole(userId: string, newRole: 'Admin' | 'User') {
   try {
-    const userRef = doc(db, 'users', userId);
+    const userRef = doc(adminDb, 'users', userId);
     await updateDoc(userRef, { role: newRole });
     return { success: true };
   } catch (error: any) {
@@ -269,7 +269,7 @@ export async function updateUserRole(userId: string, newRole: 'Admin' | 'User') 
 
 export async function getDashboardStats() {
     try {
-        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const usersSnapshot = await getDocs(collection(adminDb, 'users'));
         const totalUsers = usersSnapshot.size;
 
         const notes = await getAllNotes();
