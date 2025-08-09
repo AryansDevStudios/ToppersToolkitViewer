@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { DeleteNoteDialog } from "@/components/admin/DeleteNoteDialog";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export default async function AdminNotesPage() {
   const notes = await getAllNotes();
@@ -39,58 +40,64 @@ export default async function AdminNotesPage() {
           </Link>
         </Button>
       </header>
-      <div className="border rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Chapter Name</TableHead>
-              <TableHead>Note Type</TableHead>
-              <TableHead>Subject / Sub-Subject</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {notes.map((note) => (
-              <TableRow key={note.id}>
-                <TableCell className="font-medium">{note.chapter}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{note.type}</Badge>
-                </TableCell>
-                <TableCell>{note.subject}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                         <Link href={`/admin/notes/edit/${note.id}`}>Edit</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
-                            View PDF
-                        </Link>
-                      </DropdownMenuItem>
-                       <DropdownMenuSeparator />
-                      <DeleteNoteDialog noteId={note.id} chapterId={note.chapterId} />
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-             {notes.length === 0 && (
+      <Card>
+        <CardHeader>
+           <CardTitle>All Notes</CardTitle>
+           <CardDescription>A list of all notes currently on the platform.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No notes found.
-                </TableCell>
+                <TableHead>Chapter Name</TableHead>
+                <TableHead>Note Type</TableHead>
+                <TableHead className="hidden md:table-cell">Subject / Sub-Subject</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {notes.map((note) => (
+                <TableRow key={note.id}>
+                  <TableCell className="font-medium">{note.chapter}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{note.type}</Badge>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{note.subject}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                           <Link href={`/admin/notes/edit/${note.id}`}>Edit</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
+                              View PDF
+                          </Link>
+                        </DropdownMenuItem>
+                         <DropdownMenuSeparator />
+                        <DeleteNoteDialog noteId={note.id} chapterId={note.chapterId} />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+               {notes.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    No notes found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

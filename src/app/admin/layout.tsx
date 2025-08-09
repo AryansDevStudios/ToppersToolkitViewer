@@ -33,7 +33,7 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       <AdminSidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-muted/40">
         {/* Mobile Header */}
         <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">
@@ -49,9 +49,9 @@ export default function AdminLayout({
             </SheetTrigger>
             <SheetContent side="left">
                <nav className="grid gap-4 text-lg font-medium mt-8">
-                 <Link href="#" className="flex items-center gap-2 text-lg font-semibold mb-4">
+                 <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
                     <BookOpen className="h-6 w-6 text-primary" />
-                    <span>Admin Panel</span>
+                    <span className="font-headline">Admin Panel</span>
                 </Link>
                 {navItems.map((item) => (
                     <Link
@@ -71,7 +71,7 @@ export default function AdminLayout({
             </SheetContent>
           </Sheet>
         </header>
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-muted/30">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );
