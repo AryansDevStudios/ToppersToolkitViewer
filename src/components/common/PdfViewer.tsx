@@ -30,6 +30,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [count, setCount] = React.useState(0)
   const [error, setError] = useState<string | null>(null);
   const carouselContainerRef = React.useRef<HTMLDivElement>(null);
+  const isScrolling = React.useRef(false);
+  const scrollTimeout = React.useRef<NodeJS.Timeout | null>(null);
 
 
   React.useEffect(() => {
@@ -45,15 +47,28 @@ export function PdfViewer({ url }: PdfViewerProps) {
     });
 
     const handleWheel = (e: WheelEvent) => {
-        if (!api) return;
+        if (!api || isScrolling.current) return;
         
         e.preventDefault();
 
-        if (e.deltaY > 0) {
-            if (api.canScrollNext()) api.scrollNext();
-        } else if (e.deltaY < 0) {
-            if(api.canScrollPrev()) api.scrollPrev();
+        const scrollAction = () => {
+            if (e.deltaY > 0) {
+                if (api.canScrollNext()) api.scrollNext();
+            } else if (e.deltaY < 0) {
+                if(api.canScrollPrev()) api.scrollPrev();
+            }
         }
+        
+        scrollAction();
+        isScrolling.current = true;
+
+        if (scrollTimeout.current) {
+            clearTimeout(scrollTimeout.current);
+        }
+
+        scrollTimeout.current = setTimeout(() => {
+            isScrolling.current = false;
+        }, 300); // 300ms debounce delay
     };
     
     const carouselEl = carouselContainerRef.current;
@@ -64,6 +79,9 @@ export function PdfViewer({ url }: PdfViewerProps) {
     return () => {
         if (carouselEl) {
             carouselEl.removeEventListener('wheel', handleWheel);
+        }
+        if (scrollTimeout.current) {
+            clearTimeout(scrollTimeout.current);
         }
     }
 
