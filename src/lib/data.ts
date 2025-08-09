@@ -79,21 +79,34 @@ export const findItemBySlug = async (slug: string[]) => {
   const parents: any[] = [{ name: "Subjects", href: `/browse`, id: 'root' }];
 
   for (let i = 1; i < slug.length; i++) {
-      const part = slug[i];
-      let collection;
-      if (currentItem.subSubjects) collection = currentItem.subSubjects;
-      else if (currentItem.chapters) collection = currentItem.chapters;
-      else if (currentItem.notes) collection = currentItem.notes;
-      else return { current: null, parents };
-      
-      const foundItem = collection.find((item: any) => item.id === part);
-      if (foundItem) {
-          parents.push({ name: currentItem.name, href: `/browse/${slug.slice(0, i).join('/')}`, id: currentItem.id });
-          currentItem = foundItem;
-      } else {
-          return { current: null, parents };
-      }
+    const part = slug[i];
+    let foundItem = null;
+
+    if (currentItem.subSubjects) {
+      foundItem = currentItem.subSubjects.find((item: any) => item.id === part);
+    }
+    
+    if (!foundItem && currentItem.chapters) {
+        for (const chapter of currentItem.chapters) {
+            if (chapter.notes) {
+                foundItem = chapter.notes.find((note: any) => note.id === part);
+                if (foundItem) {
+                    parents.push({ name: currentItem.name, href: `/browse/${slug.slice(0, i).join('/')}`, id: currentItem.id });
+                    currentItem = foundItem;
+                    return { current: currentItem, parents };
+                }
+            }
+        }
+    }
+    
+    if (foundItem) {
+        parents.push({ name: currentItem.name, href: `/browse/${slug.slice(0, i).join('/')}`, id: currentItem.id });
+        currentItem = foundItem;
+    } else {
+        return { current: null, parents };
+    }
   }
+
   return { current: currentItem, parents };
 };
 
