@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { getSubjects } from "@/lib/data";
 
-export default function AdminSubjectsPage() {
-  const subjects = getSubjects();
+export default async function AdminSubjectsPage() {
+  const subjects = await getSubjects();
 
   return (
     <div className="space-y-8">

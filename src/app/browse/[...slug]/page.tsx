@@ -19,9 +19,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-export default function BrowsePage({ params }: { params: { slug: string[] } }) {
+export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
   const { slug } = params;
-  const { current, parents } = findItemBySlug(slug);
+  const { current, parents } = await findItemBySlug(slug);
 
   if (!current) {
     notFound();

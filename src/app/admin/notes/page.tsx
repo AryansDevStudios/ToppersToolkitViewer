@@ -17,8 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function AdminNotesPage() {
-  const notes = getAllNotes();
+export default async function AdminNotesPage() {
+  const notes = await getAllNotes();
 
   return (
     <div className="space-y-8">

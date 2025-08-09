@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/card";
 import { getSubjects } from "@/lib/data";
 
-export default function Home() {
-  const subjects = getSubjects();
+export default async function Home() {
+  const subjects = await getSubjects();
 
   return (
     <div className="container mx-auto px-4 py-8">

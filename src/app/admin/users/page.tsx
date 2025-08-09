@@ -19,8 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function AdminUsersPage() {
-  const users = getUsers();
+export default async function AdminUsersPage() {
+  const users = await getUsers();
 
   return (
     <div className="space-y-8">
@@ -43,6 +43,8 @@ export default function AdminUsersPage() {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Class</TableHead>
+              <TableHead>SR. No.</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -56,6 +58,8 @@ export default function AdminUsersPage() {
                     {user.role}
                   </Badge>
                 </TableCell>
+                <TableCell>{user.classAndSection}</TableCell>
+                <TableCell>{user.srNo}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
