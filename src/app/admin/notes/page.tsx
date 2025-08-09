@@ -29,7 +29,7 @@ export default async function AdminNotesPage() {
             Manage all notes and documents on the platform.
           </p>
         </div>
-        <Button>
+        <Button disabled>
           <Upload className="mr-2 h-4 w-4" />
           Upload Note
         </Button>

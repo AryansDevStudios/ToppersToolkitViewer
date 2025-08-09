@@ -1,21 +1,17 @@
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, FileText, BookCopy } from "lucide-react";
+import { Users, FileText, BookCopy, AlertCircle } from "lucide-react";
 import { getDashboardStats } from "@/lib/data";
 
 export default async function AdminDashboardPage() {
-  const { totalUsers, totalNotes, totalSubjects } = await getDashboardStats();
+  const { totalNotes, totalSubjects } = await getDashboardStats();
 
   const stats = [
-    {
-      title: "Total Users",
-      value: totalUsers,
-      icon: Users,
-    },
     {
       title: "Total Notes",
       value: totalNotes,
@@ -51,6 +47,20 @@ export default async function AdminDashboardPage() {
             </CardContent>
           </Card>
         ))}
+         <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Users
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">--</div>
+               <p className="text-xs text-muted-foreground">
+                User data is unavailable.
+              </p>
+            </CardContent>
+          </Card>
       </div>
 
       <Card>

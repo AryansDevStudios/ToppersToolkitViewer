@@ -12,6 +12,7 @@ interface ChangeRoleMenuItemProps {
     currentRole: User['role'];
 }
 
+// This component is currently not used because user management is disabled.
 export function ChangeRoleMenuItem({ userId, currentRole }: ChangeRoleMenuItemProps) {
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
@@ -40,8 +41,8 @@ export function ChangeRoleMenuItem({ userId, currentRole }: ChangeRoleMenuItemPr
     };
 
     return (
-        <DropdownMenuItem onClick={handleChangeRole} disabled={isPending}>
-            {isPending ? 'Changing...' : `Make ${newRole}`}
+        <DropdownMenuItem onClick={handleChangeRole} disabled={true}>
+            {`Make ${newRole}`}
         </DropdownMenuItem>
     )
 }
