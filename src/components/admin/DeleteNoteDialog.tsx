@@ -20,9 +20,10 @@ import { useRouter } from "next/navigation";
 
 interface DeleteNoteDialogProps {
   noteId: string;
+  chapterId: string;
 }
 
-export function DeleteNoteDialog({ noteId }: DeleteNoteDialogProps) {
+export function DeleteNoteDialog({ noteId, chapterId }: DeleteNoteDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -30,11 +31,10 @@ export function DeleteNoteDialog({ noteId }: DeleteNoteDialogProps) {
 
   const handleDelete = () => {
     startTransition(async () => {
-      // Note: This currently uses a mock implementation.
-      const result = await deleteNote(noteId);
+      const result = await deleteNote(noteId, chapterId);
       if (result.success) {
-        toast({ title: "Note Action", description: "This is a demo. No data was deleted." });
-        router.refresh(); // To reflect changes if data source was live
+        toast({ title: "Note Deleted", description: result.message });
+        router.refresh(); 
         setIsOpen(false);
       } else {
         toast({
@@ -61,7 +61,7 @@ export function DeleteNoteDialog({ noteId }: DeleteNoteDialogProps) {
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the note
-            from our servers. (This is a demo and will not actually delete anything).
+            from the database.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

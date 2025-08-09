@@ -56,7 +56,6 @@ export function NoteForm({ chapters, note }: NoteFormProps) {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-       // Note: This currently uses a mock implementation.
       const result = await upsertNote({
         id: note?.id,
         ...values,
@@ -64,17 +63,15 @@ export function NoteForm({ chapters, note }: NoteFormProps) {
 
       if (result.success) {
         toast({
-          title: "Note Action",
-          description: `This is a demo. The note has been successfully ${
-            note ? "updated" : "created"
-          } in memory, but not in a database.`,
+          title: "Success",
+          description: result.message,
         });
         router.push("/admin/notes");
         router.refresh();
       } else {
         toast({
           title: "Operation Failed",
-          description: "Could not save the note.",
+          description: result.error || "Could not save the note.",
           variant: "destructive",
         });
       }

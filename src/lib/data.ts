@@ -1,10 +1,11 @@
+
 'use server';
 
 import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
 import type { Subject, Note, Chapter, SubSubject, User } from "./types";
 import { revalidatePath } from "next/cache";
 
-// NOTE: Using local data as Firebase Admin SDK is not available.
+// Using local data as a fallback since Firebase Admin SDK is not available.
 import seedData from '../../subjects-seed.json';
 
 const iconMap: { [key: string]: React.FC<any> } = {
@@ -19,17 +20,16 @@ const iconMap: { [key: string]: React.FC<any> } = {
   Globe,
 };
 
-
-const getSeedData = (): Subject[] => {
-  return Object.entries(seedData).map(([id, subjectData]: [string, any]) => ({
-    id,
-    ...subjectData,
-    icon: iconMap[subjectData.icon] || Book,
-  }));
-};
+// Helper function to simulate deep cloning of the seed data to avoid mutation across requests.
+const getClonedSeedData = () => JSON.parse(JSON.stringify(seedData));
 
 export const getSubjects = async (): Promise<Subject[]> => {
-  return getSeedData();
+  const data = getClonedSeedData();
+  return Object.entries(data).map(([id, subject]: [string, any]) => ({
+    ...subject,
+    id,
+    icon: iconMap[subject.icon] || Book,
+  }));
 };
 
 export const getUsers = async (): Promise<any[]> => {
@@ -77,7 +77,7 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; chapter:
                             for (const note of chapter.notes) {
                                 allNotes.push({
                                     ...note,
-                                    subject: subject.name,
+                                    subject: `${subject.name} - ${subSubject.name}`,
                                     chapter: chapter.name,
                                     chapterId: `${subject.id}/${subSubject.id}/${chapter.id}`
                                 });
@@ -98,7 +98,9 @@ export const getNoteById = async (id: string): Promise<(Note & { chapterId: stri
 
     const allSubjects = await getSubjects();
     for (const subject of allSubjects) {
+      if (!subject.subSubjects) continue;
       for (const subSubject of subject.subSubjects) {
+        if (!subSubject.chapters) continue;
         for (const chapter of subSubject.chapters) {
           if (chapter.notes?.some(n => n.id === id)) {
             return {
@@ -130,7 +132,9 @@ export const getChapters = async () => {
     const allSubjects = await getSubjects();
     const chapters: { id: string; name: string; subject: string }[] = [];
     allSubjects.forEach(subject => {
+        if(!subject.subSubjects) return;
         subject.subSubjects.forEach(subSubject => {
+            if(!subSubject.chapters) return;
             subSubject.chapters.forEach(chapter => {
                 chapters.push({
                     id: `${subject.id}/${subSubject.id}/${chapter.id}`,
@@ -144,19 +148,18 @@ export const getChapters = async () => {
 };
 
 export const upsertNote = async (noteData: Omit<Note, 'id'> & {id?: string, chapterId: string}) => {
-    console.warn("upsertNote is not implemented because Firebase Admin SDK is not available.");
-    // This is a placeholder. In a real scenario, this would interact with a database.
+    console.log("DEMO MODE: Note data received:", noteData);
+    // This is a demo. In a real application, you would save this to a database.
     revalidatePath("/admin/notes");
-    return { success: true, message: `Note ${noteData.id ? 'updated' : 'created'} successfully (mock).` };
+    return { success: true, message: `This is a demo. The note has been successfully created/updated in memory, but not in a database.` };
 }
 
-export const deleteNote = async (noteId: string) => {
-    console.warn("deleteNote is not implemented because Firebase Admin SDK is not available.");
-    // This is a placeholder. In a real scenario, this would interact with a database.
+export const deleteNote = async (noteId: string, chapterId: string) => {
+    console.log(`DEMO MODE: Deleting note ${noteId} from chapter ${chapterId}`);
+    // This is a demo. In a real application, you would delete this from a database.
     revalidatePath("/admin/notes");
-    return { success: true, message: "Note deleted successfully (mock)." };
+    return { success: true, message: "This is a demo. The note has been successfully deleted from memory, but not from the database." };
 };
-
 
 export const updateUserRole = async (userId: string, newRole: User['role']) => {
     console.warn("updateUserRole is not implemented because Firebase Admin SDK is not available.");

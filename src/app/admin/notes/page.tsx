@@ -77,7 +77,7 @@ export default async function AdminNotesPage() {
                         </Link>
                       </DropdownMenuItem>
                        <DropdownMenuSeparator />
-                      <DeleteNoteDialog noteId={note.id} />
+                      <DeleteNoteDialog noteId={note.id} chapterId={note.chapterId} />
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
