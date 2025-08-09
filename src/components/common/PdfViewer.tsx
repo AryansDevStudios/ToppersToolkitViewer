@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -15,7 +15,6 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel"
 import React from 'react';
-import { Button } from '../ui/button';
 
 // Configure the worker to load from a CDN
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -30,6 +29,8 @@ export function PdfViewer({ url }: PdfViewerProps) {
   const [current, setCurrent] = React.useState(0)
   const [count, setCount] = React.useState(0)
   const [error, setError] = useState<string | null>(null);
+  const carouselContainerRef = React.useRef<HTMLDivElement>(null);
+
 
   React.useEffect(() => {
     if (!api) {
@@ -41,7 +42,31 @@ export function PdfViewer({ url }: PdfViewerProps) {
  
     api.on("select", () => {
       setCurrent(api.selectedScrollSnap() + 1)
-    })
+    });
+
+    const handleWheel = (e: WheelEvent) => {
+        if (!api) return;
+        
+        e.preventDefault();
+
+        if (e.deltaY > 0) {
+            if (api.canScrollNext()) api.scrollNext();
+        } else if (e.deltaY < 0) {
+            if(api.canScrollPrev()) api.scrollPrev();
+        }
+    };
+    
+    const carouselEl = carouselContainerRef.current;
+    if (carouselEl) {
+        carouselEl.addEventListener('wheel', handleWheel, { passive: false });
+    }
+
+    return () => {
+        if (carouselEl) {
+            carouselEl.removeEventListener('wheel', handleWheel);
+        }
+    }
+
   }, [api])
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
@@ -55,7 +80,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center bg-muted/20">
+    <div className="relative w-full h-full flex flex-col items-center bg-muted/20" ref={carouselContainerRef}>
       <div className="w-full flex-1 overflow-hidden flex justify-center items-center">
         <Document
           file={url}
