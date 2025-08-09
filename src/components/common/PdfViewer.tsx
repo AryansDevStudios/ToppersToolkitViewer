@@ -87,6 +87,26 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
   }, [api])
 
+   React.useEffect(() => {
+    if (!api) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        api.scrollNext();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        api.scrollPrev();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [api]);
+
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
   }
