@@ -76,20 +76,22 @@ export default function BrowsePage({ params }: { params: { slug: string[] } }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {children.map((item) => (
-            <Link key={item.id} href={getHref(item.id)} passHref legacyBehavior>
-              <a className="block">
-                <Card className="h-full transition-shadow duration-300 hover:shadow-lg">
-                  <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      {getIcon(item)}
-                    </div>
-                    <div>
-                      <CardTitle className="font-headline text-xl">{item.name || item.title}</CardTitle>
-                      {item.type && <Badge className="mt-1" variant="outline">{item.type}</Badge>}
-                    </div>
-                  </CardHeader>
-                </Card>
-              </a>
+            <Link
+              key={item.id}
+              href={getHref(item.id)}
+              className="block"
+            >
+              <Card className="h-full transition-shadow duration-300 hover:shadow-lg">
+                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    {getIcon(item)}
+                  </div>
+                  <div>
+                    <CardTitle className="font-headline text-xl">{item.name || item.title}</CardTitle>
+                    {item.type && <Badge className="mt-1" variant="outline">{item.type}</Badge>}
+                  </div>
+                </CardHeader>
+              </Card>
             </Link>
           ))}
         </div>

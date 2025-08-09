@@ -24,22 +24,26 @@ export default function Home() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {subjects.map((subject) => (
-          <Link href={`/browse/${subject.id}`} key={subject.id} legacyBehavior>
-            <a className="block hover:no-underline">
-              <Card className="h-full transform transition-all duration-300 hover:scale-105 hover:shadow-xl focus-visible:scale-105 focus-visible:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                <CardHeader className="flex flex-col items-center justify-center text-center p-6">
-                  <div className="p-4 bg-primary/10 rounded-full mb-4 text-primary">
-                    <subject.icon className="w-10 h-10" />
-                  </div>
-                  <CardTitle className="font-headline text-2xl">
-                    {subject.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center text-muted-foreground px-6 pb-6">
-                  <p>Explore notes, question banks, and more for {subject.name}.</p>
-                </CardContent>
-              </Card>
-            </a>
+          <Link
+            href={`/browse/${subject.id}`}
+            key={subject.id}
+            className="block hover:no-underline"
+          >
+            <Card className="h-full transform transition-all duration-300 hover:scale-105 hover:shadow-xl focus-visible:scale-105 focus-visible:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+              <CardHeader className="flex flex-col items-center justify-center text-center p-6">
+                <div className="p-4 bg-primary/10 rounded-full mb-4 text-primary">
+                  <subject.icon className="w-10 h-10" />
+                </div>
+                <CardTitle className="font-headline text-2xl">
+                  {subject.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center text-muted-foreground px-6 pb-6">
+                <p>
+                  Explore notes, question banks, and more for {subject.name}.
+                </p>
+              </CardContent>
+            </Card>
           </Link>
         ))}
       </div>
