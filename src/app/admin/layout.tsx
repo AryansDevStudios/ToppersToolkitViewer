@@ -1,14 +1,78 @@
+
+"use client";
+
+import { useState } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Menu, FileText, LayoutDashboard, Users, BookOpen } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/notes", icon: FileText, label: "Notes" },
+  { href: "/admin/users", icon: Users, label: "Users" },
+];
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const pathname = usePathname();
+
+  const closeSheet = () => setIsSheetOpen(false);
+  
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       <AdminSidebar />
-      <main className="flex-1 p-6 lg:p-8 bg-muted/30">{children}</main>
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header */}
+        <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2 font-bold">
+            <BookOpen className="h-6 w-6 text-primary" />
+            <span className="sr-only">Topper's Toolkit</span>
+          </Link>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Open navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+               <nav className="grid gap-4 text-lg font-medium mt-8">
+                 <Link href="#" className="flex items-center gap-2 text-lg font-semibold mb-4">
+                    <BookOpen className="h-6 w-6 text-primary" />
+                    <span>Admin Panel</span>
+                </Link>
+                {navItems.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={closeSheet}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
+                        pathname === item.href && "bg-muted text-primary"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {item.label}
+                    </Link>
+                  ))}
+               </nav>
+            </SheetContent>
+          </Sheet>
+        </header>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-muted/30">{children}</main>
+      </div>
     </div>
   );
 }
