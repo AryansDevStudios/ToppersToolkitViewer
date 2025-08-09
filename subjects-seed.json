@@ -84,7 +84,7 @@
                 "id": "ns-notes-1",
                 "title": "Comprehensive Notes on Number Systems",
                 "type": "Handwritten Notes",
-                "pdfUrl": "/placeholder.pdf"
+                "pdfUrl": "https://raw.githubusercontent.com/firebase/firebase-ios-sdk/master/LICENSE"
               }
             ]
           },

@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 export default async function AdminNotesPage() {
   const notes = await getAllNotes();
@@ -63,9 +64,13 @@ export default async function AdminNotesPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>View PDF</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem disabled>Edit</DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={note.pdfUrl} target="_blank">
+                            View PDF
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" disabled>
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
