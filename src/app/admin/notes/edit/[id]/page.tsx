@@ -1,10 +1,16 @@
 import { NoteForm } from "@/components/admin/NoteForm";
 import { getNoteById, getSubjects } from "@/lib/data";
 import { notFound } from "next/navigation";
+import type { Subject } from "@/lib/types";
+
+// Helper function to create a serializable version of the subjects
+const getSerializableSubjects = (subjects: Subject[]) => {
+  return subjects.map(({ icon, ...rest }) => rest);
+};
 
 export default async function EditNotePage({ params }: { params: { id: string } }) {
   const { id } = params;
-  const [note, subjects] = await Promise.all([
+  const [note, allSubjects] = await Promise.all([
     getNoteById(id),
     getSubjects()
   ]);
@@ -12,6 +18,8 @@ export default async function EditNotePage({ params }: { params: { id: string } 
   if (!note) {
     notFound();
   }
+
+  const subjects = getSerializableSubjects(allSubjects);
   
   return (
     <div className="max-w-2xl mx-auto">

@@ -6,10 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FileText, Folder, ChevronDown } from "lucide-react";
+import { FileText, Folder } from "lucide-react";
 import { findItemBySlug } from "@/lib/data";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
-import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
   AccordionContent,
@@ -17,7 +16,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
-import type { Chapter } from "@/lib/types";
+import type { Chapter, Note } from "@/lib/types";
 
 // Helper to group notes by chapter name
 const groupNotesByChapter = (chapters: Chapter[]) => {
@@ -162,7 +161,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 // Special case for the final leaf node (the note itself)
 export async function generateMetadata({ params }: { params: { slug: string[] } }) {
   const { slug } = params;
-  const { current } = await findItemBySlug(slug);
+  const { current, parents } = await findItemBySlug(slug);
 
   if (!current) {
     return {

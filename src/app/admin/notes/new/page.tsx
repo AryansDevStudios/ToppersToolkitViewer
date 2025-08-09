@@ -1,8 +1,16 @@
 import { NoteForm } from "@/components/admin/NoteForm";
 import { getSubjects } from "@/lib/data";
+import type { Subject } from "@/lib/types";
+
+// Helper function to create a serializable version of the subjects
+const getSerializableSubjects = (subjects: Subject[]) => {
+  return subjects.map(({ icon, ...rest }) => rest);
+};
 
 export default async function NewNotePage() {
-  const subjects = await getSubjects();
+  const allSubjects = await getSubjects();
+  const subjects = getSerializableSubjects(allSubjects);
+  
   return (
      <div className="max-w-2xl mx-auto">
         <header className="mb-8">

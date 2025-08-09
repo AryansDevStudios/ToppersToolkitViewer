@@ -36,8 +36,10 @@ const formSchema = z.object({
   pdfUrl: z.string().url({ message: "Please enter a valid URL." }),
 });
 
+// We expect a version of Subject without the icon for client-side components
+type SerializableSubject = Omit<Subject, 'icon'>;
 interface NoteFormProps {
-  subjects: Subject[];
+  subjects: SerializableSubject[];
   note?: Note & { chapterId?: string; subjectId?: string; subSubjectId?: string; chapterName?: string; };
 }
 
