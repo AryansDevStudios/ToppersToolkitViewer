@@ -6,7 +6,13 @@ if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
 }
 
 // Parse the service account key from the environment variable
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+let serviceAccount;
+try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+} catch (e) {
+    throw new Error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY. Make sure it is a valid JSON string.');
+}
+
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
