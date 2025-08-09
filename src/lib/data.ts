@@ -1,113 +1,73 @@
-import { Atom, Dna, FlaskConical, Sigma } from "lucide-react";
+import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
 import type { Subject, User } from "./types";
 
 const mockSubjects: Subject[] = [
   {
-    id: "physics",
-    name: "Physics",
-    icon: Atom,
+    id: "science",
+    name: "Science",
+    icon: FlaskConical,
     subSubjects: [
       {
-        id: "mechanics",
-        name: "Mechanics",
+        id: "physics",
+        name: "Physics",
         chapters: [
-          {
-            id: "newtons-laws",
-            name: "Newton's Laws",
-            notes: [
-              {
-                id: "nl-notes-1",
-                title: "Comprehensive Notes on Newton's Laws",
-                type: "Handwritten Notes",
-                pdfUrl: "/placeholder.pdf",
-              },
-              {
-                id: "nl-qb-1",
-                title: "Newton's Laws Question Bank",
-                type: "Question Bank",
-                pdfUrl: "/placeholder.pdf",
-              },
-            ],
-          },
-          {
-            id: "work-energy-power",
-            name: "Work, Energy, and Power",
-            notes: [
-              {
-                id: "wep-notes-1",
-                title: "Work, Energy, and Power Detailed Notes",
-                type: "Handwritten Notes",
-                pdfUrl: "/placeholder.pdf",
-              },
-            ],
-          },
+          { id: "motion", name: "Motion", notes: [] },
+          { id: "force-and-laws-of-motion", name: "Force and Laws of Motion", notes: [] },
         ],
       },
       {
-        id: "electromagnetism",
-        name: "Electromagnetism",
+        id: "chemistry",
+        name: "Chemistry",
         chapters: [
-          {
-            id: "maxwells-equations",
-            name: "Maxwell's Equations",
-            notes: [
-              {
-                id: "me-notes-1",
-                title: "Intro to Maxwell's Equations",
-                type: "Handwritten Notes",
-                pdfUrl: "/placeholder.pdf",
-              },
-            ],
-          },
+            { id: "matter-in-our-surroundings", name: "Matter in Our Surroundings", notes: [] },
+            { id: "is-matter-around-us-pure", name: "Is Matter Around Us Pure", notes: [] },
+        ],
+      },
+      {
+        id: "biology",
+        name: "Biology",
+        chapters: [
+            { id: "the-fundamental-unit-of-life", name: "The Fundamental Unit of Life", notes: [] },
+            { id: "tissues", name: "Tissues", notes: [] },
         ],
       },
     ],
   },
   {
-    id: "chemistry",
-    name: "Chemistry",
-    icon: FlaskConical,
+    id: "social-science",
+    name: "Social Science",
+    icon: Landmark,
     subSubjects: [
       {
-        id: "physical-chemistry",
-        name: "Physical Chemistry",
+        id: "history",
+        name: "History",
         chapters: [
-          {
-            id: "thermodynamics",
-            name: "Thermodynamics",
-            notes: [
-              {
-                id: "thermo-notes-1",
-                title: "Laws of Thermodynamics",
-                type: "Handwritten Notes",
-                pdfUrl: "/placeholder.pdf",
-              },
-            ],
-          },
+            { id: "the-french-revolution", name: "The French Revolution", notes: [] },
+            { id: "socialism-in-europe", name: "Socialism in Europe", notes: [] },
         ],
       },
       {
-        id: "organic-chemistry",
-        name: "Organic Chemistry",
+        id: "geography",
+        name: "Geography",
         chapters: [
-          {
-            id: "hydrocarbons",
-            name: "Hydrocarbons",
-            notes: [
-              {
-                id: "hc-notes-1",
-                title: "Alkane, Alkene, Alkyne Notes",
-                type: "Handwritten Notes",
-                pdfUrl: "/placeholder.pdf",
-              },
-              {
-                id: "hc-qb-1",
-                title: "Hydrocarbons Problem Set",
-                type: "Question Bank",
-                pdfUrl: "/placeholder.pdf",
-              },
-            ],
-          },
+            { id: "india-size-and-location", name: "India - Size and Location", notes: [] },
+            { id: "physical-features-of-india", name: "Physical Features of India", notes: [] },
+        ],
+      },
+      {
+        id: "economics",
+        name: "Economics",
+        chapters: [
+            { id: "the-story-of-village-palampur", name: "The Story of Village Palampur", notes: [] },
+            { id: "people-as-resource", name: "People as Resource", notes: [] },
+        ],
+      },
+      {
+        id: "politics",
+        name: "Politics",
+        chapters: [
+            { id: "what-is-democracy", name: "What is Democracy? Why Democracy?", notes: [] },
+            { id: "constitutional-design", name: "Constitutional Design", notes: [] },
         ],
       },
     ],
@@ -117,61 +77,52 @@ const mockSubjects: Subject[] = [
     name: "Mathematics",
     icon: Sigma,
     subSubjects: [
-      {
-        id: "calculus",
-        name: "Calculus",
+       {
+        id: "maths-main",
+        name: "Mathematics",
         chapters: [
-          {
-            id: "differentiation",
-            name: "Differentiation",
-            notes: [
-              {
-                id: "diff-notes-1",
-                title: "Basics of Differentiation",
-                type: "Handwritten Notes",
-                pdfUrl: "/placeholder.pdf",
-              },
-            ],
-          },
-          {
-            id: "integration",
-            name: "Integration",
-            notes: [
-              {
-                id: "int-notes-1",
-                title: "Integration Techniques",
-                type: "Handwritten Notes",
-                pdfUrl: "/placeholder.pdf",
-              },
-            ],
-          },
+          { id: "number-systems", name: "Number Systems", notes: [
+            {
+              id: "ns-notes-1",
+              title: "Comprehensive Notes on Number Systems",
+              type: "Handwritten Notes",
+              pdfUrl: "/placeholder.pdf",
+            },
+          ] },
+          { id: "polynomials", name: "Polynomials", notes: [] },
         ],
       },
     ],
   },
   {
-    id: "biology",
-    name: "Biology",
-    icon: Dna,
+    id: "english",
+    name: "English",
+    icon: Book,
     subSubjects: [
       {
-        id: "genetics",
-        name: "Genetics",
+        id: "beehive",
+        name: "Beehive",
         chapters: [
-          {
-            id: "mendelian-genetics",
-            name: "Mendelian Genetics",
-            notes: [
-              {
-                id: "mg-notes-1",
-                title: "Mendel's Experiments",
-                type: "Handwritten Notes",
-                pdfUrl: "/placeholder.pdf",
-              },
-            ],
-          },
+          { id: "the-fun-they-had", name: "The Fun They Had", notes: [] },
+          { id: "the-sound-of-music", name: "The Sound of Music", notes: [] },
         ],
       },
+       {
+        id: "moments",
+        name: "Moments",
+        chapters: [
+          { id: "the-lost-child", name: "The Lost Child", notes: [] },
+          { id: "the-adventures-of-toto", name: "The Adventures of Toto", notes: [] },
+        ],
+      },
+      {
+        id: "grammar",
+        name: "Grammar",
+        chapters: [
+            { id: "tenses", name: "Tenses", notes: [] },
+            { id: "modals", name: "Modals", notes: [] },
+        ]
+      }
     ],
   },
 ];
@@ -208,7 +159,7 @@ export const findItemBySlug = (slug: string[]) => {
     if (foundItem) {
       parents.push({
         name: currentItem.name || "Subjects",
-        href: `/browse/${parents.map((p) => p.id).join("/")}`,
+        href: `/browse/${slug.slice(0, slug.indexOf(part)).join('/')}`,
         id: currentItem.id,
       });
       currentItem = foundItem;
@@ -223,15 +174,21 @@ export const findItemBySlug = (slug: string[]) => {
 export const getAllNotes = () => {
     const allNotes = [];
     for (const subject of mockSubjects) {
-        for (const subSubject of subject.subSubjects) {
-            for (const chapter of subSubject.chapters) {
-                for (const note of chapter.notes) {
-                    allNotes.push({
-                        ...note,
-                        subject: subject.name,
-                        subSubject: subSubject.name,
-                        chapter: chapter.name,
-                    });
+        if (subject.subSubjects) {
+            for (const subSubject of subject.subSubjects) {
+                if (subSubject.chapters) {
+                    for (const chapter of subSubject.chapters) {
+                        if (chapter.notes) {
+                            for (const note of chapter.notes) {
+                                allNotes.push({
+                                    ...note,
+                                    subject: subject.name,
+                                    subSubject: subSubject.name,
+                                    chapter: chapter.name,
+                                });
+                            }
+                        }
+                    }
                 }
             }
         }

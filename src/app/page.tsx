@@ -40,7 +40,7 @@ export default function Home() {
               </CardHeader>
               <CardContent className="text-center text-muted-foreground px-6 pb-6">
                 <p>
-                  Explore notes, question banks, and more for {subject.name}.
+                  Explore materials for {subject.name}.
                 </p>
               </CardContent>
             </Card>
