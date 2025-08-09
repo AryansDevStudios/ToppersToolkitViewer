@@ -1,4 +1,5 @@
 
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -19,6 +20,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PdfViewer } from "@/components/common/PdfViewer";
 
 export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
   const { slug } = params;
@@ -59,12 +61,8 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   const renderContent = () => {
     if (isNote) {
       return (
-        <div className="w-full h-[calc(100vh-12rem)] border rounded-lg">
-             <iframe
-                src={`https://docs.google.com/gview?url=${current.pdfUrl}&embedded=true`}
-                className="w-full h-full"
-                title={current.name}
-             />
+        <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden">
+             <PdfViewer url={current.pdfUrl} />
         </div>
       );
     }
