@@ -68,7 +68,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
         scrollTimeout.current = setTimeout(() => {
             isScrolling.current = false;
-        }, 300); // 300ms debounce delay
+        }, 300);
     };
     
     const carouselEl = carouselContainerRef.current;
@@ -119,7 +119,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
 
   return (
     <div className="relative w-full h-full flex flex-col items-center bg-muted/20" ref={carouselContainerRef}>
-      <div className="w-full flex-1 overflow-hidden flex justify-center items-center">
+      <div className="w-full h-full flex-1 overflow-hidden flex justify-center items-start">
         <Document
           file={url}
           onLoadSuccess={onDocumentLoadSuccess}
@@ -139,17 +139,18 @@ export function PdfViewer({ url }: PdfViewerProps) {
           }
         >
             {numPages && (
-                 <Carousel setApi={setApi} className="w-full max-w-4xl h-full py-4">
-                    <CarouselContent className="h-full">
+                 <Carousel setApi={setApi} className="w-full h-full p-12">
+                    <CarouselContent>
                       {Array.from(new Array(numPages), (el, index) => (
                         <CarouselItem key={`page_${index + 1}`}>
-                          <div className="w-full h-full flex items-center justify-center">
+                          <div className="flex items-start justify-center">
                             <Page
                               pageNumber={index + 1}
                               renderAnnotationLayer={true}
                               renderTextLayer={true}
                               className="shadow-lg"
                               canvasBackground="transparent"
+                              width={carouselContainerRef.current ? carouselContainerRef.current.clientWidth * 0.8 : undefined}
                             />
                           </div>
                         </CarouselItem>
