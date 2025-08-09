@@ -60,7 +60,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   const renderContent = () => {
     if (isNote) {
       return (
-        <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden">
+        <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
              <PdfViewerWrapper url={current.pdfUrl} />
         </div>
       );
@@ -72,10 +72,10 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
         <Accordion type="multiple" className="w-full max-w-4xl mx-auto">
           {children.map((chapter) => (
             <AccordionItem value={chapter.id} key={chapter.id}>
-              <AccordionTrigger className="text-xl font-headline hover:no-underline">
+              <AccordionTrigger className="text-xl font-bold hover:no-underline">
                 {chapter.name}
               </AccordionTrigger>
-              <AccordionContent className="pl-6">
+              <AccordionContent className="pl-4 md:pl-6">
                 {chapter.notes && chapter.notes.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
                     {chapter.notes.map((note: any) => (
@@ -84,13 +84,13 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
                         href={`/browse/${slug.join("/")}/${note.id}`}
                         className="block"
                       >
-                         <Card className="h-full transition-shadow duration-300 hover:shadow-lg">
-                            <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                         <Card className="h-full transition-shadow duration-300 hover:shadow-lg hover:border-primary/50">
+                            <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
                                <div className="p-3 bg-primary/10 rounded-lg">
-                                <FileText className="w-8 h-8 text-primary" />
+                                <FileText className="w-6 h-6 text-primary" />
                               </div>
                               <div>
-                                <CardTitle className="font-headline text-lg">{note.type}</CardTitle>
+                                <CardTitle className="font-semibold text-lg">{note.type}</CardTitle>
                               </div>
                             </CardHeader>
                          </Card>
@@ -111,16 +111,16 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 
     // Default view for subjects -> sub-subjects
     return (
-       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {children.map((item) => (
           <Link key={item.id} href={`/browse/${slug.join("/")}/${item.id}`} className="block">
-            <Card className="h-full transition-shadow duration-300 hover:shadow-lg">
-              <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+            <Card className="h-full transition-shadow duration-300 hover:shadow-lg hover:border-primary/50">
+              <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
                 <div className="p-3 bg-primary/10 rounded-lg">
                   <Folder className="w-8 h-8 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="font-headline text-xl">{item.name}</CardTitle>
+                  <CardTitle className="font-bold text-xl">{item.name}</CardTitle>
                 </div>
               </CardHeader>
             </Card>
@@ -138,7 +138,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
         currentPageName={isNote ? current.type : current.name}
       />
       <header className="mb-8">
-        <h1 className="font-headline text-4xl font-bold mb-2">
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
            {isNote ? current.type : current.name}
         </h1>
          {isSubSubject && (
@@ -158,7 +158,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 }
 
 // Special case for the final leaf node (the note itself)
-export async function generateMetadata({ params }: { params: { slug: string[] } }) {
+export async function generateMetadata({ params }: { params: { slug:string[] } }) {
   const { slug } = params;
   const { current, parents } = await findItemBySlug(slug);
 
