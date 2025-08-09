@@ -1,15 +1,7 @@
 'use server';
 
-import {
-  collection,
-  doc,
-  getDocs,
-  setDoc
-} from 'firebase/firestore';
-import { getAdminDb } from './firebase-admin';
 import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
-
-import type { Subject } from "./types";
+import type { Subject, Note, Chapter, SubSubject, User } from "./types";
 import seedData from '../../subjects-seed.json';
 
 // Mapping of icon names (string) to Lucide components
@@ -26,38 +18,33 @@ const iconMap: { [key: string]: React.FC<any> } = {
 };
 
 // Helper function to simulate seeding data if the collection is empty
-const seedSubjects = async () => {
-    const adminDb = getAdminDb();
-    const subjectsCollection = collection(adminDb, 'subjects');
-    const snapshot = await getDocs(subjectsCollection);
-    if (snapshot.empty) {
-        console.log('No subjects found, seeding database...');
-        const subjects = seedData as Record<string, Omit<Subject, 'id' | 'icon'> & { icon: string }>;
-        for (const [id, subjectData] of Object.entries(subjects)) {
-            const subjectDocRef = doc(adminDb, 'subjects', id);
-            await setDoc(subjectDocRef, { ...subjectData, id });
-        }
-        console.log('Database seeded.');
+const getSeededSubjects = (): Subject[] => {
+    const subjects = seedData as Record<string, Omit<Subject, 'id' | 'icon'> & { icon: string }>;
+    const subjectArray: Subject[] = [];
+    for (const [id, subjectData] of Object.entries(subjects)) {
+        const subSubjects = subjectData.subSubjects?.map((ss: any) => ({
+            ...ss,
+            chapters: ss.chapters?.map((c: any) => ({
+                ...c,
+                notes: c.notes || [],
+            })) || []
+        })) || [];
+
+        subjectArray.push({
+            ...subjectData,
+            id,
+            icon: iconMap[subjectData.icon] || Book,
+            subSubjects,
+        });
     }
+    return subjectArray;
 };
 
+const allSubjects = getSeededSubjects();
 
 export const getSubjects = async (): Promise<Subject[]> => {
-  await seedSubjects();
-  const adminDb = getAdminDb();
-  const subjectsCollection = collection(adminDb, 'subjects');
-  const snapshot = await getDocs(subjectsCollection);
-  const subjects: Subject[] = [];
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    subjects.push({
-      ...data,
-      icon: iconMap[data.icon as string] || Book,
-    } as Subject);
-  });
-  return subjects;
+  return allSubjects;
 };
-
 
 export const getUsers = async (): Promise<any[]> => {
   // This function now returns an empty array as we can't fetch users without admin sdk.
@@ -66,8 +53,6 @@ export const getUsers = async (): Promise<any[]> => {
 
 export const findItemBySlug = async (slug: string[]) => {
   if (!slug || slug.length === 0) return { current: null, parents: [] };
-
-  const allSubjects = await getSubjects();
 
   const subject = allSubjects.find(s => s.id === slug[0]);
 
@@ -133,28 +118,21 @@ export const getAllNotes = async () => {
 }
 
 export const getDashboardStats = async () => {
-    try {
-        const notes = await getAllNotes();
-        const totalNotes = notes.length;
+    const notes = await getAllNotes();
+    const totalNotes = notes.length;
 
-        const subjects = await getSubjects();
-        const totalSubjects = subjects.length;
+    const subjects = await getSubjects();
+    const totalSubjects = subjects.length;
 
-        return {
-            totalUsers: 0, // User data is unavailable without auth
-            totalNotes,
-            totalSubjects,
-        };
-
-    } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
-        // Fallback for when admin SDK might not be initialized
-        const notes = await getAllNotes();
-        const subjects = await getSubjects();
-        return {
-            totalUsers: 0,
-            totalNotes: notes.length,
-            totalSubjects: subjects.length,
-        };
-    }
+    return {
+        totalUsers: 0, // User data is unavailable without auth
+        totalNotes,
+        totalSubjects,
+    };
 }
+
+export const updateUserRole = async (userId: string, newRole: User['role']) => {
+    // This functionality is disabled as it requires Admin SDK.
+    console.warn("updateUserRole is disabled.");
+    return { success: false, error: "User management is disabled." };
+};
