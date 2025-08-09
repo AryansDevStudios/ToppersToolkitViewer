@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload, MoreHorizontal } from "lucide-react";
+import { PlusCircle, MoreHorizontal } from "lucide-react";
 import { getAllNotes } from "@/lib/data";
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { DeleteNoteDialog } from "@/components/admin/DeleteNoteDialog";
 
 export default async function AdminNotesPage() {
   const notes = await getAllNotes();
@@ -30,9 +31,11 @@ export default async function AdminNotesPage() {
             Manage all notes and documents on the platform.
           </p>
         </div>
-        <Button disabled>
-          <Upload className="mr-2 h-4 w-4" />
-          Upload Note
+        <Button asChild>
+          <Link href="/admin/notes/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Upload Note
+          </Link>
         </Button>
       </header>
       <div className="border rounded-lg">
@@ -64,14 +67,16 @@ export default async function AdminNotesPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem disabled>Edit</DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                         <Link href={`/admin/notes/edit/${note.id}`}>Edit</Link>
+                      </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href={note.pdfUrl} target="_blank">
                             View PDF
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" disabled>
-                        Delete
+                      <DropdownMenuItem asChild>
+                         <DeleteNoteDialog noteId={note.id} />
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
