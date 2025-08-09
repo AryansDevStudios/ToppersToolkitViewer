@@ -1,8 +1,14 @@
 'use server';
 import * as admin from 'firebase-admin';
 import 'dotenv/config';
+import type {Auth} from 'firebase-admin/auth';
+import type {Firestore} from 'firebase-admin/firestore';
 
-if (!admin.apps.length) {
+function initializeFirebaseAdmin() {
+  if (admin.apps.length > 0) {
+    return admin.app();
+  }
+
   if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
     throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is not set in environment variables.');
   }
@@ -14,18 +20,18 @@ if (!admin.apps.length) {
     throw new Error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY. Make sure it is a valid JSON string. Error: ' + e.message);
   }
 
-  // Replace escaped newlines
-  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-  } catch (error: any) {
-    console.error('Firebase admin initialization error', error.stack);
-    throw new Error('Failed to initialize Firebase Admin SDK: ' + error.message);
+  // This check is crucial for some environments that mishandle newline characters.
+  if (serviceAccount.private_key && !serviceAccount.private_key.includes('\n')) {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
   }
+
+  return admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
 
-export const auth = admin.auth();
-export const db = admin.firestore();
+const app = initializeFirebaseAdmin();
+const auth: Auth = app.auth();
+const db: Firestore = app.firestore();
+
+export { auth, db };
