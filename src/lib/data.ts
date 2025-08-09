@@ -5,7 +5,7 @@ import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book 
 import type { Subject, Note, Chapter, User } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, runTransaction } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, runTransaction, writeBatch } from "firebase/firestore";
 import seedData from '../../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -33,13 +33,12 @@ export const seedSubjects = async () => {
     }
 
     try {
-        const batch: any[] = [];
+        const batch = writeBatch(db);
         for (const [id, subjectData] of Object.entries(seedData)) {
             const subjectRef = doc(db, "subjects", id);
-            batch.push(setDoc(subjectRef, subjectData));
+            batch.set(subjectRef, subjectData);
         }
-        // Firestore web SDK doesn't have a batched write, so we'll do them in parallel
-        await Promise.all(batch);
+        await batch.commit();
         console.log("Seeding completed successfully.");
         return { success: true, message: "Database seeded successfully." };
     } catch (error) {
@@ -199,8 +198,10 @@ export const upsertNote = async (noteData: Omit<Note, 'id'> & {id?: string, chap
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
         });
         revalidatePath("/admin/notes");
+        revalidatePath(`/browse/${subjectId}/${subSubjectId}`);
         return { success: true, message: `Note successfully ${isNew ? 'created' : 'updated'}.` };
     } catch (e: any) {
+        console.error("Upsert failed: ", e);
         return { success: false, error: e.message };
     }
 };
@@ -226,9 +227,13 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
             if (chapterIndex === -1) throw new Error("Chapter not found!");
             
             const chapter = subjectData.subSubjects[subSubjectIndex].chapters[chapterIndex];
-            const noteIndex = chapter.notes?.findIndex(n => n.id === noteId);
+            if (!chapter.notes) {
+                 throw new Error("Note not found in chapter.");
+            }
 
-            if (noteIndex !== -1 && chapter.notes) {
+            const noteIndex = chapter.notes.findIndex(n => n.id === noteId);
+
+            if (noteIndex !== -1) {
                 chapter.notes.splice(noteIndex, 1);
             } else {
                 throw new Error("Note not found to delete.");
@@ -238,8 +243,10 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
         });
 
         revalidatePath("/admin/notes");
+        revalidatePath(`/browse/${subjectId}/${subSubjectId}`);
         return { success: true, message: "Note deleted successfully." };
     } catch (e: any) {
+        console.error("Delete failed: ", e);
         return { success: false, error: e.message };
     }
 };
