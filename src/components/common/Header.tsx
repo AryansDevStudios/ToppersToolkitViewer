@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -57,6 +58,9 @@ export function AppHeader() {
 
   const NavLinks = ({ inSheet = false }: { inSheet?: boolean }) => (
     <>
+      <Button variant="ghost" asChild>
+        <Link href="/" onClick={inSheet ? closeSheet : undefined}>Home</Link>
+      </Button>
       <Button variant="ghost" asChild>
         <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
