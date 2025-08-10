@@ -83,7 +83,7 @@ export function AppHeader() {
         <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
        <Button variant="ghost" asChild>
-        <a href="https://topperstoolkit.netlify.app" target="_blank" rel="noopener noreferrer">Shop</a>
+        <a href="https://topperstoolkit.netlify.app">Shop</a>
       </Button>
        {mounted && user && role === 'Admin' && (
         <Button variant="ghost" asChild>
