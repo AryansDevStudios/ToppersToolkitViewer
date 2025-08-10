@@ -76,7 +76,7 @@ const PageContainer = ({ children, scale }: { children: React.ReactNode, scale: 
 
     const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
         if (!isPanning.current || e.touches.length !== 1) return;
-        e.preventDefault();
+        // e.preventDefault(); // This can prevent page scroll, so use with caution
         const x = e.touches[0].pageX - containerRef.current!.offsetLeft;
         const y = e.touches[0].pageY - containerRef.current!.offsetTop;
         const walkX = (x - startX.current) * 2;
@@ -182,7 +182,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
           }
         >
             {numPages && (
-                 <Carousel setApi={setApi} className="w-full h-full" opts={{watchDrag: false}}>
+                 <Carousel setApi={setApi} className="w-full h-full">
                     <CarouselContent>
                       {Array.from(new Array(numPages), (el, index) => (
                         <CarouselItem key={`page_${index + 1}`}>
