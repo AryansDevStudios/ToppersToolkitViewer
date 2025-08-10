@@ -1,13 +1,56 @@
 
-import Link from 'next/link';
-import { getAllNotes } from '@/lib/data';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ArrowRight, FileText } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
-export default async function BrowseAllNotesPage() {
-  const allNotes = await getAllNotes();
-  const sortedNotes = allNotes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+"use client";
+
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { getAllNotes, getUserById } from '@/lib/data';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { ArrowRight, FileText, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/use-auth';
+import type { Note } from '@/lib/types';
+
+type NoteItem = (Note & { subject: string; chapter: string; chapterId: string; slug: string });
+
+export default function BrowseAllNotesPage() {
+  const [allNotes, setAllNotes] = useState<NoteItem[]>([]);
+  const [filteredNotes, setFilteredNotes] = useState<NoteItem[]>([]);
+  const [showGrantedOnly, setShowGrantedOnly] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    async function fetchNotes() {
+      setIsLoading(true);
+      const notes = await getAllNotes();
+      const sortedNotes = notes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setAllNotes(sortedNotes);
+      setFilteredNotes(sortedNotes); // Initially show all notes
+      setIsLoading(false);
+    }
+    fetchNotes();
+  }, []);
+
+  useEffect(() => {
+    async function filterAndSetNotes() {
+      if (authLoading) return; // Wait for auth state to be resolved
+
+      if (showGrantedOnly && user) {
+        setIsLoading(true);
+        const userData = await getUserById(user.uid);
+        const grantedNoteIds = new Set(userData?.noteAccess || []);
+        const granted = allNotes.filter(note => grantedNoteIds.has(note.id));
+        setFilteredNotes(granted);
+        setIsLoading(false);
+      } else {
+        setFilteredNotes(allNotes);
+      }
+    }
+    filterAndSetNotes();
+  }, [showGrantedOnly, user, allNotes, authLoading]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -16,13 +59,28 @@ export default async function BrowseAllNotesPage() {
           Latest Notes
         </h1>
         <p className="text-muted-foreground text-lg">
-          Browse all available notes, with the newest uploads appearing first.
+          Browse all available notes, or filter to see only those you can access.
         </p>
       </header>
 
-      {sortedNotes.length > 0 ? (
+      {user && (
+        <div className="flex items-center space-x-2 mb-8 p-4 border rounded-lg bg-card justify-end">
+          <Label htmlFor="granted-toggle">Show Granted Access Only</Label>
+          <Switch
+            id="granted-toggle"
+            checked={showGrantedOnly}
+            onCheckedChange={setShowGrantedOnly}
+          />
+        </div>
+      )}
+
+      {isLoading || authLoading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      ) : filteredNotes.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedNotes.map((note) => (
+          {filteredNotes.map((note) => (
             <Link href={note.slug} key={note.id} className="block group">
               <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
                 <CardHeader>
@@ -47,9 +105,13 @@ export default async function BrowseAllNotesPage() {
         </div>
       ) : (
         <div className="text-center py-16">
-          <h2 className="text-2xl font-semibold mb-2">No Notes Yet</h2>
-          <p className="text-muted-foreground">
-            Looks like no notes have been uploaded. Check back soon!
+          <h2 className="text-2xl font-semibold mb-2">
+            {showGrantedOnly ? "No Notes Found" : "No Notes Yet"}
+          </h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {showGrantedOnly
+              ? "You have not been granted access to any notes yet. Please contact an administrator."
+              : "Looks like no notes have been uploaded. Check back soon!"}
           </p>
         </div>
       )}

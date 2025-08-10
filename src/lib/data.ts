@@ -1,10 +1,11 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
@@ -524,6 +525,31 @@ export const updateUserRole = async (userId: string, newRole: User['role']) => {
     }
 };
 
+export const updateUserNoteAccess = async (userId: string, noteId: string, hasAccess: boolean) => {
+    if (!userId || !noteId) {
+        return { success: false, error: "Invalid arguments provided." };
+    }
+    const userDocRef = doc(db, "users", userId);
+    try {
+        if (hasAccess) {
+            await updateDoc(userDocRef, {
+                noteAccess: arrayUnion(noteId)
+            });
+        } else {
+            await updateDoc(userDocRef, {
+                noteAccess: arrayRemove(noteId)
+            });
+        }
+        revalidatePath('/admin/users');
+        revalidatePath('/browse', "layout");
+        return { success: true, message: `Access for note ${noteId} updated.` };
+    } catch (e: any) {
+        console.error("Update note access failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
+
 export const deleteUser = async (userId: string) => {
     // This action is sensitive and has been disabled in the code
     // as it might require cleaning up Firebase Auth user as well,
@@ -568,22 +594,11 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
     };
 
     try {
-        await updateDoc(userDocRef, {
-            loginLogs: arrayUnion(newLog)
-        });
+        // Use setDoc with merge to create the field if it doesn't exist, or update it if it does.
+        await setDoc(userDocRef, { loginLogs: arrayUnion(newLog) }, { merge: true });
         return { success: true };
     } catch (e: any) {
         console.error("Failed to log user login:", e);
-        // If the 'loginLogs' field doesn't exist, Firestore throws an error.
-        // In that case, we can create it using setDoc with merge.
-        try {
-            await setDoc(userDocRef, { loginLogs: [newLog] }, { merge: true });
-            return { success: true };
-        } catch (e2: any) {
-            console.error("Failed to create loginLogs field:", e2);
-            return { success: false, error: e2.message };
-        }
+        return { success: false, error: e.message };
     }
 };
-
-    

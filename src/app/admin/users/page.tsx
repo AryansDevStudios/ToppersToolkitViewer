@@ -1,4 +1,5 @@
 
+
 import {
   Table,
   TableBody,
@@ -24,6 +25,7 @@ import { ChangeRoleMenuItem } from "@/components/admin/ChangeRoleMenuItem";
 import { DeleteUserDialog } from "@/components/admin/DeleteUserDialog";
 import { UserForm } from "@/components/admin/users/UserForm";
 import { LoginHistoryDialog } from "@/components/admin/users/LoginHistoryDialog";
+import { ManageAccessDialog } from "@/components/admin/users/ManageAccessDialog";
 
 
 export default async function AdminUsersPage() {
@@ -79,6 +81,7 @@ export default async function AdminUsersPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <UserForm user={user} />
+                        <ManageAccessDialog user={user} />
                         {user.loginLogs && user.loginLogs.length > 0 && <LoginHistoryDialog user={user} />}
                         <DropdownMenuSeparator />
                         <ChangeRoleMenuItem userId={user.id} currentRole={user.role} />

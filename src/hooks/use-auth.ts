@@ -3,10 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
-import { auth, onAuthStateChanged, db, GoogleAuthProvider, signInWithCredential } from '@/lib/firebase';
+import { auth, onAuthStateChanged } from '@/lib/firebase';
 import { getUserById } from '@/lib/data';
 import type { User } from '@/lib/types';
-import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export function useAuth() {
   const [user, setUser] = useState<FirebaseUser | null>(null);

@@ -1,4 +1,5 @@
 
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -7,8 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FileText, Folder } from "lucide-react";
-import { findItemBySlug } from "@/lib/data";
+import { Button } from "@/components/ui/button";
+import { FileText, Folder, ShieldAlert } from "lucide-react";
+import { findItemBySlug, getUserById } from "@/lib/data";
+import { auth } from "@/lib/firebase";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   Accordion,
@@ -17,7 +20,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
-import type { Chapter, Note, SubSubject } from "@/lib/types";
+import type { Chapter, Note, SubSubject, User } from "@/lib/types";
+import { headers } from "next/headers";
 
 // Helper to group notes by chapter name, handling whitespace inconsistencies
 const groupNotesByChapter = (chapters: Chapter[]) => {
@@ -40,6 +44,18 @@ const groupNotesByChapter = (chapters: Chapter[]) => {
     }));
 };
 
+const AccessDenied = () => (
+    <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
+        <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+        <h2 className="text-2xl font-bold text-destructive">Access Denied</h2>
+        <p className="mt-2 text-muted-foreground max-w-md">
+            You do not have permission to view this document. Please contact an administrator to request access.
+        </p>
+        <Button asChild className="mt-6">
+            <Link href="/browse">Back to Browse</Link>
+        </Button>
+    </div>
+);
 
 export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
   const { slug } = params;
@@ -49,6 +65,25 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
     notFound();
   }
 
+  // Permission check logic
+  let hasAccess = false;
+  const isNote = "pdfUrl" in current;
+
+  if (isNote) {
+    // A bit of a workaround to get current user on server
+    const user = auth.currentUser;
+    if (user) {
+        const userData = await getUserById(user.uid);
+        if (userData?.role === 'Admin' || userData?.noteAccess?.includes(current.id)) {
+            hasAccess = true;
+        }
+    }
+  } else {
+    // Not a note, so access is granted to browse
+    hasAccess = true;
+  }
+  
+
   const breadcrumbItems = parents
     .slice(1)
     .map((p, i) => ({
@@ -57,7 +92,6 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
     }))
     .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
 
-  const isNote = "pdfUrl" in current;
   const isSubject = "subSubjects" in current;
   const isSubSubject = !isNote && "chapters" in current;
   
@@ -68,11 +102,14 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 
   const renderContent = () => {
     if (isNote) {
-      return (
-        <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
-             <PdfViewerWrapper url={current.pdfUrl} />
-        </div>
-      );
+        if (hasAccess) {
+            return (
+                <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+                    <PdfViewerWrapper url={current.pdfUrl} />
+                </div>
+            );
+        }
+        return <AccessDenied />;
     }
     
     if (isSubSubject) {

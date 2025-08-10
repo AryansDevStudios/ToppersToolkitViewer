@@ -51,4 +51,5 @@ export interface User {
   srNo?: string;
   password?: string;
   loginLogs?: LoginLog[];
+  noteAccess?: string[];
 }
