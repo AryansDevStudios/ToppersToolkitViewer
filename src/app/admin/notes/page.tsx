@@ -53,20 +53,21 @@ export default async function AdminNotesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Chapter Name</TableHead>
-                <TableHead>Note Type</TableHead>
-                <TableHead className="hidden md:table-cell">Subject / Sub-Subject</TableHead>
+                <TableHead>Note Details</TableHead>
+                <TableHead className="hidden sm:table-cell">Note Type</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {notes.map((note) => (
                 <TableRow key={note.id}>
-                  <TableCell className="font-medium">{note.chapter}</TableCell>
                   <TableCell>
+                    <div className="font-medium">{note.chapter}</div>
+                    <div className="text-sm text-muted-foreground md:hidden">{note.subject}</div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <Badge variant="outline">{note.type}</Badge>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{note.subject}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -93,7 +94,7 @@ export default async function AdminNotesPage() {
               ))}
                {notes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={3} className="h-24 text-center">
                     No notes found.
                   </TableCell>
                 </TableRow>
