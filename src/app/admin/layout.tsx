@@ -9,11 +9,12 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, FileText, LayoutDashboard, Users, BookOpen, Loader2, ShieldAlert, Library } from "lucide-react";
+import { Menu, FileText, LayoutDashboard, Users, Loader2, ShieldAlert, Library } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import Image from "next/image";
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -61,7 +62,7 @@ export default function AdminLayout({
         {/* Mobile Header */}
         <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">
-            <BookOpen className="h-6 w-6 text-primary" />
+            <Image src="https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png" alt="Topper's Toolkit Viewer Logo" width={24} height={24} />
             <span className="sr-only">Topper's Toolkit Viewer</span>
           </Link>
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -74,7 +75,7 @@ export default function AdminLayout({
             <SheetContent side="left">
                <nav className="grid gap-4 text-lg font-medium mt-8">
                  <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
-                    <BookOpen className="h-6 w-6 text-primary" />
+                    <Image src="https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png" alt="Topper's Toolkit Viewer Logo" width={24} height={24} />
                     <span className="font-headline">Admin Panel</span>
                 </Link>
                 {navItems.map((item) => (

@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, Menu } from "lucide-react";
+import { UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
 import { Skeleton } from "../ui/skeleton";
+import Image from "next/image";
 
 function ThemeToggle() {
   const { setTheme } = useTheme();
@@ -152,7 +153,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          <BookOpen className="h-6 w-6 text-primary" />
+          <Image src="https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png" alt="Topper's Toolkit Viewer Logo" width={32} height={32} />
           <span className="font-bold inline-block font-headline text-lg">
             Topper's Toolkit Viewer
           </span>
