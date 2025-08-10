@@ -1,8 +1,8 @@
 
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithCredential } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration for topperstoolkit-63d3a
@@ -25,4 +25,23 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { app, auth, db, storage, googleProvider, onAuthStateChanged, signInWithCredential, GoogleAuthProvider };
+// Function to handle user creation in Firestore after Google Sign-In
+export const handleGoogleSignInUser = async (user: any) => {
+    if (!user || !user.uid || !user.email) return;
+
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (!userDocSnap.exists()) {
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || "Google User",
+        role: "User",
+        provider: "google",
+      });
+    }
+};
+
+
+export { app, auth, db, storage, googleProvider, onAuthStateChanged, signInWithPopup, signInWithCredential, GoogleAuthProvider };

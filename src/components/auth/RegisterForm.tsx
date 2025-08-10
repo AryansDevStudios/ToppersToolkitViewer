@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { auth, db } from "@/lib/firebase";
+import { auth, db, googleProvider, handleGoogleSignInUser, signInWithPopup } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { Separator } from "../ui/separator";
@@ -107,25 +107,15 @@ export function RegisterForm() {
     }
   }
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     try {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-        const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI;
-
-        if (!clientId || !redirectUri) {
-            throw new Error("Google Client ID or Redirect URI is not configured.");
-        }
-
-        const googleSignInUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-        googleSignInUrl.searchParams.set('client_id', clientId);
-        googleSignInUrl.searchParams.set('redirect_uri', redirectUri);
-        googleSignInUrl.searchParams.set('response_type', 'code');
-        googleSignInUrl.searchParams.set('scope', 'openid email profile');
-        googleSignInUrl.searchParams.set('access_type', 'offline');
-        googleSignInUrl.searchParams.set('prompt', 'consent');
-        
-        router.push(googleSignInUrl.toString());
-        
+      const result = await signInWithPopup(auth, googleProvider);
+      await handleGoogleSignInUser(result.user);
+      toast({
+        title: "Sign In Successful",
+        description: "Welcome!",
+      });
+      router.push('/');
     } catch (error: any) {
       toast({
           title: "Google Sign-In Failed",
