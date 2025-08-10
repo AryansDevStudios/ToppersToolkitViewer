@@ -25,6 +25,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
+import { Skeleton } from "../ui/skeleton";
 
 function ThemeToggle() {
   const { setTheme } = useTheme();
@@ -97,7 +98,7 @@ export function AppHeader() {
 
   const renderAuthSection = () => {
     if (!mounted || loading) {
-       return <div className="h-10 w-9" />;
+       return <Skeleton className="h-9 w-9 rounded-full" />;
     }
     
     if (user) {

@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { AppHeader } from "@/components/common/Header";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,11 +10,7 @@ import { Footer } from "@/components/common/Footer";
 export const metadata: Metadata = {
   title: "Topper's Toolkit Viewer",
   description: "Your one-stop destination for academic resources.",
-  icons: {
-    icon: "https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png",
-    shortcut: "https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png",
-    apple: "https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png",
-  }
+  icons: "https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png"
 };
 
 export default function RootLayout({
