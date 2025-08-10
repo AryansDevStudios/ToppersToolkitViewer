@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/common/ThemeProvider";
 import { Footer } from "@/components/common/Footer";
 
 export const metadata: Metadata = {
-  title: "Topper's Toolkit",
+  title: "Topper's Toolkit Viewer",
   description: "Your one-stop destination for academic resources.",
 };
 

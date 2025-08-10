@@ -151,7 +151,7 @@ export function AppHeader() {
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <BookOpen className="h-6 w-6 text-primary" />
           <span className="font-bold inline-block font-headline text-lg">
-            Topper's Toolkit
+            Topper's Toolkit Viewer
           </span>
         </Link>
         

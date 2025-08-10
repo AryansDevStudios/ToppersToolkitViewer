@@ -8,7 +8,7 @@ export function Footer() {
       <div className="container py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-lg font-black font-headline mb-2">Topper's Toolkit</h3>
+            <h3 className="text-lg font-black font-headline mb-2">Topper's Toolkit Viewer</h3>
             <p className="text-muted-foreground text-sm">High-quality resources for academic success. All rights reserved.</p>
              <div className="mt-4">
                 <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -60,7 +60,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t pt-4 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Topper's Toolkit. Products by Kuldeep Singh.</p>
+          <p>© {new Date().getFullYear()} Topper's Toolkit Viewer. Products by Kuldeep Singh.</p>
           <p>Website built under AryansDevStudios.</p>
         </div>
       </div>

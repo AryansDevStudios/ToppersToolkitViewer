@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: "Terms and Conditions - Topper's Toolkit",
+    title: "Terms and Conditions - Topper's Toolkit Viewer",
     description: 'Please read our terms and conditions carefully before using our service.',
 };
 

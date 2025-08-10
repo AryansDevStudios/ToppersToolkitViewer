@@ -62,7 +62,7 @@ export default function AdminLayout({
         <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2 font-bold">
             <BookOpen className="h-6 w-6 text-primary" />
-            <span className="sr-only">Topper's Toolkit</span>
+            <span className="sr-only">Topper's Toolkit Viewer</span>
           </Link>
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
