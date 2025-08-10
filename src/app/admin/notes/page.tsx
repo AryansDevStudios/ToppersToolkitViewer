@@ -54,7 +54,8 @@ export default async function AdminNotesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Note Details</TableHead>
-                <TableHead className="hidden md:table-cell">Subject</TableHead>
+                <TableHead className="hidden md:table-cell">Type</TableHead>
+                <TableHead className="hidden md:table-cell">Subject / Sub-Subject</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -63,10 +64,15 @@ export default async function AdminNotesPage() {
                 <TableRow key={note.id}>
                   <TableCell>
                     <div className="font-medium">{note.chapter}</div>
-                    <div className="text-sm text-muted-foreground">
-                        <Badge variant="outline" className="md:hidden mr-2">{note.type}</Badge>
-                        <span className="md:hidden">{note.subject}</span>
+                    <div className="text-sm text-muted-foreground md:hidden mt-1 space-y-1">
+                      <div>
+                        <Badge variant="outline">{note.type}</Badge>
+                      </div>
+                      <div>{note.subject}</div>
                     </div>
+                  </TableCell>
+                   <TableCell className="hidden md:table-cell">
+                    <Badge variant="outline">{note.type}</Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {note.subject}
@@ -97,7 +103,7 @@ export default async function AdminNotesPage() {
               ))}
                {notes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
+                  <TableCell colSpan={4} className="h-24 text-center">
                     No notes found.
                   </TableCell>
                 </TableRow>
