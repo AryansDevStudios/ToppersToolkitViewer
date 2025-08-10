@@ -38,21 +38,23 @@ export default function BrowseAllNotesPage() {
     async function filterAndSetNotes() {
       if (authLoading || isLoading) return;
 
-      if (role === 'Admin' || showAllNotes) {
+      if (role === 'Admin') {
         setFilteredNotes(allNotes);
         return;
       }
       
       if (user) {
-        // Since allNotes are already loaded, we don't need to set loading here
-        // unless fetching userData is slow, which it shouldn't be.
-        const userData = await getUserById(user.uid);
-        const grantedNoteIds = new Set(userData?.noteAccess || []);
-        const granted = allNotes.filter(note => grantedNoteIds.has(note.id));
-        setFilteredNotes(granted);
+        if (!showAllNotes) {
+            const userData = await getUserById(user.uid);
+            const grantedNoteIds = new Set(userData?.noteAccess || []);
+            const granted = allNotes.filter(note => grantedNoteIds.has(note.id));
+            setFilteredNotes(granted);
+        } else {
+            setFilteredNotes(allNotes);
+        }
       } else {
-        // If not logged in and not showing all, show nothing.
-        setFilteredNotes([]);
+        // If not logged in, show all notes if toggle is on, otherwise none
+        setFilteredNotes(showAllNotes ? allNotes : []);
       }
     }
     filterAndSetNotes();
@@ -71,7 +73,7 @@ export default function BrowseAllNotesPage() {
         </p>
       </header>
 
-      {user && role !== 'Admin' && (
+      {role !== 'Admin' && (
         <div className="flex items-center justify-end space-x-3 mb-8 p-4 border rounded-lg bg-card">
           <Label htmlFor="all-notes-toggle" className="font-semibold">Show All Notes</Label>
           <Switch

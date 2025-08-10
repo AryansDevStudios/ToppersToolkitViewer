@@ -21,7 +21,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
-import type { Chapter, Note, SubSubject, User } from "@/lib/types";
+import type { Chapter, Note, SubSubject } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { iconMap } from "@/lib/iconMap";
