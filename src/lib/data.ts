@@ -231,8 +231,10 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 id: noteId, 
                 type, 
                 pdfUrl,
-                createdAt: isNewNote ? Date.now() : oldNoteData?.createdAt ?? Date.now(),
+                createdAt: oldNoteData?.createdAt ?? Date.now(),
              };
+            if(isNewNote) newNote.createdAt = Date.now();
+
             subSubject.chapters[chapterIndex].notes.push(newNote);
             
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
