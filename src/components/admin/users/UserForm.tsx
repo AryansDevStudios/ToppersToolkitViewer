@@ -22,7 +22,6 @@ import { User } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Edit } from "lucide-react";
-import { auth, updatePassword } from "@/lib/firebase";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
@@ -51,38 +50,19 @@ export function UserForm({ user }: UserFormProps) {
       username: user.username || "",
       srNo: user.srNo || "",
       email: user.email || "",
-      password: "" // Always start empty
+      password: ""
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
       try {
-        const dataToUpdate: Partial<User> = {
+        const dataToUpdate: Omit<Partial<User>, 'id' | 'email' | 'password'> = {
           name: values.name.trim(),
           classAndSection: values.classAndSection.trim(),
           username: values.username.trim(),
           srNo: values.srNo.trim(),
         };
-
-        if (values.password) {
-           const currentUser = auth.currentUser;
-           if(currentUser && currentUser.uid === user.id) {
-              await updatePassword(currentUser, values.password);
-              toast({ title: "Auth Password Updated", description: "Firebase Auth password was changed." });
-           } else {
-             // Note: Updating other users' passwords client-side is not directly possible
-             // and requires an admin SDK on a secure backend.
-             // We will store it in firestore, but it won't work for login until the user logs in again.
-             toast({ 
-                title: "Security Warning", 
-                description: "Password for other users can't be updated in Firebase Auth from the client. The new password is saved and will be active on next login.",
-                variant: "destructive",
-                duration: 8000
-             });
-           }
-           dataToUpdate.password = values.password;
-        }
 
         const result = await upsertUser({
           id: user.id,
@@ -155,9 +135,9 @@ export function UserForm({ user }: UserFormProps) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>New Password</FormLabel>
+                  <FormLabel>Password (Read-only)</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter new password to update" {...field} autoComplete="new-password" />
+                    <Input type="password" placeholder="••••••••" {...field} readOnly disabled />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -487,7 +487,9 @@ export const upsertUser = async (userData: Partial<User> & { id: string }) => {
 
     const userDocRef = doc(db, 'users', id);
     try {
-        await setDoc(userDocRef, dataToUpdate, { merge: true });
+        // Ensure password is not part of the update from this function
+        const { password, ...restOfData } = dataToUpdate;
+        await setDoc(userDocRef, restOfData, { merge: true });
         revalidatePath('/admin/users');
         return { success: true, message: "User updated successfully." };
     } catch (e: any) {
