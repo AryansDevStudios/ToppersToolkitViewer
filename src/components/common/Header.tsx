@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, ShieldAlert } from "lucide-react";
+import { BookOpen, UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,9 +24,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
 
 function ThemeToggle() {
   const { setTheme } = useTheme();
@@ -80,7 +78,7 @@ export function AppHeader() {
       <Button variant="ghost" asChild>
         <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
-       {!loading && user && role === 'Admin' && (
+       {mounted && user && role === 'Admin' && (
         <Button variant="ghost" asChild>
           <Link href="/admin" onClick={inSheet ? closeSheet : undefined}>Admin</Link>
         </Button>
@@ -94,6 +92,58 @@ export function AppHeader() {
     }
     return <ThemeToggle />;
   }
+
+  const renderAuthSection = () => {
+    if (!mounted || loading) {
+       return <div className="h-9 w-9 ml-2" />;
+    }
+    
+    if (user) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+              <UserCircle className="h-9 w-9" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {role === 'Admin' && (
+                <DropdownMenuItem asChild>
+                <Link href="/admin">
+                    <Crown className="mr-2 h-4 w-4" />
+                    <span>Admin Panel</span>
+                </Link>
+                </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    } else {
+        return (
+            <Button asChild>
+              <Link href="/login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Link>
+            </Button>
+        )
+    }
+  }
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -109,51 +159,7 @@ export function AppHeader() {
         <nav className="hidden md:flex flex-1 items-center justify-end space-x-2">
           <NavLinks />
           {renderThemeToggle()}
-          
-          {loading ? (
-             <div className="flex items-center justify-center h-9 w-9 ml-2">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-             </div>
-          ) : user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                  <UserCircle className="h-9 w-9" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {role === 'Admin' && (
-                    <DropdownMenuItem asChild>
-                    <Link href="/admin">
-                        <Crown className="mr-2 h-4 w-4" />
-                        <span>Admin Panel</span>
-                    </Link>
-                    </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button asChild>
-              <Link href="/login">
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </Link>
-            </Button>
-          )}
+          {renderAuthSection()}
         </nav>
 
         {/* Mobile Navigation */}
@@ -173,7 +179,7 @@ export function AppHeader() {
               <nav className="flex flex-col items-start space-y-4 pt-8">
                 <NavLinks inSheet={true} />
                 <div className="pt-4 border-t w-full">
-                  {loading ? (
+                   {!mounted || loading ? (
                      <div className="flex items-center justify-center py-4">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                      </div>
