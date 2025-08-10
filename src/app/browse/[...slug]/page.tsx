@@ -60,7 +60,7 @@ const AccessDenied = () => (
 
 const getCurrentUser = async (): Promise<User | null> => {
     const sessionCookie = cookies().get('session')?.value;
-    if (!sessionCookie) return null;
+    if (!sessionCookie || !auth) return null;
 
     try {
         const decodedToken = await auth.verifySessionCookie(sessionCookie, true);
