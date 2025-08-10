@@ -68,6 +68,7 @@ export function RegisterForm() {
         srNo,
         username,
         role: "User",
+        createdAt: Date.now(),
       });
 
       toast({

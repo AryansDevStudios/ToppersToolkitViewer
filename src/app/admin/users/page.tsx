@@ -29,7 +29,8 @@ import { ManageAccessDialog } from "@/components/admin/users/ManageAccessDialog"
 
 
 export default async function AdminUsersPage() {
-  const users = await getUsers();
+  const allUsers = await getUsers();
+  const users = allUsers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   
   return (
     <div className="space-y-8">

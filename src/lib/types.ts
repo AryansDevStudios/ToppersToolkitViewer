@@ -53,4 +53,5 @@ export interface User {
   password?: string;
   loginLogs?: LoginLog[];
   noteAccess?: string[];
+  createdAt?: number;
 }
