@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import { getAllNotes } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { format } from 'date-fns';
 import { ArrowRight, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -34,18 +33,13 @@ export default async function BrowseAllNotesPage() {
                     <Badge variant="secondary">{note.subject}</Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="flex flex-col h-full">
+                <CardContent className="flex flex-col h-full pt-0">
                   <CardTitle className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
                     {note.type}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mb-1">
                     Chapter: {note.chapter}
                   </p>
-                   {note.createdAt && (
-                     <p className="text-xs text-muted-foreground mt-auto pt-4">
-                       Uploaded on {format(new Date(note.createdAt), 'PPP')}
-                     </p>
-                   )}
                 </CardContent>
               </Card>
             </Link>
