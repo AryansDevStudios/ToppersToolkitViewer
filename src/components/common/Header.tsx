@@ -65,6 +65,8 @@ export function AppHeader() {
 
   const handleLogout = async () => {
     await signOut(auth);
+    // After signing out with client-side auth, we need to clear the server-side session cookie.
+    await fetch('/api/auth/session', { method: 'DELETE' });
     router.push('/');
   };
 
@@ -95,7 +97,7 @@ export function AppHeader() {
 
   const renderAuthSection = () => {
     if (!mounted || loading) {
-       return <div className="h-9 w-9 ml-2" />;
+       return <div className="h-10 w-9" />;
     }
     
     if (user) {
