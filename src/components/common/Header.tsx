@@ -51,7 +51,7 @@ export function AppHeader() {
 
   const handleLogout = async () => {
     await signOut(auth);
-    router.push('/login');
+    router.push('/');
   };
 
   const closeSheet = () => setIsSheetOpen(false);
