@@ -17,21 +17,23 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
-import type { Chapter, Note } from "@/lib/types";
+import type { Chapter, Note, SubSubject } from "@/lib/types";
 
 // Helper to group notes by chapter name
 const groupNotesByChapter = (chapters: Chapter[]) => {
-  const grouped: { [key: string]: Chapter } = {};
-  chapters.forEach((chapter) => {
-    if (!grouped[chapter.name]) {
-      grouped[chapter.name] = { ...chapter, notes: [] };
-    }
-    // Handle cases where a chapter might not have notes initially
-    if (chapter.notes) {
-      grouped[chapter.name].notes.push(...chapter.notes);
-    }
-  });
-  return Object.values(grouped);
+    const grouped: { [key: string]: Note[] } = {};
+    chapters.forEach(chapter => {
+        if (!grouped[chapter.name]) {
+            grouped[chapter.name] = [];
+        }
+        if (chapter.notes) {
+            grouped[chapter.name].push(...chapter.notes);
+        }
+    });
+    return Object.entries(grouped).map(([chapterName, notes]) => ({
+        name: chapterName,
+        notes: notes
+    }));
 };
 
 
