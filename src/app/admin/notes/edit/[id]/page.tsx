@@ -24,7 +24,7 @@ export default async function EditNotePage({ params }: { params: { id: string } 
   return (
     <div className="max-w-2xl mx-auto">
         <header className="mb-8">
-            <h1 className="text-3xl font-headline font-bold">Edit Note</h1>
+            <h1 className="text-3xl font-bold">Edit Note</h1>
             <p className="text-muted-foreground">Update the details for this note.</p>
         </header>
         <NoteForm subjects={subjects} note={note} />

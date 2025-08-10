@@ -9,7 +9,7 @@ export function Footer() {
       <div className="container py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center md:text-left">
           <div>
-            <h3 className="text-lg font-black font-headline mb-2">Topper's Toolkit Viewer</h3>
+            <h3 className="text-lg font-black mb-2">Topper's Toolkit Viewer</h3>
             <p className="text-muted-foreground text-sm">High-quality resources for academic success. All rights reserved.</p>
              <div className="mt-4">
                 <Link href="/terms" className="text-sm text-primary underline underline-offset-4 hover:opacity-80 transition-opacity">
@@ -19,7 +19,7 @@ export function Footer() {
           </div>
 
           <div>
-             <h3 className="text-lg font-semibold font-headline mb-2">Contact Owner</h3>
+             <h3 className="text-lg font-semibold mb-2">Contact Owner</h3>
              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2 justify-center md:justify-start">
                     <Mail className="h-4 w-4" />
@@ -37,7 +37,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold font-headline mb-2">Contact Seller</h3>
+            <h3 className="text-lg font-semibold mb-2">Contact Seller</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-center gap-2 justify-center md:justify-start">
                  <Mail className="h-4 w-4" />
@@ -60,7 +60,7 @@ export function Footer() {
             </ul>
           </div>
            <div>
-            <h3 className="text-lg font-semibold font-headline mb-2">Download App</h3>
+            <h3 className="text-lg font-semibold mb-2">Download App</h3>
             <p className="text-muted-foreground text-sm mb-4">Get the Android app for a better mobile experience.</p>
             <Button asChild>
                 <a href="https://github.com/AryansDevStudios/ToppersToolkit/raw/main/public/app/android/Topper's%20Toolkit.apk" target="_blank" rel="noopener noreferrer">

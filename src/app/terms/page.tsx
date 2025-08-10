@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-2xl font-bold font-headline mt-8 mb-4 border-b pb-2">{children}</h2>
+    <h2 className="text-2xl font-bold mt-8 mb-4 border-b pb-2">{children}</h2>
 );
 
 const ListItem = ({ children }: { children: React.ReactNode }) => (
@@ -19,7 +19,7 @@ export default function TermsAndConditionsPage() {
     return (
         <div className="container mx-auto px-4 py-12 max-w-4xl">
             <header className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-2 font-headline">
+                <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-2">
                     Terms and Conditions
                 </h1>
                 <p className="text-muted-foreground">Last Updated: 10-08-2025</p>

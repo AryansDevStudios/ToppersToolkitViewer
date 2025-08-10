@@ -76,7 +76,7 @@ export default function AdminLayout({
                <nav className="grid gap-4 text-lg font-medium mt-8">
                  <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4">
                     <Image src="https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png" alt="Topper's Toolkit Viewer Logo" width={24} height={24} />
-                    <span className="font-headline">Admin Panel</span>
+                    <span>Admin Panel</span>
                 </Link>
                 {navItems.map((item) => (
                     <Link

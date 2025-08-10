@@ -30,7 +30,7 @@ export default async function AdminNotesPage() {
     <div className="space-y-8">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Notes Management</h1>
+          <h1 className="text-3xl font-bold">Notes Management</h1>
           <p className="text-muted-foreground">
             Manage all notes and documents on the platform.
           </p>

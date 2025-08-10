@@ -26,7 +26,7 @@ export function AdminSidebar() {
   return (
     <aside className="hidden md:flex w-64 flex-col border-r bg-background">
       <div className="p-4">
-        <h2 className="text-lg font-headline font-semibold">Admin Panel</h2>
+        <h2 className="text-lg font-semibold">Admin Panel</h2>
       </div>
       <Separator />
       <nav className="flex-1 px-4 py-4">

@@ -22,7 +22,7 @@ export default async function AdminSubjectsPage() {
     <div className="space-y-8">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Subjects Management</h1>
+          <h1 className="text-3xl font-bold">Subjects Management</h1>
           <p className="text-muted-foreground">
             Organize the curriculum structure of your platform.
           </p>

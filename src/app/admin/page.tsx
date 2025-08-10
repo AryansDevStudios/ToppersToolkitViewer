@@ -33,7 +33,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-headline font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">
           An overview of your platform's activity.
         </p>
