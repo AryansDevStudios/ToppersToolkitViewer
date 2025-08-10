@@ -266,30 +266,3 @@ export default function BrowsePage() {
     </div>
   );
 }
-
-// Special case for the final leaf node (the note itself)
-export async function generateMetadata({ params }: { params: { slug:string[] } }) {
-  const slug = Array.isArray(params.slug) ? params.slug : [params.slug];
-  const { current, parents } = await findItemBySlug(slug);
-
-  if (!current) {
-    return {
-      title: 'Not Found'
-    }
-  }
-  
-  const currentTitle = "pdfUrl" in current ? current.type : current.name;
-
-  if (parents && parents.length > 1) {
-    const parentName = parents[parents.length - 1]?.name;
-    if (parentName) {
-        return {
-            title: `${currentTitle} | ${parentName}`
-        };
-    }
-  }
-
-  return {
-    title: currentTitle
-  }
-}
