@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { auth, googleProvider, signInWithRedirect } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { Separator } from "@/components/ui/separator";
 
@@ -87,7 +87,16 @@ export function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithRedirect(auth, googleProvider);
+        const googleSignInUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+        googleSignInUrl.searchParams.set('client_id', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!);
+        googleSignInUrl.searchParams.set('redirect_uri', process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!);
+        googleSignInUrl.searchParams.set('response_type', 'code');
+        googleSignInUrl.searchParams.set('scope', 'openid email profile');
+        googleSignInUrl.searchParams.set('access_type', 'offline');
+        googleSignInUrl.searchParams.set('prompt', 'consent');
+        
+        router.push(googleSignInUrl.toString());
+
     } catch (error: any) {
       toast({
           title: "Google Sign-In Failed",

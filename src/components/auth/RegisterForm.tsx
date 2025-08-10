@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { auth, db, googleProvider, signInWithRedirect } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { Separator } from "../ui/separator";
@@ -108,8 +108,17 @@ export function RegisterForm() {
   }
 
   const handleGoogleSignIn = async () => {
-    try {
-      await signInWithRedirect(auth, googleProvider);
+     try {
+        const googleSignInUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+        googleSignInUrl.searchParams.set('client_id', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!);
+        googleSignInUrl.searchParams.set('redirect_uri', process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!);
+        googleSignInUrl.searchParams.set('response_type', 'code');
+        googleSignInUrl.searchParams.set('scope', 'openid email profile');
+        googleSignInUrl.searchParams.set('access_type', 'offline');
+        googleSignInUrl.searchParams.set('prompt', 'consent');
+        
+        router.push(googleSignInUrl.toString());
+        
     } catch (error: any) {
       toast({
           title: "Google Sign-In Failed",
@@ -207,7 +216,7 @@ export function RegisterForm() {
             <Button type="submit" className="w-full">
               Create Account
             </Button>
-            <div className="relative w-full">
+            <div className="relative w-.localfull">
                 <Separator />
                 <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">
                     OR CONTINUE WITH
