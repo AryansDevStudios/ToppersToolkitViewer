@@ -51,26 +51,21 @@ export default async function AdminUsersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead className="hidden sm:table-cell">Username</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="hidden sm:table-cell">Class</TableHead>
-                <TableHead className="hidden sm:table-cell">SR. No.</TableHead>
+                <TableHead className="hidden sm:table-cell">Role</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.length > 0 ? users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name || 'N/A'}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                   <TableCell className="hidden sm:table-cell">{user.username || 'N/A'}</TableCell>
                   <TableCell>
+                     <div className="font-medium">{user.name || 'N/A'}</div>
+                     <div className="text-sm text-muted-foreground">{user.email}</div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">{user.classAndSection || 'N/A'}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{user.srNo || 'N/A'}</TableCell>
                   <TableCell className="text-right">
                      <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -93,7 +88,7 @@ export default async function AdminUsersPage() {
                 </TableRow>
               )) : (
                  <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={3} className="h-24 text-center">
                     No users found.
                   </TableCell>
                 </TableRow>
