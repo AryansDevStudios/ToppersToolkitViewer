@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { onIdTokenChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth, getRedirectResult, db } from '@/lib/firebase';
+import { User as FirebaseUser } from 'firebase/auth';
+import { auth, getRedirectResult, db, onAuthStateChanged } from '@/lib/firebase';
 import { getUserById } from '@/lib/data';
 import type { User } from '@/lib/types';
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -14,13 +14,11 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const processAuth = async () => {
-      setLoading(true);
-      try {
-        // First, check for redirect result
-        const result = await getRedirectResult(auth);
+    // This effect runs once on component mount
+    getRedirectResult(auth)
+      .then(async (result) => {
         if (result && result.user) {
-          // A user has just signed in or signed up via redirect.
+          // User signed in via redirect.
           const firebaseUrl = result.user;
           const userDocRef = doc(db, "users", firebaseUrl.uid);
           const userDocSnap = await getDoc(userDocRef);
@@ -35,27 +33,25 @@ export function useAuth() {
             });
           }
         }
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error("Error processing redirect result:", error);
-      }
-
-      // Then, set up the state listener. This will also run after a redirect.
-      const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
-        if (firebaseUser) {
-          setUser(firebaseUser);
-          const userData = await getUserById(firebaseUser.uid);
-          setRole(userData?.role || 'User');
-        } else {
-          setUser(null);
-          setRole(null);
-        }
-        setLoading(false);
       });
 
-      return () => unsubscribe();
-    };
-    
-    processAuth();
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        const userData = await getUserById(firebaseUser.uid);
+        setRole(userData?.role || 'User');
+      } else {
+        setUser(null);
+        setRole(null);
+      }
+      setLoading(false);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   return { user, role, loading };
