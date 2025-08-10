@@ -4,7 +4,7 @@
 import type { Subject, Note, Chapter, User, SubSubject } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
@@ -448,6 +448,7 @@ export const deleteChapter = async (subjectId: string, subSubjectId: string, cha
     }
 };
 
+// --- User Management ---
 
 export const getUserById = async (userId: string): Promise<User | null> => {
   try {
@@ -464,11 +465,50 @@ export const getUserById = async (userId: string): Promise<User | null> => {
 };
 
 
-export const getUsers = async (): Promise<any[]> => {
-  return [];
+export const getUsers = async (): Promise<User[]> => {
+  try {
+    const usersCollection = collection(db, 'users');
+    const usersSnapshot = await getDocs(usersCollection);
+    return usersSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as User[];
+  } catch (error) {
+    console.error("Error getting users:", error);
+    return [];
+  }
 };
 
 export const updateUserRole = async (userId: string, newRole: User['role']) => {
-    console.warn("updateUserRole is not implemented.");
-    return { success: false, error: "Feature is disabled." };
+    if (!userId || !newRole) {
+        return { success: false, error: "Invalid arguments provided."};
+    }
+    const userDocRef = doc(db, 'users', userId);
+    try {
+        await updateDoc(userDocRef, { role: newRole });
+        revalidatePath('/admin/users');
+        return { success: true, message: "User role updated successfully." };
+    } catch(e: any) {
+        console.error("Update user role failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
+export const deleteUser = async (userId: string) => {
+    // This action is sensitive and has been disabled in the code
+    // as it might require cleaning up Firebase Auth user as well,
+    // which cannot be done from the client-side without admin privileges.
+    // For now, it just deletes the Firestore document.
+    if (!userId) {
+        return { success: false, error: "Invalid user ID."};
+    }
+    const userDocRef = doc(db, 'users', userId);
+    try {
+        await deleteDoc(userDocRef);
+        revalidatePath('/admin/users');
+        return { success: true, message: "User data deleted from Firestore." };
+    } catch(e: any) {
+        console.error("Delete user failed:", e);
+        return { success: false, error: e.message };
+    }
 };

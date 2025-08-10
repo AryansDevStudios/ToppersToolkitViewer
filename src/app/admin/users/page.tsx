@@ -8,13 +8,23 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
+import { getUsers } from "@/lib/data";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel
+} from "@/components/ui/dropdown-menu";
+import { ChangeRoleMenuItem } from "@/components/admin/ChangeRoleMenuItem";
+import { DeleteUserDialog } from "@/components/admin/DeleteUserDialog";
 
 
 export default async function AdminUsersPage() {
+  const users = await getUsers();
   
   return (
     <div className="space-y-8">
@@ -30,17 +40,10 @@ export default async function AdminUsersPage() {
           Add User
         </Button>
       </header>
-       <Alert variant="destructive">
-        <Terminal className="h-4 w-4" />
-        <AlertTitle>Feature Disabled</AlertTitle>
-        <AlertDescription>
-          User management is disabled because a server-side database connection is not available. User data cannot be fetched or modified.
-        </AlertDescription>
-      </Alert>
       <Card>
          <CardHeader>
            <CardTitle>All Users</CardTitle>
-           <CardDescription>A list of all registered users.</CardDescription>
+           <CardDescription>A list of all registered users on the platform.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -55,11 +58,39 @@ export default async function AdminUsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  User data is currently unavailable.
-                </TableCell>
-              </TableRow>
+              {users.length > 0 ? users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.name || 'N/A'}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">{user.classAndSection || 'N/A'}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{user.srNo || 'N/A'}</TableCell>
+                  <TableCell className="text-right">
+                     <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <ChangeRoleMenuItem userId={user.id} currentRole={user.role} />
+                        <DeleteUserDialog userId={user.id} />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              )) : (
+                 <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    No users found.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

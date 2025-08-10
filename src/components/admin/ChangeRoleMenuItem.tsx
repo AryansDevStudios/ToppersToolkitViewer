@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useTransition } from 'react';
@@ -6,13 +7,13 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { updateUserRole } from '@/lib/data';
 import type { User } from '@/lib/types';
+import { ShieldCheck, UserCheck } from 'lucide-react';
 
 interface ChangeRoleMenuItemProps {
     userId: string;
     currentRole: User['role'];
 }
 
-// This component is currently not used because user management is disabled.
 export function ChangeRoleMenuItem({ userId, currentRole }: ChangeRoleMenuItemProps) {
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
@@ -41,7 +42,8 @@ export function ChangeRoleMenuItem({ userId, currentRole }: ChangeRoleMenuItemPr
     };
 
     return (
-        <DropdownMenuItem onClick={handleChangeRole} disabled={true}>
+        <DropdownMenuItem onClick={handleChangeRole} disabled={isPending}>
+            {newRole === 'Admin' ? <ShieldCheck className="mr-2 h-4 w-4" /> : <UserCheck className="mr-2 h-4 w-4" />}
             {`Make ${newRole}`}
         </DropdownMenuItem>
     )
