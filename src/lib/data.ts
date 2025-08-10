@@ -163,9 +163,11 @@ export const getNoteById = async (id: string): Promise<(Note & { subjectId: stri
 export const getDashboardStats = async () => {
     const notes = await getAllNotes();
     const subjects = await getSubjects();
+    const users = await getUsers();
     return {
         totalNotes: notes.length,
         totalSubjects: subjects.length,
+        totalUsers: users.length,
     };
 };
 

@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -9,7 +10,7 @@ import { Users, FileText, BookCopy } from "lucide-react";
 import { getDashboardStats } from "@/lib/data";
 
 export default async function AdminDashboardPage() {
-  const { totalNotes, totalSubjects } = await getDashboardStats();
+  const { totalNotes, totalSubjects, totalUsers } = await getDashboardStats();
 
   const stats = [
     {
@@ -24,9 +25,8 @@ export default async function AdminDashboardPage() {
     },
      {
       title: "Total Users",
-      value: "--",
+      value: totalUsers,
       icon: Users,
-      description: "User data is unavailable",
     },
   ];
 
