@@ -4,7 +4,7 @@
 import type { Subject, Note, Chapter, User, SubSubject } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc } from "firebase/firestore";
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
@@ -477,6 +477,24 @@ export const getUsers = async (): Promise<User[]> => {
     console.error("Error getting users:", error);
     return [];
   }
+};
+
+export const upsertUser = async (userData: Partial<User> & { id: string }) => {
+    const { id, ...dataToUpdate } = userData;
+    if (!id) {
+        return { success: false, error: "User ID is required for updates." };
+    }
+
+    const userDocRef = doc(db, 'users', id);
+    try {
+        // Use set with merge option to update existing doc or create if it doesn't exist
+        await setDoc(userDocRef, dataToUpdate, { merge: true });
+        revalidatePath('/admin/users');
+        return { success: true, message: "User updated successfully." };
+    } catch (e: any) {
+        console.error("Upsert user failed:", e);
+        return { success: false, error: e.message };
+    }
 };
 
 export const updateUserRole = async (userId: string, newRole: User['role']) => {

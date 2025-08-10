@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChangeRoleMenuItem } from "@/components/admin/ChangeRoleMenuItem";
 import { DeleteUserDialog } from "@/components/admin/DeleteUserDialog";
+import { UserForm } from "@/components/admin/users/UserForm";
 
 
 export default async function AdminUsersPage() {
@@ -77,6 +79,7 @@ export default async function AdminUsersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <UserForm user={user} />
                         <DropdownMenuSeparator />
                         <ChangeRoleMenuItem userId={user.id} currentRole={user.role} />
                         <DeleteUserDialog userId={user.id} />
