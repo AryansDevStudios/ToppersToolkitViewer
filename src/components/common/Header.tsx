@@ -28,6 +28,7 @@ import {
 import { useState, useEffect } from "react";
 import { Skeleton } from "../ui/skeleton";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 function ThemeToggle() {
   const { setTheme } = useTheme();
@@ -120,7 +121,7 @@ export function AppHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-               <Avatar className="h-9 w-9">
+               <Avatar className={cn("h-9 w-9", role === 'Admin' && "ring-2 ring-offset-2 ring-orange-500 ring-offset-background")}>
                   <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
                 </Avatar>
             </Button>
