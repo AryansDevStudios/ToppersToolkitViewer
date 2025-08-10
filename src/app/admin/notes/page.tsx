@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -22,7 +23,8 @@ import { DeleteNoteDialog } from "@/components/admin/DeleteNoteDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export default async function AdminNotesPage() {
-  const notes = await getAllNotes();
+  const allNotes = await getAllNotes();
+  const notes = allNotes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
   return (
     <div className="space-y-8">

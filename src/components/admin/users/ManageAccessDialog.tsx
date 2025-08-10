@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
@@ -55,7 +56,8 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
             setIsLoading(true);
             getAllNotes()
                 .then(fetchedNotes => {
-                    setNotes(fetchedNotes.sort((a,b) => (a.createdAt || 0) - (b.createdAt || 0)));
+                    const sortedNotes = fetchedNotes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    setNotes(sortedNotes);
                     setIsLoading(false);
                 })
                 .catch(err => {
