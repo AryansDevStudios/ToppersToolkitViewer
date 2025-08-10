@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileText, Folder, ShieldAlert } from "lucide-react";
 import { findItemBySlug, getUserById } from "@/lib/data";
-import { auth } from "@/lib/firebase";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   Accordion,
@@ -22,6 +21,9 @@ import {
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
 import type { Chapter, Note, SubSubject, User } from "@/lib/types";
 import { headers } from "next/headers";
+import { auth } from "firebase-admin";
+import { cookies } from 'next/headers';
+
 
 // Helper to group notes by chapter name, handling whitespace inconsistencies
 const groupNotesByChapter = (chapters: Chapter[]) => {
@@ -57,20 +59,45 @@ const AccessDenied = () => (
     </div>
 );
 
+const getCurrentUser = async (): Promise<User | null> => {
+    const sessionCookie = cookies().get('session')?.value;
+    if (!sessionCookie) return null;
+
+    try {
+        const decodedToken = await auth().verifySessionCookie(sessionCookie, true);
+        const user = await getUserById(decodedToken.uid);
+        return user;
+    } catch (error) {
+        console.error("Error verifying session cookie:", error);
+        return null;
+    }
+};
+
+
 export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
   const { slug } = params;
   const { current, parents } = await findItemBySlug(slug);
-
+  
   if (!current) {
     notFound();
   }
 
-  // Permission check logic
-  // TODO: Implement a proper server-side auth check. `auth.currentUser` is not reliable here.
-  // For now, we'll grant access to unblock users.
-  let hasAccess = true;
   const isNote = "pdfUrl" in current;
+  let hasAccess = false;
 
+  if (isNote) {
+    const user = await getCurrentUser();
+    if (user) {
+        if (user.role === 'Admin') {
+            hasAccess = true;
+        } else {
+            hasAccess = user.noteAccess?.includes(current.id) || false;
+        }
+    }
+  } else {
+    // It's a subject or sub-subject, so access is granted to see the list
+    hasAccess = true;
+  }
 
   const breadcrumbItems = parents
     .slice(1)
@@ -89,15 +116,16 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 
 
   const renderContent = () => {
-    if (isNote) {
-        if (hasAccess) {
-            return (
-                <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
-                    <PdfViewerWrapper url={current.pdfUrl} />
-                </div>
-            );
-        }
+    if (!hasAccess) {
         return <AccessDenied />;
+    }
+
+    if (isNote) {
+        return (
+            <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+                <PdfViewerWrapper url={current.pdfUrl} />
+            </div>
+        );
     }
     
     if (isSubSubject) {
