@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
+import { Footer } from "@/components/common/Footer";
 
 export const metadata: Metadata = {
   title: "Topper's Toolkit",
@@ -43,6 +44,7 @@ export default function RootLayout({
           <div className="relative flex min-h-screen flex-col">
             <AppHeader />
             <main className="flex-1">{children}</main>
+            <Footer />
           </div>
           <Toaster />
         </ThemeProvider>
