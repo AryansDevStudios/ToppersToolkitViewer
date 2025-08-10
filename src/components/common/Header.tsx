@@ -94,7 +94,7 @@ export function AppHeader() {
         <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
        <Button variant="ghost" asChild>
-        <a href="https://topperstoolkit.netlify.app">Shop</a>
+        <a href="https://topperstoolkit.netlify.app" >Shop</a>
       </Button>
        {mounted && user && role === 'Admin' && (
         <Button variant="ghost" asChild>
@@ -113,15 +113,19 @@ export function AppHeader() {
 
   const renderAuthSection = () => {
     if (!mounted || loading) {
-       return <Skeleton className="h-9 w-9 rounded-full" />;
+       return <Skeleton className="h-9 w-9 rounded-full ml-2" />;
     }
     
     if (user) {
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-               <Avatar className={cn("h-9 w-9", role === 'Admin' && "ring-2 ring-offset-2 ring-orange-500 ring-offset-background")}>
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full ml-2">
+               <Avatar className={cn(
+                  "h-9 w-9",
+                   role === 'Admin' && "ring-2 ring-offset-2 ring-orange-500 ring-offset-background",
+                   role === 'User' && "ring-2 ring-offset-2 ring-sky-500 ring-offset-background"
+                )}>
                   <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
                 </Avatar>
             </Button>
@@ -154,7 +158,7 @@ export function AppHeader() {
       )
     } else {
         return (
-            <Button asChild>
+            <Button asChild className="ml-2">
               <Link href="/login">
                 <LogIn className="mr-2 h-4 w-4" />
                 Login
