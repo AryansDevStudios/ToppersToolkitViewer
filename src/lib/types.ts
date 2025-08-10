@@ -1,4 +1,19 @@
 
+
+export interface LoginLog {
+  timestamp: number;
+  ipAddress?: string; // Note: Capturing IP on server is more reliable
+  userAgent: string;
+  platform: string;
+  deviceType: 'Desktop' | 'Mobile' | 'Tablet';
+  os: string;
+  browser: string;
+  screenResolution: string;
+  pointingMethod: 'Mouse' | 'Touchscreen';
+  ram?: number; // in GB
+  cpuCores?: number;
+}
+
 export interface Note {
   id: string;
   type: string;
@@ -34,4 +49,5 @@ export interface User {
   username?: string;
   srNo?: string;
   password?: string;
+  loginLogs?: LoginLog[];
 }

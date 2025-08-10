@@ -1,10 +1,10 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion } from "firebase/firestore";
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
@@ -554,5 +554,33 @@ export const updatePasswordInFirestore = async (userId: string, password: string
     } catch (e: any) {
         console.error("Update password failed:", e);
         return { success: false, error: e.message };
+    }
+};
+
+export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'timestamp'>) => {
+    if (!userId) {
+        return { success: false, error: "User ID is required." };
+    }
+    const userDocRef = doc(db, 'users', userId);
+    const newLog: LoginLog = {
+        ...loginData,
+        timestamp: Date.now(),
+    };
+
+    try {
+        await updateDoc(userDocRef, {
+            loginLogs: arrayUnion(newLog)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error("Failed to log user login:", e);
+        // Attempt to create the field if it doesn't exist
+        try {
+            await setDoc(userDocRef, { loginLogs: [newLog] }, { merge: true });
+            return { success: true };
+        } catch (e2: any) {
+            console.error("Failed to create loginLogs field:", e2);
+            return { success: false, error: e2.message };
+        }
     }
 };
