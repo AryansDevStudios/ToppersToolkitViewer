@@ -70,14 +70,18 @@ export const getSubjects = async (): Promise<Subject[]> => {
 };
 
 export const findItemBySlug = async (slug: string[]) => {
-  if (!slug || slug.length === 0) return { current: null, parents: [] };
+  if (!slug || slug.length === 0) {
+    const allSubjects = await getSubjects();
+    return { current: { name: 'Browse', children: allSubjects, isRoot: true }, parents: [] };
+  }
+  
   const allSubjects = await getSubjects();
   const subject = allSubjects.find(s => s.id === slug[0]);
   if (!subject) return { current: null, parents: [] };
 
   let currentItem: any = subject;
-  const parents: any[] = [{ name: "Subjects", href: `/browse`, id: 'root' }];
-
+  const parents: any[] = [{ name: "Browse", href: `/browse`, id: 'root' }];
+  
   for (let i = 1; i < slug.length; i++) {
     const part = slug[i];
     let foundItem = null;
@@ -110,9 +114,9 @@ export const findItemBySlug = async (slug: string[]) => {
   return { current: currentItem, parents };
 };
 
-export const getAllNotes = async (): Promise<(Note & { subject: string; chapter: string; chapterId: string })[]> => {
+export const getAllNotes = async (): Promise<(Note & { subject: string; chapter: string; chapterId: string; slug: string })[]> => {
     const allSubjects = await getSubjects();
-    const allNotes: (Note & { subject: string; chapter: string; chapterId: string })[] = [];
+    const allNotes: (Note & { subject: string; chapter: string; chapterId: string; slug: string })[] = [];
     for (const subject of allSubjects) {
         if (subject.subSubjects) {
             for (const subSubject of subject.subSubjects) {
@@ -122,9 +126,10 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; chapter:
                             for (const note of chapter.notes) {
                                 allNotes.push({
                                     ...note,
-                                    subject: `${subject.name} - ${subSubject.name}`,
+                                    subject: `${subject.name} / ${subSubject.name}`,
                                     chapter: chapter.name,
-                                    chapterId: `${subject.id}/${subSubject.id}/${chapter.id}`
+                                    chapterId: `${subject.id}/${subSubject.id}/${chapter.id}`,
+                                    slug: `/browse/${subject.id}/${subSubject.id}/${note.id}`
                                 });
                             }
                         }
@@ -194,11 +199,17 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             const subSubject = subjectData.subSubjects[subSubjectIndex];
             if (!subSubject.chapters) subSubject.chapters = [];
 
-            // If updating, first remove the old note
+            let oldNoteData: Note | undefined;
+
+            // If updating, first remove the old note to get its data
             if (!isNewNote) {
                 subjectData.subSubjects.forEach(ss => {
                     ss.chapters.forEach(c => {
-                        c.notes = c.notes.filter(n => n.id !== noteId);
+                        const noteIndex = c.notes.findIndex(n => n.id === noteId);
+                        if (noteIndex > -1) {
+                           oldNoteData = c.notes[noteIndex];
+                           c.notes.splice(noteIndex, 1);
+                        }
                     });
                 });
             }
@@ -216,13 +227,19 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 chapterIndex = subSubject.chapters.length - 1;
             }
 
-            const newNote: Note = { id: noteId, type, pdfUrl };
+            const newNote: Note = { 
+                id: noteId, 
+                type, 
+                pdfUrl,
+                createdAt: isNewNote ? Date.now() : oldNoteData?.createdAt ?? Date.now(),
+             };
             subSubject.chapters[chapterIndex].notes.push(newNote);
             
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
         });
 
         revalidatePath("/admin/notes");
+        revalidatePath("/browse");
         revalidatePath(`/browse/${subjectId}/${subSubjectId}`);
         return { success: true, message: `Note successfully ${isNewNote ? 'created' : 'updated'}.` };
     } catch (e: any) {
@@ -263,6 +280,7 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
         });
 
         revalidatePath("/admin/notes");
+        revalidatePath("/browse");
         revalidatePath(`/browse/${subjectId}/${subSubjectId}`);
         return { success: true, message: "Note deleted successfully." };
     } catch (e: any) {

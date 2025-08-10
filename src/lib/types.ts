@@ -4,6 +4,7 @@ export interface Note {
   id: string;
   type: string; // Changed from enum to string
   pdfUrl: string;
+  createdAt?: number;
 }
 
 export interface Chapter {
