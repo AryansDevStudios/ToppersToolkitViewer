@@ -1,26 +1,13 @@
 
-
 'use server';
 
-import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
-import type { Subject, Note, Chapter, User } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch, getDoc } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc } from "firebase/firestore";
 import seedData from '../../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
-
-const iconMap: { [key: string]: React.FC<any> } = {
-  FlaskConical,
-  Landmark,
-  Sigma,
-  Book,
-  Atom,
-  Dna,
-  BookOpen,
-  Scale,
-  Globe,
-};
+import { iconMap } from "./iconMap";
 
 export const seedSubjects = async () => {
     console.log("Seeding subjects...");
@@ -29,6 +16,11 @@ export const seedSubjects = async () => {
     if (!subjectsSnapshot.empty) {
         console.log("Subjects collection already exists. Seeding skipped.");
         return { success: true, message: "Database already seeded." };
+    }
+    
+    if (Object.keys(seedData).length === 0) {
+        console.log("Seed data is empty. Nothing to seed.");
+        return { success: true, message: "Seed data is empty, nothing to seed."};
     }
 
     try {
@@ -56,13 +48,13 @@ export const getSubjects = async (): Promise<Subject[]> => {
             return seededSubjectsSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
-                icon: iconMap[doc.data().icon] || Book,
+                icon: iconMap[doc.data().icon] || iconMap["Book"],
             })) as Subject[];
         }
         return subjectsSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
-            icon: iconMap[doc.data().icon] || Book,
+            icon: iconMap[doc.data().icon] || iconMap["Book"],
         })) as Subject[];
     } catch (error) {
         console.error("Error getting subjects:", error);
@@ -242,8 +234,8 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
         });
 
         revalidatePath("/admin/notes");
-        revalidatePath("/browse");
-        revalidatePath(`/browse/${subjectId}/${subSubjectId}`);
+        revalidatePath("/admin/subjects");
+        revalidatePath("/browse", "layout");
         return { success: true, message: `Note successfully ${isNewNote ? 'created' : 'updated'}.` };
     } catch (e: any) {
         console.error("Upsert failed: ", e);
@@ -283,14 +275,175 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
         });
 
         revalidatePath("/admin/notes");
-        revalidatePath("/browse");
-        revalidatePath(`/browse/${subjectId}/${subSubjectId}`);
+        revalidatePath("/admin/subjects");
+        revalidatePath("/browse", "layout");
         return { success: true, message: "Note deleted successfully." };
     } catch (e: any) {
         console.error("Delete failed: ", e);
         return { success: false, error: e.message };
     }
 };
+
+// --- Subject/Chapter Management ---
+
+export const upsertSubject = async (data: { id?: string, name: string, icon: string }) => {
+    const { id, name, icon } = data;
+    const isNew = !id;
+    const subjectId = isNew ? uuidv4() : id!;
+    const subjectDocRef = doc(db, "subjects", subjectId);
+
+    try {
+        if (isNew) {
+            const newSubject: Omit<Subject, 'id' | 'icon'> & { icon: string } = {
+                name,
+                icon,
+                subSubjects: []
+            };
+            await runTransaction(db, async (transaction) => {
+                transaction.set(subjectDocRef, newSubject);
+            });
+        } else {
+            await runTransaction(db, async (transaction) => {
+                transaction.update(subjectDocRef, { name, icon });
+            });
+        }
+        revalidatePath("/admin/subjects");
+        revalidatePath("/", "layout");
+        return { success: true, message: `Subject successfully ${isNew ? 'created' : 'updated'}.` };
+    } catch (e: any) {
+        console.error("Upsert subject failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
+export const deleteSubject = async (subjectId: string) => {
+    const subjectDocRef = doc(db, "subjects", subjectId);
+    try {
+        await deleteDoc(subjectDocRef);
+        revalidatePath("/admin/subjects");
+        revalidatePath("/", "layout");
+        return { success: true, message: "Subject deleted successfully." };
+    } catch (e: any) {
+        console.error("Delete subject failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
+export const upsertSubSubject = async (data: { subjectId: string, id?: string, name: string }) => {
+    const { subjectId, id, name } = data;
+    const isNew = !id;
+    const subSubjectId = isNew ? uuidv4() : id!;
+    const subjectDocRef = doc(db, "subjects", subjectId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) throw new Error("Subject not found!");
+            const subjectData = subjectDoc.data() as Subject;
+            
+            if (isNew) {
+                const newSubSubject: SubSubject = { id: subSubjectId, name, chapters: [] };
+                subjectData.subSubjects.push(newSubSubject);
+            } else {
+                const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
+                if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
+                subjectData.subSubjects[subSubjectIndex].name = name;
+            }
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+        revalidatePath("/admin/subjects");
+        revalidatePath("/", "layout");
+        return { success: true, message: `Sub-subject successfully ${isNew ? 'created' : 'updated'}.` };
+    } catch (e: any) {
+        console.error("Upsert sub-subject failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
+export const deleteSubSubject = async (subjectId: string, subSubjectId: string) => {
+    const subjectDocRef = doc(db, "subjects", subjectId);
+    try {
+         await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) throw new Error("Subject not found!");
+            const subjectData = subjectDoc.data() as Subject;
+            
+            subjectData.subSubjects = subjectData.subSubjects.filter(ss => ss.id !== subSubjectId);
+            
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+        revalidatePath("/admin/subjects");
+        revalidatePath("/", "layout");
+        return { success: true, message: "Sub-subject deleted successfully." };
+    } catch (e: any) {
+        console.error("Delete sub-subject failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
+export const upsertChapter = async (data: { subjectId: string, subSubjectId: string, id?: string, name: string }) => {
+    const { subjectId, subSubjectId, id, name } = data;
+    const isNew = !id;
+    const chapterId = isNew ? uuidv4() : id!;
+    const subjectDocRef = doc(db, "subjects", subjectId);
+
+    try {
+         await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) throw new Error("Subject not found!");
+            const subjectData = subjectDoc.data() as Subject;
+            const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
+            if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
+            
+            const subSubject = subjectData.subSubjects[subSubjectIndex];
+            if (!subSubject.chapters) subSubject.chapters = [];
+
+            if(isNew) {
+                const newChapter: Chapter = { id: chapterId, name, notes: [] };
+                subSubject.chapters.push(newChapter);
+            } else {
+                const chapterIndex = subSubject.chapters.findIndex(c => c.id === chapterId);
+                if (chapterIndex === -1) throw new Error("Chapter not found!");
+                subSubject.chapters[chapterIndex].name = name;
+            }
+            
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+        revalidatePath("/admin/subjects");
+        revalidatePath("/", "layout");
+        return { success: true, message: `Chapter successfully ${isNew ? 'created' : 'updated'}.` };
+    } catch(e: any) {
+        console.error("Upsert chapter failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
+export const deleteChapter = async (subjectId: string, subSubjectId: string, chapterId: string) => {
+    const subjectDocRef = doc(db, "subjects", subjectId);
+    try {
+        await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) throw new Error("Subject not found!");
+            const subjectData = subjectDoc.data() as Subject;
+            const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
+            if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
+            
+            const subSubject = subjectData.subSubjects[subSubjectIndex];
+            if(subSubject.chapters) {
+                subSubject.chapters = subSubject.chapters.filter(c => c.id !== chapterId);
+            }
+            
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+        revalidatePath("/admin/subjects");
+        revalidatePath("/", "layout");
+        return { success: true, message: "Chapter deleted successfully." };
+    } catch(e: any) {
+        console.error("Delete chapter failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
 
 export const getUserById = async (userId: string): Promise<User | null> => {
   try {
@@ -315,4 +468,3 @@ export const updateUserRole = async (userId: string, newRole: User['role']) => {
     console.warn("updateUserRole is not implemented.");
     return { success: false, error: "Feature is disabled." };
 };
-

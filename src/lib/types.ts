@@ -1,8 +1,9 @@
+
 import type { LucideIcon } from "lucide-react";
 
 export interface Note {
   id: string;
-  type: string; // Changed from enum to string
+  type: string;
   pdfUrl: string;
   createdAt?: number;
 }
@@ -22,7 +23,7 @@ export interface SubSubject {
 export interface Subject {
   id: string;
   name: string;
-  icon: LucideIcon;
+  icon: LucideIcon | string;
   subSubjects: SubSubject[];
 }
 

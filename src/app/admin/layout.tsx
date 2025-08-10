@@ -9,7 +9,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, FileText, LayoutDashboard, Users, BookOpen, Loader2, ShieldAlert } from "lucide-react";
+import { Menu, FileText, LayoutDashboard, Users, BookOpen, Loader2, ShieldAlert, Library } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/subjects", icon: Library, label: "Subjects" },
   { href: "/admin/notes", icon: FileText, label: "Notes" },
   { href: "/admin/users", icon: Users, label: "Users" },
 ];

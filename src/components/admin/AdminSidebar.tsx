@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -6,6 +7,7 @@ import {
   FileText,
   LayoutDashboard,
   Users,
+  Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/subjects", icon: Library, label: "Subjects" },
   { href: "/admin/notes", icon: FileText, label: "Notes" },
   { href: "/admin/users", icon: Users, label: "Users" },
 ];
@@ -32,7 +35,7 @@ export function AdminSidebar() {
             <li key={item.label}>
               <Button
                 asChild
-                variant={pathname === item.href ? "secondary" : "ghost"}
+                variant={pathname.startsWith(item.href) ? "secondary" : "ghost"}
                 className="w-full justify-start"
               >
                 <Link href={item.href}>
