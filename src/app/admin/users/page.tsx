@@ -53,6 +53,7 @@ export default async function AdminUsersPage() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead className="hidden sm:table-cell">Username</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead className="hidden sm:table-cell">Class</TableHead>
                 <TableHead className="hidden sm:table-cell">SR. No.</TableHead>
@@ -64,6 +65,7 @@ export default async function AdminUsersPage() {
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.name || 'N/A'}</TableCell>
                   <TableCell>{user.email}</TableCell>
+                   <TableCell className="hidden sm:table-cell">{user.username || 'N/A'}</TableCell>
                   <TableCell>
                     <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
                   </TableCell>
@@ -89,7 +91,7 @@ export default async function AdminUsersPage() {
                 </TableRow>
               )) : (
                  <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     No users found.
                   </TableCell>
                 </TableRow>
