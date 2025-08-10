@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog } from "./types";
@@ -246,7 +247,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 originalPdfUrl: originalUrl,
                 linkType,
                 serveViaJsDelivr,
-                icon: icon || undefined,
+                icon: icon || 'FileText',
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
              };
             if(isNewNote) newNote.createdAt = Date.now();
