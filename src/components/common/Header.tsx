@@ -80,7 +80,7 @@ export function AppHeader() {
       <Button variant="ghost" asChild>
         <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
-      {!loading && user && role === 'Admin' && (
+       {!loading && user && role === 'Admin' && (
         <Button variant="ghost" asChild>
           <Link href="/admin" onClick={inSheet ? closeSheet : undefined}>Admin</Link>
         </Button>
