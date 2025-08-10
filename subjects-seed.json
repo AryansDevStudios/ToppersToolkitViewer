@@ -79,14 +79,7 @@
           {
             "id": "number-systems",
             "name": "Number Systems",
-            "notes": [
-              {
-                "id": "ns-notes-1",
-                "title": "Comprehensive Notes on Number Systems",
-                "type": "Handwritten Notes",
-                "pdfUrl": "https://raw.githubusercontent.com/firebase/firebase-ios-sdk/master/LICENSE"
-              }
-            ]
+            "notes": []
           },
           { "id": "polynomials", "name": "Polynomials", "notes": [] }
         ]

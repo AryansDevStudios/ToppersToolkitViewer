@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book } from "lucide-react";
@@ -314,3 +315,4 @@ export const updateUserRole = async (userId: string, newRole: User['role']) => {
     console.warn("updateUserRole is not implemented.");
     return { success: false, error: "Feature is disabled." };
 };
+
