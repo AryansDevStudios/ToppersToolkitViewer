@@ -61,7 +61,6 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                     setIsLoading(false);
                 })
                 .catch(err => {
-                    console.error("Failed to fetch notes for access management:", err);
                     toast({ title: "Error", description: "Could not load notes.", variant: "destructive" });
                     setIsLoading(false);
                 });

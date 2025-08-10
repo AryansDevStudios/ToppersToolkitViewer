@@ -74,7 +74,7 @@ const getGpuInfo = () => {
             }
         }
     } catch (e) {
-        console.error("Could not get GPU info:", e);
+        // Silently fail in production
     }
     return "Unknown";
 };

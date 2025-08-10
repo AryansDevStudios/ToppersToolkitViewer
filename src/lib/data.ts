@@ -11,16 +11,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
 
 export const seedSubjects = async () => {
-    console.log("Seeding subjects...");
     const subjectsCollection = collection(db, 'subjects');
     const subjectsSnapshot = await getDocs(subjectsCollection);
     if (!subjectsSnapshot.empty) {
-        console.log("Subjects collection already exists. Seeding skipped.");
         return { success: true, message: "Database already seeded." };
     }
     
     if (Object.keys(seedData).length === 0) {
-        console.log("Seed data is empty. Nothing to seed.");
         return { success: true, message: "Seed data is empty, nothing to seed."};
     }
 
@@ -31,10 +28,8 @@ export const seedSubjects = async () => {
             batch.set(subjectRef, subjectData);
         }
         await batch.commit();
-        console.log("Seeding completed successfully.");
         return { success: true, message: "Database seeded successfully." };
     } catch (error) {
-        console.error("Error seeding database:", error);
         return { success: false, error: "Failed to seed database." };
     }
 };
@@ -56,7 +51,6 @@ export const getSubjects = async (): Promise<Subject[]> => {
             ...doc.data(),
         })) as Subject[];
     } catch (error) {
-        console.error("Error getting subjects:", error);
         return [];
     }
 };
@@ -244,7 +238,6 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
         revalidatePath("/admin");
         return { success: true, message: `Note successfully ${isNewNote ? 'created' : 'updated'}.` };
     } catch (e: any) {
-        console.error("Upsert failed: ", e);
         return { success: false, error: e.message };
     }
 };
@@ -286,7 +279,6 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
         revalidatePath("/admin");
         return { success: true, message: "Note deleted successfully." };
     } catch (e: any) {
-        console.error("Delete failed: ", e);
         return { success: false, error: e.message };
     }
 };
@@ -321,7 +313,6 @@ export const upsertSubject = async (data: { id?: string, name: string, icon: str
         revalidatePath("/admin");
         return { success: true, message: `Subject successfully ${isNew ? 'created' : 'updated'}.` };
     } catch (e: any) {
-        console.error("Upsert subject failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -335,7 +326,6 @@ export const deleteSubject = async (subjectId: string) => {
         revalidatePath("/admin");
         return { success: true, message: "Subject deleted successfully." };
     } catch (e: any) {
-        console.error("Delete subject failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -368,7 +358,6 @@ export const upsertSubSubject = async (data: { subjectId: string, id?: string, n
         revalidatePath("/admin");
         return { success: true, message: `Sub-subject successfully ${isNew ? 'created' : 'updated'}.` };
     } catch (e: any) {
-        console.error("Upsert sub-subject failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -390,7 +379,6 @@ export const deleteSubSubject = async (subjectId: string, subSubjectId: string) 
         revalidatePath("/admin");
         return { success: true, message: "Sub-subject deleted successfully." };
     } catch (e: any) {
-        console.error("Delete sub-subject failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -429,7 +417,6 @@ export const upsertChapter = async (data: { subjectId: string, subSubjectId: str
         revalidatePath("/admin");
         return { success: true, message: `Chapter successfully ${isNew ? 'created' : 'updated'}.` };
     } catch(e: any) {
-        console.error("Upsert chapter failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -456,7 +443,6 @@ export const deleteChapter = async (subjectId: string, subSubjectId: string, cha
         revalidatePath("/admin");
         return { success: true, message: "Chapter deleted successfully." };
     } catch(e: any) {
-        console.error("Delete chapter failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -472,7 +458,6 @@ export const getUserById = async (userId: string): Promise<User | null> => {
     }
     return null;
   } catch (error) {
-    console.error("Error fetching user:", error);
     return null;
   }
 };
@@ -487,7 +472,6 @@ export const getUsers = async (): Promise<User[]> => {
       ...doc.data(),
     })) as User[];
   } catch (error) {
-    console.error("Error getting users:", error);
     return [];
   }
 };
@@ -506,7 +490,6 @@ export const upsertUser = async (userData: Partial<User> & { id: string }) => {
         revalidatePath('/admin/users');
         return { success: true, message: "User updated successfully." };
     } catch (e: any) {
-        console.error("Upsert user failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -521,7 +504,6 @@ export const updateUserRole = async (userId: string, newRole: User['role']) => {
         revalidatePath('/admin/users');
         return { success: true, message: "User role updated successfully." };
     } catch(e: any) {
-        console.error("Update user role failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -545,7 +527,6 @@ export const updateUserNoteAccess = async (userId: string, noteId: string, hasAc
         revalidatePath('/browse', "layout");
         return { success: true, message: `Access for note ${noteId} updated.` };
     } catch (e: any) {
-        console.error("Update note access failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -565,7 +546,6 @@ export const deleteUser = async (userId: string) => {
         revalidatePath('/admin/users');
         return { success: true, message: "User data deleted from Firestore." };
     } catch(e: any) {
-        console.error("Delete user failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -579,7 +559,6 @@ export const updatePasswordInFirestore = async (userId: string, password: string
         await updateDoc(userDocRef, { password });
         return { success: true, message: "Password updated in Firestore." };
     } catch (e: any) {
-        console.error("Update password failed:", e);
         return { success: false, error: e.message };
     }
 };
@@ -599,7 +578,6 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
         await setDoc(userDocRef, { loginLogs: arrayUnion(newLog) }, { merge: true });
         return { success: true };
     } catch (e: any) {
-        console.error("Failed to log user login:", e);
         return { success: false, error: e.message };
     }
 };

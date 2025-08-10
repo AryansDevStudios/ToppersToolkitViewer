@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -121,7 +122,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
   }, []);
   
   function onDocumentLoadError(error: Error) {
-    console.error("Failed to load PDF:", error);
     setError("Failed to load PDF file. Please check the URL and CORS settings.");
   }
   
@@ -202,7 +202,6 @@ export function PdfViewer({ url }: PdfViewerProps) {
                                   if (error.name === 'AbortException') {
                                       return; // Ignore benign cancellation errors
                                   }
-                                  console.error('Failed to render PDF page:', error);
                                 }}
                               />
                             </div>
@@ -271,7 +270,7 @@ export function PdfViewer({ url }: PdfViewerProps) {
                               <TooltipContent><p>Next Page</p></TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
-                         <p className="text-sm font-medium text-muted-foreground w-20 md:w-24 text-center">
+                         <p className="text-sm font-sans font-medium text-muted-foreground w-20 md:w-24 text-center">
                             {current} / {count}
                         </p>
                     </div>

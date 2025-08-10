@@ -7,16 +7,19 @@ let app;
 // This check is important to prevent re-initialization in a serverless environment
 // and to avoid crashing when the service account key is not present.
 if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    if (!getApps().length) {
-        app = initializeApp({
-            credential: cert(serviceAccount),
-        });
-    } else {
-        app = getApp();
+    try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        if (!getApps().length) {
+            app = initializeApp({
+                credential: cert(serviceAccount),
+            });
+        } else {
+            app = getApp();
+        }
+    } catch (e) {
+        // Silently fail if key is invalid
+        app = null;
     }
-} else {
-  console.warn("FIREBASE_SERVICE_ACCOUNT_KEY is not set. Firebase Admin SDK not initialized.");
 }
 
 

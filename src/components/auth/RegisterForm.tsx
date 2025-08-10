@@ -190,7 +190,7 @@ export function RegisterForm() {
                     <FormLabel>
                        I have read and agree to the Terms and Conditions.
                     </FormLabel>
-                    <FormDescription className="lg:hidden">
+                    <FormDescription>
                       Please read the{" "}
                       <Link href="/terms" className="underline hover:text-primary" target="_blank">
                         Terms and Conditions
