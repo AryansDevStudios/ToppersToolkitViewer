@@ -216,7 +216,7 @@ export function RegisterForm() {
             <Button type="submit" className="w-full">
               Create Account
             </Button>
-            <div className="relative w-.localfull">
+            <div className="relative w-full">
                 <Separator />
                 <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">
                     OR CONTINUE WITH
