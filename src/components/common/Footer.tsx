@@ -1,12 +1,13 @@
 
-import { Mail, Send, Smartphone } from 'lucide-react';
+import { Mail, Send, Smartphone, Download } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export function Footer() {
   return (
     <footer className="bg-card mt-12 border-t">
       <div className="container py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <h3 className="text-lg font-black font-headline mb-2">Topper's Toolkit Viewer</h3>
             <p className="text-muted-foreground text-sm">High-quality resources for academic success. All rights reserved.</p>
@@ -57,6 +58,16 @@ export function Footer() {
                 </a>
               </li>
             </ul>
+          </div>
+           <div>
+            <h3 className="text-lg font-semibold font-headline mb-2">Download App</h3>
+            <p className="text-muted-foreground text-sm mb-4">Get the Android app for a better mobile experience.</p>
+            <Button asChild>
+                <a href="https://github.com/AryansDevStudios/ToppersToolkit/raw/main/public/app/android/Topper's%20Toolkit.apk" target="_blank" rel="noopener noreferrer">
+                    <Download className="mr-2 h-4 w-4" />
+                    Download APK
+                </a>
+            </Button>
           </div>
         </div>
         <div className="mt-8 border-t pt-4 text-center text-sm text-muted-foreground">
