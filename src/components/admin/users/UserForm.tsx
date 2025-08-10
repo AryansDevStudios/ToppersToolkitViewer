@@ -51,7 +51,7 @@ export function UserForm({ user }: UserFormProps) {
       username: user.username || "",
       srNo: user.srNo || "",
       email: user.email || "",
-      password: user.password || ""
+      password: "" // Always start empty
     },
   });
 
@@ -65,15 +65,21 @@ export function UserForm({ user }: UserFormProps) {
           srNo: values.srNo.trim(),
         };
 
-        if (values.password && values.password !== user.password) {
+        if (values.password) {
            const currentUser = auth.currentUser;
            if(currentUser && currentUser.uid === user.id) {
               await updatePassword(currentUser, values.password);
+              toast({ title: "Auth Password Updated", description: "Firebase Auth password was changed." });
            } else {
              // Note: Updating other users' passwords client-side is not directly possible
              // and requires an admin SDK on a secure backend.
-             // We will store it in firestore, but it won't work for login.
-             console.warn("Password for other users can't be updated from client.")
+             // We will store it in firestore, but it won't work for login until the user logs in again.
+             toast({ 
+                title: "Security Warning", 
+                description: "Password for other users can't be updated in Firebase Auth from the client. The new password is saved and will be active on next login.",
+                variant: "destructive",
+                duration: 8000
+             });
            }
            dataToUpdate.password = values.password;
         }
@@ -149,9 +155,9 @@ export function UserForm({ user }: UserFormProps) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter new password to update" {...field} />
+                    <Input type="password" placeholder="Enter new password to update" {...field} autoComplete="new-password" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

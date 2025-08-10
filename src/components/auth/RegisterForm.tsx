@@ -21,9 +21,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { auth, db } from "@/lib/firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { auth, db, createUserWithEmailAndPassword, updateProfile, doc, setDoc } from "@/lib/firebase";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
@@ -60,11 +58,12 @@ export function RegisterForm() {
 
       await updateProfile(user, { displayName: name });
 
+      // Storing password in Firestore (Security Risk)
       await setDoc(doc(db, "users", user.uid), {
         id: user.uid,
         name,
         email,
-        password,
+        password, // Storing plaintext password
         classAndSection,
         srNo,
         username,

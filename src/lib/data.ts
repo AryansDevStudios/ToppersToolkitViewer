@@ -531,8 +531,8 @@ export const deleteUser = async (userId: string) => {
 };
 
 export const updatePasswordInFirestore = async (userId: string, password: string) => {
-    if (!userId) {
-        return { success: false, error: "Invalid user ID." };
+    if (!userId || !password) {
+        return { success: false, error: "Invalid user ID or password." };
     }
     const userDocRef = doc(db, 'users', userId);
     try {

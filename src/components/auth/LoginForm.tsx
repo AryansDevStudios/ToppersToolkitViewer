@@ -49,8 +49,7 @@ export function LoginForm() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       
-      // I am updating the password in Firestore here, as requested.
-      // This is still a major security risk.
+      // Update the password in Firestore after a successful login.
       await updatePasswordInFirestore(userCredential.user.uid, values.password);
 
       toast({
