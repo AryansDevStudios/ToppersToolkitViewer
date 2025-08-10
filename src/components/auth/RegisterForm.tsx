@@ -19,12 +19,10 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { auth, db, googleProvider } from "@/lib/firebase";
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, getAdditionalUserInfo } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { Separator } from "../ui/separator";
 
@@ -153,13 +151,6 @@ export function RegisterForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4 pt-6">
-            <Alert>
-                <Terminal className="h-4 w-4" />
-                <AlertTitle>Heads up!</AlertTitle>
-                <AlertDescription>
-                  For Google Sign-In to work, make sure you've added your app's domain to the list of authorized domains in your Firebase console's Authentication settings.
-                </AlertDescription>
-            </Alert>
              <FormField
               control={form.control}
               name="name"
