@@ -12,7 +12,7 @@ export function Footer() {
             <h3 className="text-lg font-black font-headline mb-2">Topper's Toolkit Viewer</h3>
             <p className="text-muted-foreground text-sm">High-quality resources for academic success. All rights reserved.</p>
              <div className="mt-4">
-                <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                <Link href="/terms" className="text-sm text-primary underline underline-offset-4 hover:opacity-80 transition-opacity">
                     Terms & Conditions
                 </Link>
             </div>

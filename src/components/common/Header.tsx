@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, Menu } from "lucide-react";
+import { UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, Menu, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -81,6 +81,9 @@ export function AppHeader() {
       </Button>
       <Button variant="ghost" asChild>
         <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
+      </Button>
+       <Button variant="ghost" asChild>
+        <a href="https://topperstoolkit.netlify.app" target="_blank" rel="noopener noreferrer">Shop</a>
       </Button>
        {mounted && user && role === 'Admin' && (
         <Button variant="ghost" asChild>
