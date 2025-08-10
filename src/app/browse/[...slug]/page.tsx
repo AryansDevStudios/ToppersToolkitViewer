@@ -74,7 +74,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
       return (
         <Accordion type="multiple" className="w-full max-w-4xl mx-auto">
           {children.map((chapter) => (
-            <AccordionItem value={chapter.id} key={chapter.id}>
+            <AccordionItem value={chapter.name} key={chapter.name}>
               <AccordionTrigger className="text-xl font-bold hover:no-underline">
                 {chapter.name}
               </AccordionTrigger>
