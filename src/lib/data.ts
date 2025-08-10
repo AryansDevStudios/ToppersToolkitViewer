@@ -5,7 +5,7 @@ import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book 
 import type { Subject, Note, Chapter, User } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc } from "firebase/firestore";
 import seedData from '../../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -270,6 +270,21 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
         return { success: false, error: e.message };
     }
 };
+
+export const getUserById = async (userId: string): Promise<User | null> => {
+  try {
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      return { id: userDoc.id, ...userDoc.data() } as User;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return null;
+  }
+};
+
 
 export const getUsers = async (): Promise<any[]> => {
   return [];

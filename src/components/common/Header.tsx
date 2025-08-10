@@ -44,7 +44,7 @@ function ThemeToggle() {
 }
 
 export function AppHeader() {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -58,9 +58,9 @@ export function AppHeader() {
   const NavLinks = ({ inSheet = false }: { inSheet?: boolean }) => (
     <>
       <Button variant="ghost" asChild>
-        <Link href="/" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
+        <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
-      {user && (
+      {user && role === 'Admin' && (
         <Button variant="ghost" asChild>
           <Link href="/admin" onClick={inSheet ? closeSheet : undefined}>Admin</Link>
         </Button>
@@ -102,12 +102,14 @@ export function AppHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/admin">
-                    <Crown className="mr-2 h-4 w-4" />
-                    <span>Admin Panel</span>
-                  </Link>
-                </DropdownMenuItem>
+                {role === 'Admin' && (
+                    <DropdownMenuItem asChild>
+                    <Link href="/admin">
+                        <Crown className="mr-2 h-4 w-4" />
+                        <span>Admin Panel</span>
+                    </Link>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
