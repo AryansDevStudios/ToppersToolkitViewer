@@ -54,7 +54,7 @@ export default async function AdminNotesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Note Details</TableHead>
-                <TableHead className="hidden sm:table-cell">Note Type</TableHead>
+                <TableHead className="hidden md:table-cell">Subject</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -63,10 +63,13 @@ export default async function AdminNotesPage() {
                 <TableRow key={note.id}>
                   <TableCell>
                     <div className="font-medium">{note.chapter}</div>
-                    <div className="text-sm text-muted-foreground md:hidden">{note.subject}</div>
+                    <div className="text-sm text-muted-foreground">
+                        <Badge variant="outline" className="md:hidden mr-2">{note.type}</Badge>
+                        <span className="md:hidden">{note.subject}</span>
+                    </div>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Badge variant="outline">{note.type}</Badge>
+                  <TableCell className="hidden md:table-cell">
+                    {note.subject}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
