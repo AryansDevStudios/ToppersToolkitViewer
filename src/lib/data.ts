@@ -173,6 +173,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
     const { id, subjectId, subSubjectId, chapterName, type, pdfUrl } = data;
     const isNewNote = !id;
     const noteId = isNewNote ? uuidv4() : id!;
+    const trimmedChapterName = chapterName.trim();
 
     const subjectDocRef = doc(db, "subjects", subjectId);
 
@@ -205,13 +206,13 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 });
             }
 
-            let chapterIndex = subSubject.chapters.findIndex(c => c.name.toLowerCase() === chapterName.toLowerCase());
+            let chapterIndex = subSubject.chapters.findIndex(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
 
             if (chapterIndex === -1) {
                 // Chapter doesn't exist, create it
                 const newChapter: Chapter = {
                     id: uuidv4(),
-                    name: chapterName,
+                    name: trimmedChapterName,
                     notes: [],
                 };
                 subSubject.chapters.push(newChapter);
