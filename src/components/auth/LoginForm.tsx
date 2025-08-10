@@ -12,6 +12,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +25,9 @@ import { useRouter } from "next/navigation";
 import { auth, signInWithEmailAndPassword } from "@/lib/firebase";
 import { updatePasswordInFirestore, logUserLogin } from "@/lib/data";
 import type { LoginLog } from "@/lib/types";
+import { Checkbox } from "../ui/checkbox";
+import Link from "next/link";
+import { useState } from "react";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -31,6 +35,9 @@ const formSchema = z.object({
   }),
   password: z.string().min(1, {
     message: "Password is required.",
+  }),
+  agreeToTerms: z.boolean().refine(val => val === true, {
+    message: "You must agree to the terms and conditions.",
   }),
 });
 
@@ -82,6 +89,7 @@ export function LoginForm() {
     defaultValues: {
       email: "",
       password: "",
+      agreeToTerms: false,
     },
   });
 
@@ -161,9 +169,36 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="agreeToTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Agree to our Terms and Conditions
+                    </FormLabel>
+                    <FormDescription>
+                      You agree to our{" "}
+                      <Link href="/terms" className="underline hover:text-primary" target="_blank">
+                        Terms and Conditions
+                      </Link>
+                      .
+                    </FormDescription>
+                     <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
           </CardContent>
           <CardFooter className="flex-col gap-4">
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={!form.watch('agreeToTerms')}>
               Sign In
             </Button>
           </CardFooter>
