@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, UserCircle, LogIn, Crown, LogOut, Sun, Moon } from "lucide-react";
+import { BookOpen, UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -64,7 +64,13 @@ export function AppHeader() {
       <Button variant="ghost" asChild>
         <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
-      {user && role === 'Admin' && (
+      {/* 
+        This part is rendered conditionally based on client-side authentication state.
+        To prevent hydration errors, we must ensure it doesn't render on the server
+        if the state is not yet available. By checking `!loading`, we ensure this
+        part of the tree is only rendered on the client after the auth state is resolved.
+      */}
+      {!loading && user && role === 'Admin' && (
         <Button variant="ghost" asChild>
           <Link href="/admin" onClick={inSheet ? closeSheet : undefined}>Admin</Link>
         </Button>
@@ -88,7 +94,9 @@ export function AppHeader() {
           <ThemeToggle />
           
           {loading ? (
-            <div className="h-9 w-9 rounded-full bg-muted animate-pulse ml-2" />
+             <div className="flex items-center justify-center h-9 w-9 ml-2">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+             </div>
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -148,7 +156,11 @@ export function AppHeader() {
               <nav className="flex flex-col items-start space-y-4 pt-8">
                 <NavLinks inSheet={true} />
                 <div className="pt-4 border-t w-full">
-                  {loading ? <p>Loading...</p> : user ? (
+                  {loading ? (
+                     <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                     </div>
+                  ) : user ? (
                      <div className="space-y-4">
                         <div className="font-medium">
                             <p>{user.displayName || "User"}</p>
