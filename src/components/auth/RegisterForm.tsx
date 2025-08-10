@@ -116,7 +116,7 @@ export function RegisterForm() {
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-         await setDoc(doc(db, "users", user.uid), {
+         await setDoc(userDocRef, {
             uid: user.uid,
             name: user.displayName,
             email: user.email,

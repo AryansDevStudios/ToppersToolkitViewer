@@ -91,11 +91,14 @@ export function LoginForm() {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       
+      // The useAuth hook will handle redirects and session state.
+      // We just need to ensure the user document exists.
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-         await setDoc(doc(db, "users", user.uid), {
+         // This is a new user, create their document
+         await setDoc(userDocRef, {
             uid: user.uid,
             name: user.displayName,
             email: user.email,
@@ -104,10 +107,11 @@ export function LoginForm() {
       }
       
       toast({
-        title: "Login Successful",
+        title: "Sign-In Successful",
         description: "Welcome! Redirecting you now.",
       });
       router.push("/");
+
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user') {
         toast({
