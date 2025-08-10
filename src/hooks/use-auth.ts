@@ -6,7 +6,7 @@ import { onIdTokenChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth, getRedirectResult, db } from '@/lib/firebase';
 import { getUserById } from '@/lib/data';
 import type { User } from '@/lib/types';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export function useAuth() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -14,42 +14,48 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-     const handleRedirectResult = async () => {
+    const processAuth = async () => {
+      setLoading(true);
       try {
+        // First, check for redirect result
         const result = await getRedirectResult(auth);
         if (result && result.user) {
-          const user = result.user;
-          const userDocRef = doc(db, "users", user.uid);
-          const userData = await getUserById(user.uid);
-          if (!userData) {
+          // A user has just signed in or signed up via redirect.
+          const firebaseUrl = result.user;
+          const userDocRef = doc(db, "users", firebaseUrl.uid);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (!userDocSnap.exists()) {
+            // This is a new user, create their document
             await setDoc(userDocRef, {
-              uid: user.uid,
-              name: user.displayName,
-              email: user.email,
+              uid: firebaseUrl.uid,
+              name: firebaseUrl.displayName,
+              email: firebaseUrl.email,
               role: 'User',
             });
           }
         }
       } catch (error) {
-        console.error("Error handling redirect result:", error);
+        console.error("Error processing redirect result:", error);
       }
+
+      // Then, set up the state listener. This will also run after a redirect.
+      const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+          setUser(firebaseUser);
+          const userData = await getUserById(firebaseUser.uid);
+          setRole(userData?.role || 'User');
+        } else {
+          setUser(null);
+          setRole(null);
+        }
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
     };
     
-    handleRedirectResult();
-
-    const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const userData = await getUserById(firebaseUser.uid);
-        setRole(userData?.role || 'User');
-      } else {
-        setUser(null);
-        setRole(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    processAuth();
   }, []);
 
   return { user, role, loading };
