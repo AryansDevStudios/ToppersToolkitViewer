@@ -6,11 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, FileText, BookCopy } from "lucide-react";
+import { Users, FileText, BookCopy, ArrowRight } from "lucide-react";
 import { getDashboardStats } from "@/lib/data";
+import { List, ListItem } from "@/components/ui/list";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export default async function AdminDashboardPage() {
-  const { totalNotes, totalSubjects, totalUsers } = await getDashboardStats();
+  const { totalNotes, totalSubjects, totalUsers, recentNotes } = await getDashboardStats();
 
   const stats = [
     {
@@ -66,9 +70,49 @@ export default async function AdminDashboardPage() {
            <CardDescription>A log of recent uploads and changes.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 text-muted-foreground">
-            <p>Activity feed will be displayed here.</p>
-          </div>
+           {recentNotes.length > 0 ? (
+            <div className="flow-root">
+              <ul role="list" className="-mb-8">
+                {recentNotes.map((note, noteIdx) => (
+                  <li key={note.id}>
+                    <div className="relative pb-8">
+                      {noteIdx !== recentNotes.length - 1 ? (
+                        <span className="absolute left-4 top-4 -ml-px h-full w-0.5 bg-border" aria-hidden="true" />
+                      ) : null}
+                      <div className="relative flex space-x-3">
+                        <div>
+                          <span className='h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center ring-8 ring-background'>
+                            <FileText className="h-4 w-4 text-primary" />
+                          </span>
+                        </div>
+                        <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                          <div>
+                            <p className="text-sm text-foreground">
+                              New <Badge variant="secondary">{note.type}</Badge> added to <span className="font-medium">{note.chapter}</span>
+                            </p>
+                             <p className="text-xs text-muted-foreground mt-1">
+                              {note.subject}
+                            </p>
+                          </div>
+                          <div className="whitespace-nowrap text-right text-sm text-muted-foreground">
+                             <Button asChild variant="ghost" size="icon">
+                               <Link href={note.slug}>
+                                <ArrowRight className="h-4 w-4" />
+                               </Link>
+                             </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>No recent activity to display.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

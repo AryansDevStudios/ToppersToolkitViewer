@@ -164,10 +164,15 @@ export const getDashboardStats = async () => {
     const notes = await getAllNotes();
     const subjects = await getSubjects();
     const users = await getUsers();
+    const recentNotes = notes
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 5);
+
     return {
         totalNotes: notes.length,
         totalSubjects: subjects.length,
         totalUsers: users.length,
+        recentNotes: recentNotes,
     };
 };
 
@@ -238,6 +243,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
         revalidatePath("/admin/notes");
         revalidatePath("/admin/subjects");
         revalidatePath("/browse", "layout");
+        revalidatePath("/admin");
         return { success: true, message: `Note successfully ${isNewNote ? 'created' : 'updated'}.` };
     } catch (e: any) {
         console.error("Upsert failed: ", e);
@@ -279,6 +285,7 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
         revalidatePath("/admin/notes");
         revalidatePath("/admin/subjects");
         revalidatePath("/browse", "layout");
+        revalidatePath("/admin");
         return { success: true, message: "Note deleted successfully." };
     } catch (e: any) {
         console.error("Delete failed: ", e);
@@ -313,6 +320,7 @@ export const upsertSubject = async (data: { id?: string, name: string, icon: str
         }
         revalidatePath("/admin/subjects");
         revalidatePath("/", "layout");
+        revalidatePath("/admin");
         return { success: true, message: `Subject successfully ${isNew ? 'created' : 'updated'}.` };
     } catch (e: any) {
         console.error("Upsert subject failed:", e);
@@ -326,6 +334,7 @@ export const deleteSubject = async (subjectId: string) => {
         await deleteDoc(subjectDocRef);
         revalidatePath("/admin/subjects");
         revalidatePath("/", "layout");
+        revalidatePath("/admin");
         return { success: true, message: "Subject deleted successfully." };
     } catch (e: any) {
         console.error("Delete subject failed:", e);
@@ -358,6 +367,7 @@ export const upsertSubSubject = async (data: { subjectId: string, id?: string, n
         });
         revalidatePath("/admin/subjects");
         revalidatePath("/", "layout");
+        revalidatePath("/admin");
         return { success: true, message: `Sub-subject successfully ${isNew ? 'created' : 'updated'}.` };
     } catch (e: any) {
         console.error("Upsert sub-subject failed:", e);
@@ -379,6 +389,7 @@ export const deleteSubSubject = async (subjectId: string, subSubjectId: string) 
         });
         revalidatePath("/admin/subjects");
         revalidatePath("/", "layout");
+        revalidatePath("/admin");
         return { success: true, message: "Sub-subject deleted successfully." };
     } catch (e: any) {
         console.error("Delete sub-subject failed:", e);
@@ -417,6 +428,7 @@ export const upsertChapter = async (data: { subjectId: string, subSubjectId: str
         });
         revalidatePath("/admin/subjects");
         revalidatePath("/", "layout");
+        revalidatePath("/admin");
         return { success: true, message: `Chapter successfully ${isNew ? 'created' : 'updated'}.` };
     } catch(e: any) {
         console.error("Upsert chapter failed:", e);
@@ -443,6 +455,7 @@ export const deleteChapter = async (subjectId: string, subSubjectId: string, cha
         });
         revalidatePath("/admin/subjects");
         revalidatePath("/", "layout");
+        revalidatePath("/admin");
         return { success: true, message: "Chapter deleted successfully." };
     } catch(e: any) {
         console.error("Delete chapter failed:", e);
