@@ -48,13 +48,11 @@ export const getSubjects = async (): Promise<Subject[]> => {
             return seededSubjectsSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
-                icon: iconMap[doc.data().icon] || iconMap["Book"],
             })) as Subject[];
         }
         return subjectsSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
-            icon: iconMap[doc.data().icon] || iconMap["Book"],
         })) as Subject[];
     } catch (error) {
         console.error("Error getting subjects:", error);
@@ -294,7 +292,7 @@ export const upsertSubject = async (data: { id?: string, name: string, icon: str
 
     try {
         if (isNew) {
-            const newSubject: Omit<Subject, 'id' | 'icon'> & { icon: string } = {
+            const newSubject: Omit<Subject, 'id'| 'icon'> & { icon: string } = {
                 name,
                 icon,
                 subSubjects: []

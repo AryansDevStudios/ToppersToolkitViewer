@@ -1,6 +1,4 @@
 
-import type { LucideIcon } from "lucide-react";
-
 export interface Note {
   id: string;
   type: string;
@@ -23,7 +21,7 @@ export interface SubSubject {
 export interface Subject {
   id: string;
   name: string;
-  icon: LucideIcon | string;
+  icon: string;
   subSubjects: SubSubject[];
 }
 

@@ -7,7 +7,8 @@ import {
 } from "@/components/ui/card";
 import { getSubjects } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Book } from "lucide-react";
+import { iconMap } from "@/lib/iconMap";
 
 export default async function Home() {
   const subjects = await getSubjects();
@@ -42,7 +43,9 @@ export default async function Home() {
             <div className="container px-4">
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Browse by Subject</h2>
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {subjects.map((subject) => (
+                  {subjects.map((subject) => {
+                    const Icon = iconMap[subject.icon] || Book;
+                    return (
                     <Link
                       href={`/browse/${subject.id}`}
                       key={subject.id}
@@ -51,7 +54,7 @@ export default async function Home() {
                       <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:bg-accent/40">
                          <CardHeader>
                             <div className="p-4 bg-primary/10 rounded-lg self-start">
-                                <subject.icon className="h-8 w-8 text-primary" />
+                                <Icon className="h-8 w-8 text-primary" />
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -66,7 +69,7 @@ export default async function Home() {
                         </CardContent>
                       </Card>
                     </Link>
-                  ))}
+                  )})}
                 </div>
             </div>
         </section>

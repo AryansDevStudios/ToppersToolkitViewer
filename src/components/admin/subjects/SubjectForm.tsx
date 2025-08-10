@@ -51,12 +51,12 @@ export function SubjectForm({ subject, trigger }: SubjectFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: subject?.name || "",
-      icon: subject ? (subject.icon as unknown as string) : "",
+      icon: subject?.icon || "",
     },
   });
 
   const resetForm = () => {
-      form.reset({ name: subject?.name || "", icon: subject ? (subject.icon as unknown as string) : "" });
+      form.reset({ name: subject?.name || "", icon: subject?.icon || "" });
   };
 
   function onSubmit(values: z.infer<typeof formSchema>) {

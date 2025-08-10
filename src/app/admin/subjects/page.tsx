@@ -50,7 +50,7 @@ export default async function AdminSubjectsPage() {
           ) : (
             <Accordion type="multiple" className="w-full">
               {subjects.map((subject) => {
-                const SubjectIcon = iconMap[subject.icon as string] || Library;
+                const SubjectIcon = iconMap[subject.icon] || Library;
                 return (
                   <AccordionItem value={subject.id} key={subject.id}>
                     <AccordionTrigger className="text-xl font-bold hover:no-underline">
