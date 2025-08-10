@@ -60,7 +60,8 @@ const AccessDenied = () => (
 
 const getCurrentUser = async (): Promise<User | null> => {
     console.log("--- [DEBUG] Attempting to get current user on server ---");
-    const sessionCookie = cookies().get('session')?.value;
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session')?.value;
     if (!sessionCookie) {
         console.log("[DEBUG] No session cookie found.");
         return null;
