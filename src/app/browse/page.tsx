@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import type { Note } from '@/lib/types';
+import { iconMap } from '@/lib/iconMap';
 
 type NoteItem = (Note & { subject: string; chapter: string; chapterId: string; slug: string });
 
@@ -35,7 +36,7 @@ export default function BrowseAllNotesPage() {
 
   useEffect(() => {
     async function filterAndSetNotes() {
-      if (authLoading || allNotes.length === 0) return;
+      if (authLoading || isLoading) return;
 
       if (role === 'Admin' || showAllNotes) {
         setFilteredNotes(allNotes);
@@ -43,19 +44,21 @@ export default function BrowseAllNotesPage() {
       }
       
       if (user) {
-        setIsLoading(true);
+        // Since allNotes are already loaded, we don't need to set loading here
+        // unless fetching userData is slow, which it shouldn't be.
         const userData = await getUserById(user.uid);
         const grantedNoteIds = new Set(userData?.noteAccess || []);
         const granted = allNotes.filter(note => grantedNoteIds.has(note.id));
         setFilteredNotes(granted);
-        setIsLoading(false);
       } else {
         // If not logged in and not showing all, show nothing.
         setFilteredNotes([]);
       }
     }
     filterAndSetNotes();
-  }, [showAllNotes, user, role, allNotes, authLoading]);
+  }, [showAllNotes, user, role, allNotes, authLoading, isLoading]);
+
+  const displayLoading = authLoading || isLoading;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -79,34 +82,37 @@ export default function BrowseAllNotesPage() {
         </div>
       )}
 
-      {isLoading || authLoading ? (
+      {displayLoading ? (
         <div className="flex justify-center py-16">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
       ) : filteredNotes.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredNotes.map((note) => (
-            <Link href={note.slug} key={note.id} className="block group">
-              <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <FileText className="w-6 h-6 text-primary" />
-                    </div>
-                    <Badge variant="secondary">{note.subject}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-col h-full pt-0">
-                  <CardTitle className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                    {note.type}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Chapter: {note.chapter}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+          {filteredNotes.map((note) => {
+            const Icon = (note.icon && iconMap[note.icon]) || FileText;
+            return (
+                <Link href={note.slug} key={note.id} className="block group">
+                  <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div className="p-3 bg-primary/10 rounded-lg">
+                          <Icon className="w-6 h-6 text-primary" />
+                        </div>
+                        <Badge variant="secondary">{note.subject}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex flex-col h-full pt-0">
+                      <CardTitle className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                        {note.type}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Chapter: {note.chapter}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+            )
+          })}
         </div>
       ) : (
         <div className="text-center py-16">

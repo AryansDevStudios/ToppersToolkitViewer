@@ -173,8 +173,8 @@ export const getDashboardStats = async () => {
     };
 };
 
-export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; }) => {
-    const { id, subjectId, subSubjectId, pdfUrl } = data;
+export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; icon?: string; }) => {
+    const { id, subjectId, subSubjectId, pdfUrl, icon } = data;
     const isNewNote = !id;
     const noteId = isNewNote ? uuidv4() : id!;
     const trimmedChapterName = data.chapterName.trim();
@@ -228,6 +228,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 id: noteId, 
                 type: trimmedType, 
                 pdfUrl,
+                icon: icon || undefined,
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
              };
             if(isNewNote) newNote.createdAt = Date.now();

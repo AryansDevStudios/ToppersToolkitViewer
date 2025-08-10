@@ -19,6 +19,7 @@ export interface Note {
   id: string;
   type: string;
   pdfUrl: string;
+  icon?: string;
   createdAt?: number;
 }
 

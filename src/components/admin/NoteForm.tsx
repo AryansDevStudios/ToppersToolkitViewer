@@ -27,6 +27,7 @@ import { useRouter } from "next/navigation";
 import { upsertNote } from "@/lib/data";
 import type { Note, Subject } from "@/lib/types";
 import { useTransition } from "react";
+import { iconMap, iconNames } from "@/lib/iconMap";
 
 const formSchema = z.object({
   subjectId: z.string().min(1, { message: "Please select a subject." }),
@@ -34,6 +35,7 @@ const formSchema = z.object({
   chapterName: z.string().min(1, { message: "Chapter Name is required." }),
   type: z.string().min(1, { message: "Note type is required." }),
   pdfUrl: z.string().url({ message: "Please enter a valid URL." }),
+  icon: z.string().optional(),
 });
 
 // We expect a version of Subject without the icon for client-side components
@@ -56,6 +58,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       chapterName: note?.chapterName || "",
       type: note?.type || "",
       pdfUrl: note?.pdfUrl || "",
+      icon: note?.icon || "",
     },
   });
 
@@ -75,6 +78,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
         ...values,
         chapterName: values.chapterName.trim(),
         type: values.type.trim(),
+        icon: values.icon,
       });
 
       if (result.success) {
@@ -194,6 +198,39 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                   <FormControl>
                     <Input placeholder="https://example.com/note.pdf" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Icon (Optional)</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an icon for the note" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {iconNames.map((iconName) => {
+                         const Icon = iconMap[iconName];
+                         return(
+                            <SelectItem key={iconName} value={iconName}>
+                               <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                <span>{iconName}</span>
+                               </div>
+                            </SelectItem>
+                         )
+                        })}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

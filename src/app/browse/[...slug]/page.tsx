@@ -24,6 +24,7 @@ import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
 import type { Chapter, Note, SubSubject, User } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
+import { iconMap } from "@/lib/iconMap";
 
 // Helper to group notes by chapter name, handling whitespace inconsistencies
 const groupNotesByChapter = (chapters: Chapter[]) => {
@@ -188,24 +189,27 @@ export default function BrowsePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
                     {chapter.notes
                       .sort((a: Note, b: Note) => (b.createdAt || 0) - (a.createdAt || 0))
-                      .map((note: any) => (
-                      <Link
-                        key={note.id}
-                        href={`/browse/${slug.join("/")}/${note.id}`}
-                        className="block"
-                      >
-                         <Card className="h-full transition-shadow duration-300 hover:shadow-lg hover:border-primary/50">
-                            <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
-                               <div className="p-3 bg-primary/10 rounded-lg">
-                                <FileText className="w-6 h-6 text-primary" />
-                              </div>
-                              <div>
-                                <CardTitle className="font-semibold text-lg">{note.type}</CardTitle>
-                              </div>
-                            </CardHeader>
-                         </Card>
-                      </Link>
-                    ))}
+                      .map((note: any) => {
+                        const Icon = (note.icon && iconMap[note.icon]) || FileText;
+                        return (
+                          <Link
+                            key={note.id}
+                            href={`/browse/${slug.join("/")}/${note.id}`}
+                            className="block"
+                          >
+                             <Card className="h-full transition-shadow duration-300 hover:shadow-lg hover:border-primary/50">
+                                <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
+                                   <div className="p-3 bg-primary/10 rounded-lg">
+                                    <Icon className="w-6 h-6 text-primary" />
+                                  </div>
+                                  <div>
+                                    <CardTitle className="font-semibold text-lg">{note.type}</CardTitle>
+                                  </div>
+                                </CardHeader>
+                             </Card>
+                          </Link>
+                        )
+                    })}
                   </div>
                 ) : (
                   <p className="text-muted-foreground italic py-4">
