@@ -5,7 +5,7 @@ import type { Subject, Note, Chapter, User, SubSubject } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc } from "firebase/firestore";
-import seedData from '../../subjects-seed.json';
+import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
 
@@ -170,10 +170,11 @@ export const getDashboardStats = async () => {
 };
 
 export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; }) => {
-    const { id, subjectId, subSubjectId, chapterName, type, pdfUrl } = data;
+    const { id, subjectId, subSubjectId, pdfUrl } = data;
     const isNewNote = !id;
     const noteId = isNewNote ? uuidv4() : id!;
-    const trimmedChapterName = chapterName.trim();
+    const trimmedChapterName = data.chapterName.trim();
+    const trimmedType = data.type.trim();
 
     const subjectDocRef = doc(db, "subjects", subjectId);
 
@@ -221,7 +222,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
 
             const newNote: Note = { 
                 id: noteId, 
-                type, 
+                type: trimmedType, 
                 pdfUrl,
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
              };
@@ -286,7 +287,9 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
 // --- Subject/Chapter Management ---
 
 export const upsertSubject = async (data: { id?: string, name: string, icon: string }) => {
-    const { id, name, icon } = data;
+    const { id } = data;
+    const name = data.name.trim();
+    const icon = data.icon.trim();
     const isNew = !id;
     const subjectId = isNew ? uuidv4() : id!;
     const subjectDocRef = doc(db, "subjects", subjectId);
@@ -329,7 +332,8 @@ export const deleteSubject = async (subjectId: string) => {
 };
 
 export const upsertSubSubject = async (data: { subjectId: string, id?: string, name: string }) => {
-    const { subjectId, id, name } = data;
+    const { subjectId, id } = data;
+    const name = data.name.trim();
     const isNew = !id;
     const subSubjectId = isNew ? uuidv4() : id!;
     const subjectDocRef = doc(db, "subjects", subjectId);
@@ -381,7 +385,8 @@ export const deleteSubSubject = async (subjectId: string, subSubjectId: string) 
 };
 
 export const upsertChapter = async (data: { subjectId: string, subSubjectId: string, id?: string, name: string }) => {
-    const { subjectId, subSubjectId, id, name } = data;
+    const { subjectId, subSubjectId, id } = data;
+    const name = data.name.trim();
     const isNew = !id;
     const chapterId = isNew ? uuidv4() : id!;
     const subjectDocRef = doc(db, "subjects", subjectId);

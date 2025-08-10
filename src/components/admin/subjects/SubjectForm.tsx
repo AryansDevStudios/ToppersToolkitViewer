@@ -63,8 +63,8 @@ export function SubjectForm({ subject, trigger }: SubjectFormProps) {
     startTransition(async () => {
       const result = await upsertSubject({
         id: subject?.id,
-        name: values.name,
-        icon: values.icon,
+        name: values.name.trim(),
+        icon: values.icon.trim(),
       });
 
       if (result.success) {

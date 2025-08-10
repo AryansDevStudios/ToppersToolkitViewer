@@ -56,7 +56,7 @@ export function SubSubjectForm({ subjectId, subSubject, trigger }: SubSubjectFor
       const result = await upsertSubSubject({
         subjectId,
         id: subSubject?.id,
-        name: values.name,
+        name: values.name.trim(),
       });
 
       if (result.success) {

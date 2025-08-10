@@ -57,7 +57,7 @@ export function ChapterForm({ subjectId, subSubjectId, chapter, trigger }: Chapt
         subjectId,
         subSubjectId,
         id: chapter?.id,
-        name: values.name,
+        name: values.name.trim(),
       });
 
       if (result.success) {

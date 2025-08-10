@@ -73,6 +73,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       const result = await upsertNote({
         id: note?.id,
         ...values,
+        chapterName: values.chapterName.trim(),
+        type: values.type.trim(),
       });
 
       if (result.success) {
