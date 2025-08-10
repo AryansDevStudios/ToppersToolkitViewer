@@ -50,7 +50,7 @@ export function UserForm({ user }: UserFormProps) {
       username: user.username || "",
       srNo: user.srNo || "",
       email: user.email || "",
-      password: ""
+      password: user.password || ""
     },
   });
 
@@ -137,7 +137,7 @@ export function UserForm({ user }: UserFormProps) {
                 <FormItem>
                   <FormLabel>Password (Read-only)</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} readOnly disabled />
+                    <Input type="text" {...field} readOnly disabled />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
