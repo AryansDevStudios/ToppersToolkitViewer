@@ -111,11 +111,19 @@ export function LoginForm() {
       });
       router.push("/");
     } catch (error: any) {
-      toast({
-        title: "Google Sign-In Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({
+            title: "Sign-In Cancelled",
+            description: "The sign-in popup was closed. Please try again.",
+            variant: "destructive",
+        });
+      } else {
+        toast({
+            title: "Google Sign-In Failed",
+            description: error.message,
+            variant: "destructive",
+        });
+      }
     }
   };
 
