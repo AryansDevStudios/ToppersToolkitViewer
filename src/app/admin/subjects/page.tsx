@@ -77,11 +77,13 @@ export default async function AdminSubjectsPage() {
 
                       {subject.subSubjects && subject.subSubjects.length > 0 ? (
                         <Accordion type="multiple" className="w-full">
-                           {subject.subSubjects.map((subSubject) => (
+                           {subject.subSubjects.map((subSubject) => {
+                             const SubSubjectIcon = (subSubject.icon && iconMap[subSubject.icon]) || Folder;
+                             return (
                              <AccordionItem value={subSubject.id} key={subSubject.id} className="border-b-0">
                                <AccordionTrigger className="text-lg font-semibold hover:no-underline rounded-md px-4 hover:bg-muted/50">
                                 <div className="flex items-center gap-3">
-                                  <Folder className="h-5 w-5 text-primary/80" />
+                                  <SubSubjectIcon className="h-5 w-5 text-primary/80" />
                                   {subSubject.name}
                                 </div>
                                </AccordionTrigger>
@@ -120,7 +122,7 @@ export default async function AdminSubjectsPage() {
 
                                </AccordionContent>
                              </AccordionItem>
-                           ))}
+                           )})}
                         </Accordion>
                       ) : <p className="text-sm text-muted-foreground italic mt-2">No sub-subjects yet.</p>}
                       
