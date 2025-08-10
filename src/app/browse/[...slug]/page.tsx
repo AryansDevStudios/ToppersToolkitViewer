@@ -83,15 +83,16 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 
   const isNote = "pdfUrl" in current;
   let hasAccess = false;
-
+  
   if (isNote) {
     const user = await getCurrentUser();
     if (user) {
         if (user.role === 'Admin') {
             hasAccess = true;
         } else {
-            // Grant access if the user has the note's ID in their access list
-            hasAccess = user.noteAccess?.includes(current.id) || false;
+            // Correctly get the note ID from the last part of the slug
+            const noteId = slug[slug.length - 1];
+            hasAccess = user.noteAccess?.includes(noteId) || false;
         }
     }
   } else {
