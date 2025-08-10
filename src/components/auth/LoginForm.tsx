@@ -21,9 +21,8 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { auth, googleProvider, db } from "@/lib/firebase";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { auth, googleProvider, signInWithRedirect } from "@/lib/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
@@ -88,27 +87,7 @@ export function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (!userDoc.exists()) {
-         await setDoc(userDocRef, {
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            role: "User",
-        });
-      }
-      
-      toast({
-        title: "Sign-In Successful",
-        description: "Welcome! Redirecting you now.",
-      });
-      router.push("/");
-
+      await signInWithRedirect(auth, googleProvider);
     } catch (error: any) {
       toast({
           title: "Google Sign-In Failed",
