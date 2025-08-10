@@ -20,8 +20,7 @@ import {
 } from "@/components/ui/accordion";
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
 import type { Chapter, Note, SubSubject, User } from "@/lib/types";
-import { headers } from "next/headers";
-import { auth } from "firebase-admin";
+import { auth } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
 
 
@@ -64,7 +63,7 @@ const getCurrentUser = async (): Promise<User | null> => {
     if (!sessionCookie) return null;
 
     try {
-        const decodedToken = await auth().verifySessionCookie(sessionCookie, true);
+        const decodedToken = await auth.verifySessionCookie(sessionCookie, true);
         const user = await getUserById(decodedToken.uid);
         return user;
     } catch (error) {
