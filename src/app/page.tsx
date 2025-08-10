@@ -17,10 +17,10 @@ export default async function Home() {
       <main className="flex-1">
         <section className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-card to-background">
           <div className="container px-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4 font-headline">
               Unlock Your Academic Potential
             </h1>
-            <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-4">
               High-quality, chapter-wise notes designed for academic excellence. Dive into any subject and start your journey to becoming a topper.
             </p>
             <div className="mt-8 flex justify-center gap-4">
