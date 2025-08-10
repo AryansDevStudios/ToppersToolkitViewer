@@ -9,9 +9,9 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, FileText, LayoutDashboard, Users, BookOpen, Loader2 } from "lucide-react";
+import { Menu, FileText, LayoutDashboard, Users, BookOpen, Loader2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
-import { usePathname, notFound } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -41,7 +41,16 @@ export default function AdminLayout({
   }
 
   if (!user || role !== 'Admin') {
-    return notFound();
+    return (
+       <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4 text-center">
+          <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+          <h1 className="text-3xl font-bold text-destructive">Access Denied</h1>
+          <p className="mt-2 text-muted-foreground">You don't have permission to view this page.</p>
+          <Button asChild className="mt-6">
+            <Link href="/">Go to Homepage</Link>
+          </Button>
+        </div>
+    );
   }
   
   return (
