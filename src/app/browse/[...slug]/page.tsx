@@ -1,7 +1,9 @@
 
 
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -9,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Folder, ShieldAlert } from "lucide-react";
+import { FileText, Folder, ShieldAlert, Loader2 } from "lucide-react";
 import { findItemBySlug, getUserById } from "@/lib/data";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
@@ -20,9 +22,8 @@ import {
 } from "@/components/ui/accordion";
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
 import type { Chapter, Note, SubSubject, User } from "@/lib/types";
-import { auth } from '@/lib/firebase-admin';
-import { cookies } from 'next/headers';
-
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect, useState } from "react";
 
 // Helper to group notes by chapter name, handling whitespace inconsistencies
 const groupNotesByChapter = (chapters: Chapter[]) => {
@@ -58,57 +59,90 @@ const AccessDenied = () => (
     </div>
 );
 
-const getCurrentUser = async (): Promise<User | null> => {
-    try {
-        const cookieStore = await cookies();
-        const sessionCookie = cookieStore.get('session')?.value;
-        if (!sessionCookie) {
-            return null;
-        }
+const LoadingState = () => (
+   <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
+        <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
+        <h2 className="text-2xl font-bold">Verifying Access...</h2>
+        <p className="mt-2 text-muted-foreground">Please wait while we check your permissions.</p>
+    </div>
+)
 
-        if (!auth) {
-            console.error("[AUTH] Firebase Admin SDK is not initialized.");
-            return null;
-        }
 
-        const decodedToken = await auth.verifySessionCookie(sessionCookie, true);
-        const user = await getUserById(decodedToken.uid);
-        return user;
-    } catch (error) {
-        // This can happen if the cookie is invalid or expired.
-        // It's a normal case, so we don't need to log an error.
-        return null;
+export default function BrowsePage() {
+  const params = useParams();
+  const slug = Array.isArray(params.slug) ? params.slug : [params.slug];
+
+  const [current, setCurrent] = useState<any>(null);
+  const [parents, setParents] = useState<any[]>([]);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null); // null means loading
+  const { user, role, loading: authLoading } = useAuth();
+  
+  const isNote = current && "pdfUrl" in current;
+  const noteId = isNote ? slug[slug.length - 1] : null;
+
+  useEffect(() => {
+    async function fetchData() {
+       const { current: currentItem, parents: parentItems } = await findItemBySlug(slug);
+       if (!currentItem) {
+          notFound();
+       }
+       setCurrent(currentItem);
+       setParents(parentItems);
     }
-};
+    fetchData();
+  }, [slug]);
 
 
-export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
-  const { slug } = params;
-  
-  const { current, parents } = await findItemBySlug(slug);
-  
-  if (!current) {
-    notFound();
-  }
+  useEffect(() => {
+    if (authLoading || !current) {
+        // Wait for auth and data to be loaded
+        return;
+    }
+    
+    if (!isNote) {
+        // If it's not a note page, access is always granted
+        setHasAccess(true);
+        return;
+    }
 
-  const isNote = "pdfUrl" in current;
-  
-  let hasAccess = false;
-  
-  if (isNote) {
-    const user = await getCurrentUser();
-    if (user) {
-        if (user.role === 'Admin') {
-            hasAccess = true;
+    // Now, handle note access logic
+    setHasAccess(null); // Set to loading state while we check
+
+    async function checkAccess() {
+        if (!user) {
+            // No user logged in, so no access
+            setHasAccess(false);
+            return;
+        }
+
+        if (role === 'Admin') {
+            // Admins have automatic access
+            setHasAccess(true);
+            return;
+        }
+
+        // For regular users, check their noteAccess field
+        const userData = await getUserById(user.uid);
+        if (userData?.noteAccess?.includes(noteId!)) {
+            setHasAccess(true);
         } else {
-            const noteId = slug[slug.length - 1];
-            hasAccess = user.noteAccess?.includes(noteId) || false;
+            setHasAccess(false);
         }
     }
-  } else {
-    // It's a subject or sub-subject list page, so access is always granted
-    hasAccess = true;
+
+    checkAccess();
+
+  }, [authLoading, user, role, current, isNote, noteId]);
+
+
+  if (!current) {
+    return (
+       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
+
 
   const breadcrumbItems = parents
     .slice(1)
@@ -127,20 +161,21 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 
 
   const renderContent = () => {
-    if (!hasAccess) {
-        return <AccessDenied />;
-    }
-
     if (isNote) {
-        return (
-            <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
-                <PdfViewerWrapper url={current.pdfUrl} />
-            </div>
-        );
+        if (hasAccess === null) {
+            return <LoadingState />;
+        }
+        if (hasAccess) {
+            return (
+                <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+                    <PdfViewerWrapper url={current.pdfUrl} />
+                </div>
+            );
+        }
+        return <AccessDenied />;
     }
     
     if (isSubSubject) {
-      // New Accordion View for Chapters and Notes
       return (
         <Accordion type="multiple" className="w-full max-w-4xl mx-auto">
           {children.map((chapter) => (
@@ -234,7 +269,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
 
 // Special case for the final leaf node (the note itself)
 export async function generateMetadata({ params }: { params: { slug:string[] } }) {
-  const { slug } = params;
+  const slug = Array.isArray(params.slug) ? params.slug : [params.slug];
   const { current, parents } = await findItemBySlug(slug);
 
   if (!current) {
