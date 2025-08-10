@@ -59,22 +59,41 @@ const AccessDenied = () => (
 );
 
 const getCurrentUser = async (): Promise<User | null> => {
+    console.log("--- [DEBUG] Attempting to get current user on server ---");
     const sessionCookie = cookies().get('session')?.value;
-    if (!sessionCookie || !auth) return null;
+    if (!sessionCookie) {
+        console.log("[DEBUG] No session cookie found.");
+        return null;
+    }
+     console.log("[DEBUG] Session cookie found.");
+
+    if (!auth) {
+        console.log("[DEBUG] Firebase Admin SDK is not initialized. Cannot verify session.");
+        return null;
+    }
 
     try {
         const decodedToken = await auth.verifySessionCookie(sessionCookie, true);
+        console.log(`[DEBUG] Session cookie verified for UID: ${decodedToken.uid}`);
         const user = await getUserById(decodedToken.uid);
+        if (user) {
+            console.log(`[DEBUG] User data fetched from Firestore for user: ${user.name}`);
+        } else {
+            console.log(`[DEBUG] Could not fetch user data from Firestore for UID: ${decodedToken.uid}`);
+        }
         return user;
     } catch (error) {
-        // Session cookie is invalid or expired, which is an expected case.
+        console.error("[DEBUG] Error verifying session cookie or fetching user:", error);
         return null;
     }
 };
 
 
 export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
+  console.log("\n--- [DEBUG] NEW BROWSE PAGE REQUEST ---");
   const { slug } = params;
+  console.log("[DEBUG] URL Slug:", slug);
+  
   const { current, parents } = await findItemBySlug(slug);
   
   if (!current) {
@@ -82,23 +101,35 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   }
 
   const isNote = "pdfUrl" in current;
+  console.log(`[DEBUG] Is this a note page? ${isNote}`);
+  
   let hasAccess = false;
   
   if (isNote) {
     const user = await getCurrentUser();
     if (user) {
+        console.log(`[DEBUG] User identified: ${user.name} (Role: ${user.role})`);
         if (user.role === 'Admin') {
             hasAccess = true;
+            console.log("[DEBUG] User is Admin. Granting access.");
         } else {
-            // Correctly get the note ID from the last part of the slug
             const noteId = slug[slug.length - 1];
+            console.log(`[DEBUG] Checking access for Note ID: '${noteId}'`);
+            console.log("[DEBUG] User's granted notes:", user.noteAccess || []);
             hasAccess = user.noteAccess?.includes(noteId) || false;
+            console.log(`[DEBUG] Does user have access to this note? ${hasAccess}`);
         }
+    } else {
+        console.log("[DEBUG] No user is logged in.");
     }
   } else {
     // It's a subject or sub-subject list page, so access is always granted
     hasAccess = true;
+    console.log("[DEBUG] This is a directory page, not a note. Access granted by default.");
   }
+  
+  console.log(`[DEBUG] Final access decision (hasAccess): ${hasAccess}`);
+  console.log("--- [DEBUG] END OF PERMISSION CHECK ---");
 
   const breadcrumbItems = parents
     .slice(1)
