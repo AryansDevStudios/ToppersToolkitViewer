@@ -18,9 +18,9 @@ type NoteItem = (Note & { subject: string; chapter: string; chapterId: string; s
 export default function BrowseAllNotesPage() {
   const [allNotes, setAllNotes] = useState<NoteItem[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<NoteItem[]>([]);
-  const [showGrantedOnly, setShowGrantedOnly] = useState(false);
+  const [showAllNotes, setShowAllNotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, loading: authLoading } = useAuth();
+  const { user, role, loading: authLoading } = useAuth();
 
   useEffect(() => {
     async function fetchNotes() {
@@ -28,7 +28,6 @@ export default function BrowseAllNotesPage() {
       const notes = await getAllNotes();
       const sortedNotes = notes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       setAllNotes(sortedNotes);
-      setFilteredNotes(sortedNotes); // Initially show all notes
       setIsLoading(false);
     }
     fetchNotes();
@@ -36,9 +35,14 @@ export default function BrowseAllNotesPage() {
 
   useEffect(() => {
     async function filterAndSetNotes() {
-      if (authLoading) return; // Wait for auth state to be resolved
+      if (authLoading || allNotes.length === 0) return;
 
-      if (showGrantedOnly && user) {
+      if (role === 'Admin' || showAllNotes) {
+        setFilteredNotes(allNotes);
+        return;
+      }
+      
+      if (user) {
         setIsLoading(true);
         const userData = await getUserById(user.uid);
         const grantedNoteIds = new Set(userData?.noteAccess || []);
@@ -46,11 +50,12 @@ export default function BrowseAllNotesPage() {
         setFilteredNotes(granted);
         setIsLoading(false);
       } else {
-        setFilteredNotes(allNotes);
+        // If not logged in and not showing all, show nothing.
+        setFilteredNotes([]);
       }
     }
     filterAndSetNotes();
-  }, [showGrantedOnly, user, allNotes, authLoading]);
+  }, [showAllNotes, user, role, allNotes, authLoading]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -63,13 +68,13 @@ export default function BrowseAllNotesPage() {
         </p>
       </header>
 
-      {user && (
-        <div className="flex items-center space-x-2 mb-8 p-4 border rounded-lg bg-card justify-end">
-          <Label htmlFor="granted-toggle">Show Granted Access Only</Label>
+      {user && role !== 'Admin' && (
+        <div className="flex items-center justify-end space-x-3 mb-8 p-4 border rounded-lg bg-card">
+          <Label htmlFor="all-notes-toggle" className="font-semibold">Show All Notes</Label>
           <Switch
-            id="granted-toggle"
-            checked={showGrantedOnly}
-            onCheckedChange={setShowGrantedOnly}
+            id="all-notes-toggle"
+            checked={showAllNotes}
+            onCheckedChange={setShowAllNotes}
           />
         </div>
       )}
@@ -106,12 +111,12 @@ export default function BrowseAllNotesPage() {
       ) : (
         <div className="text-center py-16">
           <h2 className="text-2xl font-semibold mb-2">
-            {showGrantedOnly ? "No Notes Found" : "No Notes Yet"}
+            {showAllNotes ? "No Notes Yet" : "No Notes Found"}
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            {showGrantedOnly
-              ? "You have not been granted access to any notes yet. Please contact an administrator."
-              : "Looks like no notes have been uploaded. Check back soon!"}
+            {showAllNotes
+              ? "Looks like no notes have been uploaded. Check back soon!"
+              : "You have not been granted access to any notes yet. Turn on 'Show All Notes' to browse everything."}
           </p>
         </div>
       )}
