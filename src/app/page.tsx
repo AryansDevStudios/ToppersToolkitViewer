@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Book } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
 
+export const revalidate = 0;
+
 export default async function Home() {
   const subjects = await getSubjects();
 

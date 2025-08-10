@@ -1,5 +1,4 @@
 
-
 import {
   Table,
   TableBody,
@@ -27,6 +26,7 @@ import { UserForm } from "@/components/admin/users/UserForm";
 import { LoginHistoryDialog } from "@/components/admin/users/LoginHistoryDialog";
 import { ManageAccessDialog } from "@/components/admin/users/ManageAccessDialog";
 
+export const revalidate = 0;
 
 export default async function AdminUsersPage() {
   const allUsers = await getUsers();

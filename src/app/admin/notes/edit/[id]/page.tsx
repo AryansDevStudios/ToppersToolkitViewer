@@ -3,6 +3,8 @@ import { getNoteById, getSubjects } from "@/lib/data";
 import { notFound } from "next/navigation";
 import type { Subject } from "@/lib/types";
 
+export const revalidate = 0;
+
 // Helper function to create a serializable version of the subjects
 const getSerializableSubjects = (subjects: Subject[]) => {
   return subjects.map(({ icon, ...rest }) => rest);

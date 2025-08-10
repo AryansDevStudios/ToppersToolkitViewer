@@ -15,6 +15,8 @@ import { ChapterForm } from "@/components/admin/subjects/ChapterForm";
 import { DeleteDialog } from "@/components/admin/subjects/DeleteDialog";
 import { iconMap } from "@/lib/iconMap";
 
+export const revalidate = 0;
+
 export default async function AdminSubjectsPage() {
   const subjects = await getSubjects();
 

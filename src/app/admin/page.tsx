@@ -9,6 +9,8 @@ import {
 import { Users, FileText, BookCopy } from "lucide-react";
 import { getDashboardStats } from "@/lib/data";
 
+export const revalidate = 0;
+
 export default async function AdminDashboardPage() {
   const { totalNotes, totalSubjects, totalUsers } = await getDashboardStats();
 

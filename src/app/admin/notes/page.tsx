@@ -22,6 +22,8 @@ import Link from "next/link";
 import { DeleteNoteDialog } from "@/components/admin/DeleteNoteDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
+export const revalidate = 0;
+
 export default async function AdminNotesPage() {
   const allNotes = await getAllNotes();
   const notes = allNotes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
