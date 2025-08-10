@@ -113,14 +113,14 @@ export function AppHeader() {
 
   const renderAuthSection = () => {
     if (!mounted || loading) {
-       return <Skeleton className="h-9 w-9 rounded-full ml-2" />;
+       return <Skeleton className="h-9 w-9 rounded-full" />;
     }
     
     if (user) {
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full ml-2">
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                <Avatar className={cn(
                   "h-9 w-9",
                    role === 'Admin' && "ring-2 ring-offset-2 ring-orange-500 ring-offset-background",
@@ -158,7 +158,7 @@ export function AppHeader() {
       )
     } else {
         return (
-            <Button asChild className="ml-2">
+            <Button asChild>
               <Link href="/login">
                 <LogIn className="mr-2 h-4 w-4" />
                 Login
@@ -180,10 +180,14 @@ export function AppHeader() {
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex flex-1 items-center justify-end space-x-2">
-          <NavLinks />
-          {renderThemeToggle()}
-          {renderAuthSection()}
+        <nav className="hidden md:flex flex-1 items-center justify-end space-x-4">
+          <div className="flex items-center space-x-2">
+             <NavLinks />
+          </div>
+          <div className="flex items-center space-x-2">
+             {renderThemeToggle()}
+             {renderAuthSection()}
+          </div>
         </nav>
 
         {/* Mobile Navigation */}
