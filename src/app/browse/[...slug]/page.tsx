@@ -26,7 +26,10 @@ const groupNotesByChapter = (chapters: Chapter[]) => {
     if (!grouped[chapter.name]) {
       grouped[chapter.name] = { ...chapter, notes: [] };
     }
-    grouped[chapter.name].notes.push(...chapter.notes);
+    // Handle cases where a chapter might not have notes initially
+    if (chapter.notes) {
+      grouped[chapter.name].notes.push(...chapter.notes);
+    }
   });
   return Object.values(grouped);
 };
