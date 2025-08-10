@@ -37,10 +37,6 @@ export default async function AdminUsersPage() {
             View and manage all user accounts.
           </p>
         </div>
-        <Button disabled>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
       </header>
       <Card>
          <CardHeader>
