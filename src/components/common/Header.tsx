@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2 } from "lucide-react";
+import { BookOpen, UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,7 +25,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 function ThemeToggle() {
@@ -59,6 +59,11 @@ export function AppHeader() {
   const { user, role, loading } = useAuth();
   const router = useRouter();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -75,12 +80,6 @@ export function AppHeader() {
       <Button variant="ghost" asChild>
         <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
       </Button>
-      {/* 
-        This part is rendered conditionally based on client-side authentication state.
-        To prevent hydration errors, we must ensure it doesn't render on the server
-        if the state is not yet available. By checking `!loading`, we ensure this
-        part of the tree is only rendered on the client after the auth state is resolved.
-      */}
       {!loading && user && role === 'Admin' && (
         <Button variant="ghost" asChild>
           <Link href="/admin" onClick={inSheet ? closeSheet : undefined}>Admin</Link>
@@ -88,6 +87,13 @@ export function AppHeader() {
       )}
     </>
   );
+  
+  const renderThemeToggle = () => {
+    if (!mounted) {
+      return <div className="h-10 w-10" />;
+    }
+    return <ThemeToggle />;
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -102,7 +108,7 @@ export function AppHeader() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex flex-1 items-center justify-end space-x-2">
           <NavLinks />
-          <ThemeToggle />
+          {renderThemeToggle()}
           
           {loading ? (
              <div className="flex items-center justify-center h-9 w-9 ml-2">
@@ -152,7 +158,7 @@ export function AppHeader() {
 
         {/* Mobile Navigation */}
         <div className="flex md:hidden flex-1 justify-end items-center">
-          <ThemeToggle />
+          {renderThemeToggle()}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
