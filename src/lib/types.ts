@@ -12,6 +12,7 @@ export interface LoginLog {
   pointingMethod: 'Mouse' | 'Touchscreen';
   ram?: number; // in GB
   cpuCores?: number;
+  gpuInfo?: string;
 }
 
 export interface Note {

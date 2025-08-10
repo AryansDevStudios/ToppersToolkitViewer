@@ -53,6 +53,25 @@ const getOSAndBrowser = (userAgent: string) => {
     return { os, browser };
 };
 
+// Helper function to get GPU information
+const getGpuInfo = () => {
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
+            if (debugInfo) {
+                const vendor = (gl as any).getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                const renderer = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                return `${vendor} - ${renderer}`;
+            }
+        }
+    } catch (e) {
+        console.error("Could not get GPU info:", e);
+    }
+    return "Unknown";
+};
+
 
 export function LoginForm() {
   const { toast } = useToast();
@@ -77,6 +96,7 @@ export function LoginForm() {
       const { userAgent, platform, hardwareConcurrency, deviceMemory } = navigator;
       const { width, height } = window.screen;
       const { os, browser } = getOSAndBrowser(userAgent);
+      const gpuInfo = getGpuInfo();
 
       const deviceType = /Mobi|Android/i.test(userAgent) ? 'Mobile' : /Tablet/i.test(userAgent) ? 'Tablet' : 'Desktop';
 
@@ -90,6 +110,7 @@ export function LoginForm() {
         pointingMethod: 'ontouchstart' in window ? 'Touchscreen' : 'Mouse',
         ram: deviceMemory,
         cpuCores: hardwareConcurrency,
+        gpuInfo,
       };
 
       await logUserLogin(userCredential.user.uid, loginLog);
