@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="bg-card mt-12 border-t">
       <div className="container py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center md:text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-center md:text-left">
           <div>
             <h3 className="text-lg font-black mb-2">Topper's Toolkit Viewer</h3>
             <p className="text-muted-foreground text-sm">High-quality resources for academic success. All rights reserved.</p>
@@ -16,24 +16,6 @@ export function Footer() {
                     Terms & Conditions
                 </Link>
             </div>
-          </div>
-
-          <div>
-             <h3 className="text-lg font-semibold mb-2">Contact Owner</h3>
-             <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2 justify-center md:justify-start">
-                    <Mail className="h-4 w-4" />
-                    <a href="mailto:aryan0106gupta@gmail.com" className="hover:text-primary">
-                        aryan0106gupta@gmail.com
-                    </a>
-                </li>
-                 <li className="flex items-center gap-2 justify-center md:justify-start">
-                    <Smartphone className="h-4 w-4" />
-                    <a href="https://wa.me/919838040111" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-                        WhatsApp: +91 9838040111
-                    </a>
-                </li>
-             </ul>
           </div>
 
           <div>
