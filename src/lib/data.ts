@@ -164,15 +164,11 @@ export const getDashboardStats = async () => {
     const notes = await getAllNotes();
     const subjects = await getSubjects();
     const users = await getUsers();
-    const recentNotes = notes
-        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-        .slice(0, 5);
-
+    
     return {
         totalNotes: notes.length,
         totalSubjects: subjects.length,
         totalUsers: users.length,
-        recentNotes: recentNotes,
     };
 };
 
