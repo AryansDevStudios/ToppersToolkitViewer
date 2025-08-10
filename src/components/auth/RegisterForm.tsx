@@ -64,6 +64,7 @@ export function RegisterForm() {
         uid: user.uid,
         name,
         email,
+        password,
         classAndSection,
         srNo,
         username,

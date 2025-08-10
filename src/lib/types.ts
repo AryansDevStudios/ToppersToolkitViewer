@@ -33,4 +33,5 @@ export interface User {
   classAndSection?: string;
   username?: string;
   srNo?: string;
+  password?: string;
 }

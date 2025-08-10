@@ -29,6 +29,7 @@ const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required."}),
   srNo: z.string().length(4, { message: "SR. No. must be 4 digits."}).regex(/^\d{4}$/, { message: "SR. No. must be a 4-digit number."}),
   email: z.string().email(),
+  password: z.string().optional(),
 });
 
 interface UserFormProps {
@@ -114,6 +115,19 @@ export function UserForm({ user }: UserFormProps) {
                   <FormLabel>Email (Read-only)</FormLabel>
                   <FormControl>
                     <Input placeholder="name@example.com" {...field} readOnly disabled />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" value="••••••••" readOnly disabled />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
