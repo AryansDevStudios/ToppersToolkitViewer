@@ -22,6 +22,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { auth, signInWithEmailAndPassword } from "@/lib/firebase";
+import { updatePasswordInFirestore } from "@/lib/data";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -46,7 +47,12 @@ export function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      
+      // I am updating the password in Firestore here, as requested.
+      // This is still a major security risk.
+      await updatePasswordInFirestore(userCredential.user.uid, values.password);
+
       toast({
         title: "Login Successful",
         description: "Redirecting you to the dashboard.",

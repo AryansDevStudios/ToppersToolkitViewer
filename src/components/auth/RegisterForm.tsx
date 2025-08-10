@@ -61,7 +61,7 @@ export function RegisterForm() {
       await updateProfile(user, { displayName: name });
 
       await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
+        id: user.uid,
         name,
         email,
         password,

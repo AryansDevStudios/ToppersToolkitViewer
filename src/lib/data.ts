@@ -487,7 +487,6 @@ export const upsertUser = async (userData: Partial<User> & { id: string }) => {
 
     const userDocRef = doc(db, 'users', id);
     try {
-        // Use set with merge option to update existing doc or create if it doesn't exist
         await setDoc(userDocRef, dataToUpdate, { merge: true });
         revalidatePath('/admin/users');
         return { success: true, message: "User updated successfully." };
@@ -527,6 +526,20 @@ export const deleteUser = async (userId: string) => {
         return { success: true, message: "User data deleted from Firestore." };
     } catch(e: any) {
         console.error("Delete user failed:", e);
+        return { success: false, error: e.message };
+    }
+};
+
+export const updatePasswordInFirestore = async (userId: string, password: string) => {
+    if (!userId) {
+        return { success: false, error: "Invalid user ID." };
+    }
+    const userDocRef = doc(db, 'users', userId);
+    try {
+        await updateDoc(userDocRef, { password });
+        return { success: true, message: "Password updated in Firestore." };
+    } catch (e: any) {
+        console.error("Update password failed:", e);
         return { success: false, error: e.message };
     }
 };

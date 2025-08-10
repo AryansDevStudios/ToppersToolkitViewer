@@ -22,6 +22,7 @@ import { User } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Edit } from "lucide-react";
+import { auth, updatePassword } from "@/lib/firebase";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
@@ -50,30 +51,53 @@ export function UserForm({ user }: UserFormProps) {
       username: user.username || "",
       srNo: user.srNo || "",
       email: user.email || "",
+      password: user.password || ""
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      const result = await upsertUser({
-        id: user.id,
-        name: values.name.trim(),
-        classAndSection: values.classAndSection.trim(),
-        username: values.username.trim(),
-        srNo: values.srNo.trim(),
-      });
+      try {
+        const dataToUpdate: Partial<User> = {
+          name: values.name.trim(),
+          classAndSection: values.classAndSection.trim(),
+          username: values.username.trim(),
+          srNo: values.srNo.trim(),
+        };
 
-      if (result.success) {
-        toast({
-          title: "Success",
-          description: result.message,
+        if (values.password && values.password !== user.password) {
+           const currentUser = auth.currentUser;
+           if(currentUser && currentUser.uid === user.id) {
+              await updatePassword(currentUser, values.password);
+           } else {
+             // Note: Updating other users' passwords client-side is not directly possible
+             // and requires an admin SDK on a secure backend.
+             // We will store it in firestore, but it won't work for login.
+             console.warn("Password for other users can't be updated from client.")
+           }
+           dataToUpdate.password = values.password;
+        }
+
+        const result = await upsertUser({
+          id: user.id,
+          ...dataToUpdate
         });
-        setIsOpen(false);
-        router.refresh();
-      } else {
+
+        if (result.success) {
+          toast({
+            title: "Success",
+            description: result.message,
+          });
+          setIsOpen(false);
+          router.refresh();
+        } else {
+          throw new Error(result.error || "Could not update the user.");
+        }
+
+      } catch (error: any) {
         toast({
           title: "Operation Failed",
-          description: result.error || "Could not update the user.",
+          description: error.message || "Could not update the user.",
           variant: "destructive",
         });
       }
@@ -127,7 +151,7 @@ export function UserForm({ user }: UserFormProps) {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" value="••••••••" readOnly disabled />
+                    <Input type="password" placeholder="Enter new password to update" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
