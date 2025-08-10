@@ -67,7 +67,7 @@ const getCurrentUser = async (): Promise<User | null> => {
         const user = await getUserById(decodedToken.uid);
         return user;
     } catch (error) {
-        console.error("Error verifying session cookie:", error);
+        // Session cookie is invalid or expired, which is an expected case.
         return null;
     }
 };
@@ -90,11 +90,12 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
         if (user.role === 'Admin') {
             hasAccess = true;
         } else {
+            // Grant access if the user has the note's ID in their access list
             hasAccess = user.noteAccess?.includes(current.id) || false;
         }
     }
   } else {
-    // It's a subject or sub-subject, so access is granted to see the list
+    // It's a subject or sub-subject list page, so access is always granted
     hasAccess = true;
   }
 
