@@ -330,9 +330,10 @@ export const deleteSubject = async (subjectId: string) => {
     }
 };
 
-export const upsertSubSubject = async (data: { subjectId: string, id?: string, name: string }) => {
+export const upsertSubSubject = async (data: { subjectId: string, id?: string, name: string, icon?: string }) => {
     const { subjectId, id } = data;
     const name = data.name.trim();
+    const icon = data.icon?.trim();
     const isNew = !id;
     const subSubjectId = isNew ? uuidv4() : id!;
     const subjectDocRef = doc(db, "subjects", subjectId);
@@ -344,12 +345,13 @@ export const upsertSubSubject = async (data: { subjectId: string, id?: string, n
             const subjectData = subjectDoc.data() as Subject;
             
             if (isNew) {
-                const newSubSubject: SubSubject = { id: subSubjectId, name, chapters: [] };
+                const newSubSubject: SubSubject = { id: subSubjectId, name, icon: icon || 'Folder', chapters: [] };
                 subjectData.subSubjects.push(newSubSubject);
             } else {
                 const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
                 if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
                 subjectData.subSubjects[subSubjectIndex].name = name;
+                subjectData.subSubjects[subSubjectIndex].icon = icon || 'Folder';
             }
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
         });

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -13,6 +14,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -21,9 +29,11 @@ import { upsertSubSubject } from "@/lib/data";
 import { SubSubject } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Edit } from "lucide-react";
+import { iconMap, iconNames } from "@/lib/iconMap";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Sub-subject name is required." }),
+  icon: z.string().optional(),
 });
 
 interface SubSubjectFormProps {
@@ -43,11 +53,12 @@ export function SubSubjectForm({ subjectId, subSubject, trigger }: SubSubjectFor
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: subSubject?.name || "",
+      icon: subSubject?.icon || "",
     },
   });
 
   const resetForm = () => {
-    form.reset({ name: subSubject?.name || "" });
+    form.reset({ name: subSubject?.name || "", icon: subSubject?.icon || "" });
   };
 
 
@@ -57,6 +68,7 @@ export function SubSubjectForm({ subjectId, subSubject, trigger }: SubSubjectFor
         subjectId,
         id: subSubject?.id,
         name: values.name.trim(),
+        icon: values.icon,
       });
 
       if (result.success) {
@@ -108,6 +120,39 @@ export function SubSubjectForm({ subjectId, subSubject, trigger }: SubSubjectFor
                   </FormItem>
                 )}
               />
+            <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Icon (Optional)</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an icon for the sub-subject" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {iconNames.map((iconName) => {
+                         const Icon = iconMap[iconName];
+                         return(
+                            <SelectItem key={iconName} value={iconName}>
+                               <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                <span>{iconName}</span>
+                               </div>
+                            </SelectItem>
+                         )
+                        })}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
                 <Button type="submit" disabled={isPending}>
                 {isPending ? "Saving..." : isEditing ? "Save Changes" : "Add Sub-Subject"}

@@ -226,12 +226,14 @@ export default function BrowsePage() {
     // Default view for subjects -> sub-subjects
     return (
        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {children.map((item) => (
+        {children.map((item) => {
+          const Icon = (item.icon && iconMap[item.icon]) || Folder;
+          return (
           <Link key={item.id} href={`/browse/${slug.join("/")}/${item.id}`} className="block">
             <Card className="h-full transition-shadow duration-300 hover:shadow-lg hover:border-primary/50">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
                 <div className="p-3 bg-primary/10 rounded-lg">
-                  <Folder className="w-8 h-8 text-primary" />
+                  <Icon className="w-8 h-8 text-primary" />
                 </div>
                 <div>
                   <CardTitle className="font-bold text-xl">{item.name}</CardTitle>
@@ -239,7 +241,7 @@ export default function BrowsePage() {
               </CardHeader>
             </Card>
           </Link>
-        ))}
+        )})}
       </div>
     );
   };

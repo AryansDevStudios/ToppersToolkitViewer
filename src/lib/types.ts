@@ -32,6 +32,7 @@ export interface Chapter {
 export interface SubSubject {
   id: string;
   name: string;
+  icon?: string;
   chapters: Chapter[];
 }
 

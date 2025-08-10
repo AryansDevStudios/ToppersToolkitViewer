@@ -7,6 +7,7 @@
       {
         "id": "physics",
         "name": "Physics",
+        "icon": "Atom",
         "chapters": [
           { "id": "motion", "name": "Motion", "notes": [] },
           { "id": "force-and-laws-of-motion", "name": "Force and Laws of Motion", "notes": [] }
@@ -15,6 +16,7 @@
       {
         "id": "chemistry",
         "name": "Chemistry",
+        "icon": "FlaskConical",
         "chapters": [
           { "id": "matter-in-our-surroundings", "name": "Matter in Our Surroundings", "notes": [] },
           { "id": "is-matter-around-us-pure", "name": "Is Matter Around Us Pure", "notes": [] }
@@ -23,6 +25,7 @@
       {
         "id": "biology",
         "name": "Biology",
+        "icon": "Dna",
         "chapters": [
           { "id": "the-fundamental-unit-of-life", "name": "The Fundamental Unit of Life", "notes": [] },
           { "id": "tissues", "name": "Tissues", "notes": [] }
@@ -37,6 +40,7 @@
       {
         "id": "history",
         "name": "History",
+        "icon": "BookOpen",
         "chapters": [
           { "id": "the-french-revolution", "name": "The French Revolution", "notes": [] },
           { "id": "socialism-in-europe", "name": "Socialism in Europe", "notes": [] }
@@ -45,6 +49,7 @@
       {
         "id": "geography",
         "name": "Geography",
+        "icon": "Globe",
         "chapters": [
           { "id": "india-size-and-location", "name": "India - Size and Location", "notes": [] },
           { "id": "physical-features-of-india", "name": "Physical Features of India", "notes": [] }
@@ -53,6 +58,7 @@
       {
         "id": "economics",
         "name": "Economics",
+        "icon": "Scale",
         "chapters": [
           { "id": "the-story-of-village-palampur", "name": "The Story of Village Palampur", "notes": [] },
           { "id": "people-as-resource", "name": "People as Resource", "notes": [] }
@@ -61,6 +67,7 @@
       {
         "id": "politics",
         "name": "Politics",
+        "icon": "Landmark",
         "chapters": [
           { "id": "what-is-democracy", "name": "What is Democracy? Why Democracy?", "notes": [] },
           { "id": "constitutional-design", "name": "Constitutional Design", "notes": [] }
@@ -75,6 +82,7 @@
       {
         "id": "maths-main",
         "name": "Mathematics",
+        "icon": "Calculator",
         "chapters": [
           {
             "id": "number-systems",
@@ -93,6 +101,7 @@
       {
         "id": "beehive",
         "name": "Beehive",
+        "icon": "BookOpen",
         "chapters": [
           { "id": "the-fun-they-had", "name": "The Fun They Had", "notes": [] },
           { "id": "the-sound-of-music", "name": "The Sound of Music", "notes": [] }
@@ -101,6 +110,7 @@
       {
         "id": "moments",
         "name": "Moments",
+        "icon": "BookOpen",
         "chapters": [
           { "id": "the-lost-child", "name": "The Lost Child", "notes": [] },
           { "id": "the-adventures-of-toto", "name": "The Adventures of Toto", "notes": [] }
@@ -109,6 +119,7 @@
       {
         "id": "grammar",
         "name": "Grammar",
+        "icon": "PenSquare",
         "chapters": [
           { "id": "tenses", "name": "Tenses", "notes": [] },
           { "id": "modals", "name": "Modals", "notes": [] }
