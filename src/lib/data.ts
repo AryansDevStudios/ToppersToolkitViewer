@@ -574,7 +574,8 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
         return { success: true };
     } catch (e: any) {
         console.error("Failed to log user login:", e);
-        // Attempt to create the field if it doesn't exist
+        // If the 'loginLogs' field doesn't exist, Firestore throws an error.
+        // In that case, we can create it using setDoc with merge.
         try {
             await setDoc(userDocRef, { loginLogs: [newLog] }, { merge: true });
             return { success: true };
@@ -584,3 +585,5 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
         }
     }
 };
+
+    
