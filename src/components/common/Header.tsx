@@ -184,7 +184,7 @@ export function AppHeader() {
           <div className="flex items-center space-x-2">
              <NavLinks />
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4">
              {renderThemeToggle()}
              {renderAuthSection()}
           </div>
