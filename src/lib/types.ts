@@ -1,5 +1,4 @@
 
-
 export interface LoginLog {
   timestamp: number;
   ipAddress?: string; // Note: Capturing IP on server is more reliable
@@ -19,6 +18,9 @@ export interface Note {
   id: string;
   type: string;
   pdfUrl: string;
+  originalPdfUrl?: string;
+  linkType?: 'github' | 'other';
+  serveViaJsDelivr?: boolean;
   icon?: string;
   createdAt?: number;
 }

@@ -12,6 +12,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +29,8 @@ import { upsertNote } from "@/lib/data";
 import type { Note, Subject } from "@/lib/types";
 import { useTransition } from "react";
 import { iconMap, iconNames } from "@/lib/iconMap";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   subjectId: z.string().min(1, { message: "Please select a subject." }),
@@ -35,6 +38,8 @@ const formSchema = z.object({
   chapterName: z.string().min(1, { message: "Chapter Name is required." }),
   type: z.string().min(1, { message: "Note type is required." }),
   pdfUrl: z.string().url({ message: "Please enter a valid URL." }),
+  linkType: z.enum(["github", "other"]),
+  serveViaJsDelivr: z.boolean(),
   icon: z.string().optional(),
 });
 
@@ -57,7 +62,9 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       subSubjectId: note?.subSubjectId || "",
       chapterName: note?.chapterName || "",
       type: note?.type || "",
-      pdfUrl: note?.pdfUrl || "",
+      pdfUrl: note?.originalPdfUrl || note?.pdfUrl || "",
+      linkType: note?.linkType || "other",
+      serveViaJsDelivr: note?.serveViaJsDelivr === undefined ? true : note.serveViaJsDelivr,
       icon: note?.icon || "",
     },
   });
@@ -65,6 +72,11 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   const selectedSubjectId = useWatch({
     control: form.control,
     name: "subjectId",
+  });
+  
+  const linkType = useWatch({
+      control: form.control,
+      name: "linkType",
   });
 
   const subSubjects = selectedSubjectId
@@ -191,17 +203,72 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
             />
             <FormField
               control={form.control}
-              name="pdfUrl"
+              name="linkType"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>PDF URL</FormLabel>
+                <FormItem className="space-y-3">
+                  <FormLabel>Link Type</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://example.com/note.pdf" {...field} />
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="github" />
+                        </FormControl>
+                        <FormLabel className="font-normal">GitHub</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="other" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Other</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="pdfUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>PDF URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://..." {...field} />
+                  </FormControl>
+                   <FormDescription>
+                    {linkType === 'github' ? "Enter the standard GitHub blob URL." : "Enter the direct URL to the PDF."}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {linkType === 'github' && (
+                <FormField
+                    control={form.control}
+                    name="serveViaJsDelivr"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                            <div className="space-y-0.5">
+                                <FormLabel>Serve via jsDelivr</FormLabel>
+                                <FormDescription>
+                                    Convert GitHub link to a faster jsDelivr CDN link.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+            )}
              <FormField
               control={form.control}
               name="icon"

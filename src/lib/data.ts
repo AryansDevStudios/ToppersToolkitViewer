@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog } from "./types";
@@ -9,6 +8,26 @@ import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
+
+const convertToJsDelivr = (githubUrl: string): string => {
+    try {
+        const url = new URL(githubUrl);
+        if (url.hostname !== 'github.com') return githubUrl;
+
+        const pathParts = url.pathname.split('/');
+        const user = pathParts[1];
+        const repo = pathParts[2];
+        const branch = pathParts[4];
+        const filePath = pathParts.slice(5).join('/');
+        
+        if (user && repo && branch && filePath) {
+            return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branch}/${filePath}`;
+        }
+        return githubUrl;
+    } catch (error) {
+        return githubUrl;
+    }
+};
 
 export const seedSubjects = async () => {
     const subjectsCollection = collection(db, 'subjects');
@@ -167,8 +186,8 @@ export const getDashboardStats = async () => {
     };
 };
 
-export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; icon?: string; }) => {
-    const { id, subjectId, subSubjectId, pdfUrl, icon } = data;
+export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; linkType: 'github' | 'other'; serveViaJsDelivr: boolean; icon?: string; }) => {
+    const { id, subjectId, subSubjectId, pdfUrl: originalUrl, icon, linkType, serveViaJsDelivr } = data;
     const isNewNote = !id;
     const noteId = isNewNote ? uuidv4() : id!;
     const trimmedChapterName = data.chapterName.trim();
@@ -218,10 +237,15 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 chapterIndex = subSubject.chapters.length - 1;
             }
 
+            const jsDelivrUrl = linkType === 'github' ? convertToJsDelivr(originalUrl) : originalUrl;
+            
             const newNote: Note = { 
                 id: noteId, 
                 type: trimmedType, 
-                pdfUrl,
+                pdfUrl: serveViaJsDelivr ? jsDelivrUrl : originalUrl,
+                originalPdfUrl: originalUrl,
+                linkType,
+                serveViaJsDelivr,
                 icon: icon || undefined,
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
              };
