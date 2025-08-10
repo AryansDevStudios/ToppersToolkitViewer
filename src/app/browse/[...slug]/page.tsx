@@ -19,19 +19,23 @@ import {
 import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
 import type { Chapter, Note, SubSubject } from "@/lib/types";
 
-// Helper to group notes by chapter name
+// Helper to group notes by chapter name, handling whitespace inconsistencies
 const groupNotesByChapter = (chapters: Chapter[]) => {
     const grouped: { [key: string]: Note[] } = {};
+    const chapterNameMap: { [key: string]: string } = {}; // To store the original name
+
     chapters.forEach(chapter => {
-        if (!grouped[chapter.name]) {
-            grouped[chapter.name] = [];
+        const trimmedName = chapter.name.trim();
+        if (!grouped[trimmedName]) {
+            grouped[trimmedName] = [];
+            chapterNameMap[trimmedName] = chapter.name; // Store the first occurrence of the name
         }
         if (chapter.notes) {
-            grouped[chapter.name].push(...chapter.notes);
+            grouped[trimmedName].push(...chapter.notes);
         }
     });
-    return Object.entries(grouped).map(([chapterName, notes]) => ({
-        name: chapterName,
+    return Object.entries(grouped).map(([trimmedName, notes]) => ({
+        name: chapterNameMap[trimmedName], // Use the original, untrimmed name for display
         notes: notes
     }));
 };
