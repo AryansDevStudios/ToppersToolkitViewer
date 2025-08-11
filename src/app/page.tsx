@@ -41,7 +41,7 @@ export default async function Home() {
             </div>
              <div className="mt-8 max-w-3xl mx-auto text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg flex items-start gap-3">
               <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <span>This website is for browsing and ordering study materials. After purchase, digital notes (PDFs) are accessed exclusively through our secure <a href="https://topperstoolkitviewer.netlify.app/" className="text-primary font-semibold hover:underline" target="_blank" rel="noopener noreferrer">E-Library platform</a>.</span>
+              <span>This website is for viewing purchased digital study materials. All notes (PDFs) are accessible exclusively through your E-Library account after purchase from our <a href="https://topperstoolkit.netlify.app" className="text-primary font-semibold hover:underline" target="_blank" rel="noopener noreferrer">Shop</a> website.</span>
             </div>
           </div>
         </section>
