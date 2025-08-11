@@ -8,7 +8,7 @@ export function Footer() {
       <div className="container py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left">
           <div>
-            <h3 className="text-lg font-black mb-2">Topper's Toolkit Viewer</h3>
+            <h3 className="text-lg font-black mb-2">Topper's Toolkit E-Library</h3>
             <p className="text-muted-foreground text-sm">This website is for viewing purchased digital study materials. All notes (PDFs) are accessible exclusively through your E-Library account after purchase from our <a href="https://topperstoolkit.netlify.app" className="text-primary font-semibold hover:underline">Shop</a> website.</p>
              <div className="mt-4">
                 <Link href="/terms" className="text-sm text-primary underline underline-offset-4 hover:opacity-80 transition-opacity">
@@ -42,7 +42,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t pt-4 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Topper's Toolkit Viewer. Products by Kuldeep Singh.</p>
+          <p>© {new Date().getFullYear()} Topper's Toolkit E-Library. Products by Kuldeep Singh.</p>
           <p>Website built under AryansDevStudios.</p>
         </div>
       </div>

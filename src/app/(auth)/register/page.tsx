@@ -57,7 +57,7 @@ export default function RegisterPage() {
                     <CardContent className="h-[calc(100%-8rem)]">
                         <ScrollArea className="h-full w-full p-4 rounded-md border bg-muted/30">
                             <p className="text-sm text-muted-foreground mb-4">
-                                Welcome to <strong>Topper’s Toolkit Viewer</strong>, owned and operated by <strong>Aryan Gupta (AryansDevStudios)</strong>.
+                                Welcome to <strong>Topper’s Toolkit E-Library</strong>, owned and operated by <strong>Aryan Gupta (AryansDevStudios)</strong>.
                                 By accessing purchased notes on this platform, you agree to the following Terms.
                             </p>
                             <SectionTitle>1. Access Rights</SectionTitle>

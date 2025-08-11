@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: "Terms and Conditions - Topper's Toolkit Viewer",
+    title: "Terms and Conditions - Topper's Toolkit E-Library",
     description: 'Please read our terms and conditions carefully before using our service.',
 };
 
@@ -27,7 +27,7 @@ export default function TermsAndConditionsPage() {
 
             <div className="prose prose-lg dark:prose-invert max-w-none">
                 <p className="lead">
-                    Welcome to <strong>Topper’s Toolkit Viewer</strong> (
+                    Welcome to <strong>Topper’s Toolkit E-Library</strong> (
                     <Link href="https://topperstoolkitviewer.netlify.app" className="text-primary hover:underline" target="_blank">
                         https://topperstoolkitviewer.netlify.app
                     </Link>
