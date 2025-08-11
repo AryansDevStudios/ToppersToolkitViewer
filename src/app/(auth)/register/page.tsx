@@ -1,8 +1,13 @@
 
+"use client";
+
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePathname } from "next/navigation";
+
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     <h3 className="text-md font-semibold font-headline mt-4 mb-2">{children}</h3>
@@ -13,25 +18,33 @@ const ListItem = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function RegisterPage() {
+    const pathname = usePathname();
+
   return (
     <div className="w-full max-w-6xl mx-auto p-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             
             {/* Left Column: Form */}
             <div className="flex flex-col justify-center">
-                 <div className="mb-8 text-center lg:text-left">
-                    <h1 className="font-headline text-3xl font-bold">Create an Account</h1>
-                    <p className="text-muted-foreground mt-2">
-                        Join our community of learners today.
-                    </p>
-                 </div>
-                <RegisterForm />
-                <p className="text-center text-sm text-muted-foreground mt-6">
-                    Already have an account?{" "}
-                    <Link href="/login" className="font-semibold text-primary hover:underline">
-                    Login
-                    </Link>
-                </p>
+                <Tabs value={pathname} className="w-full max-w-md mx-auto">
+                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="/login" asChild>
+                        <Link href="/login">Login</Link>
+                    </TabsTrigger>
+                    <TabsTrigger value="/register" asChild>
+                        <Link href="/register">Register</Link>
+                    </TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <Card className="mt-4">
+                    <CardHeader className="text-center">
+                        <CardTitle className="text-2xl font-bold tracking-tight">Create an Account</CardTitle>
+                        <CardDescription>Join our community of learners today.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <RegisterForm />
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Right Column: T&C */}
