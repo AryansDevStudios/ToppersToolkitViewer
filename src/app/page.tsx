@@ -27,7 +27,7 @@ export default async function Home() {
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-4">
               High-quality, chapter-wise notes designed for academic excellence. Dive into any subject and start your journey to becoming a topper.
             </p>
-            <div className="mt-8 flex justify-center gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
               <Button asChild size="lg">
                 <Link href="#subjects">
                   Browse Subjects <ArrowRight className="ml-2 h-4 w-4" />
