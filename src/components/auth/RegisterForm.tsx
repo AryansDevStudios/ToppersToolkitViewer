@@ -104,7 +104,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="Aryan Gupta" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,7 +117,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Class & Section</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 10th A" {...field} />
+                    <Input placeholder="e.g., 9th C" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -169,7 +169,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Create Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <Input type="password" placeholder="•••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
