@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import {
   Card,
@@ -7,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { getSubjects } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Book } from "lucide-react";
+import { ArrowRight, Book, Info } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
 
 export const revalidate = 0;
@@ -37,6 +38,10 @@ export default async function Home() {
                   See Latest Notes
                 </Link>
               </Button>
+            </div>
+             <div className="mt-8 max-w-3xl mx-auto text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg flex items-start gap-3">
+              <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>This website is for browsing and ordering study materials. After purchase, digital notes (PDFs) are accessed exclusively through our secure <a href="https://topperstoolkitviewer.netlify.app/" className="text-primary font-semibold hover:underline" target="_blank" rel="noopener noreferrer">E-Library platform</a>.</span>
             </div>
           </div>
         </section>
