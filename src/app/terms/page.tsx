@@ -31,7 +31,7 @@ export default function TermsAndConditionsPage() {
                     <Link href="https://topperstoolkitviewer.netlify.app" className="text-primary hover:underline" target="_blank">
                         https://topperstoolkitviewer.netlify.app
                     </Link>
-                    ), owned and operated by <strong>Aryan Gupta (AryansDevStudios)</strong>.
+                    ), operated by <strong>Kuldeep Singh</strong>.
                     By accessing purchased notes on this platform, you agree to the following Terms.
                 </p>
 
