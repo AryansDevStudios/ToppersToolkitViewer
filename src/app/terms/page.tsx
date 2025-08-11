@@ -35,7 +35,23 @@ export default function TermsAndConditionsPage() {
                     By accessing purchased notes on this platform, you agree to the following Terms.
                 </p>
 
-                <SectionTitle>1. Access Rights</SectionTitle>
+                <SectionTitle>1. Parties Involved</SectionTitle>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 not-prose">
+                    <div className="text-sm p-4 rounded-lg border bg-card">
+                        <h3 className="font-semibold text-lg text-card-foreground">Site Owner</h3>
+                        <p className="text-muted-foreground">Aryan Gupta (AryansDevStudios)</p>
+                        <a href="mailto:aryan0106gupta@gmail.com" className="text-primary hover:underline block mt-2">aryan0106gupta@gmail.com</a>
+                        <a href="https://wa.me/919838040111" className="text-primary hover:underline block">WhatsApp: +91 98380 40111</a>
+                    </div>
+                     <div className="text-sm p-4 rounded-lg border bg-card">
+                        <h3 className="font-semibold text-lg text-card-foreground">Seller</h3>
+                        <p className="text-muted-foreground">Kuldeep Singh</p>
+                         <a href="mailto:kuldeepsingh012011@gmail.com" className="text-primary hover:underline block mt-2">kuldeepsingh012011@gmail.com</a>
+                         <a href="https://wa.me/917754000411" className="text-primary hover:underline block">WhatsApp: +91 77540 00411</a>
+                    </div>
+                </div>
+
+                <SectionTitle>2. Access Rights</SectionTitle>
                 <ul>
                     <ListItem>
                         Access is granted <strong>only to verified purchasers</strong> from{' '}
@@ -47,7 +63,7 @@ export default function TermsAndConditionsPage() {
                     <ListItem>You do <strong>not</strong> own the content you view — all rights remain with <strong>Kuldeep Singh</strong>.</ListItem>
                 </ul>
 
-                <SectionTitle>2. Restrictions on Use</SectionTitle>
+                <SectionTitle>3. Restrictions on Use</SectionTitle>
                 <p>You are strictly prohibited from:</p>
                 <ul>
                     <ListItem>Downloading, saving, or copying any notes.</ListItem>
@@ -57,13 +73,13 @@ export default function TermsAndConditionsPage() {
                     <ListItem>Selling, redistributing, or publishing the content.</ListItem>
                 </ul>
 
-                <SectionTitle>3. Anti-Piracy Notice</SectionTitle>
+                <SectionTitle>4. Anti-Piracy Notice</SectionTitle>
                 <p>
                     We actively monitor for unauthorized sharing and may embed digital tracking within our notes to trace leaks.
                     Any violation will result in <strong>immediate account suspension</strong> and possible <strong>legal action</strong>.
                 </p>
 
-                <SectionTitle>4. Enforcement Actions</SectionTitle>
+                <SectionTitle>5. Enforcement Actions</SectionTitle>
                 <p>If you are found violating these Terms, the Owner/Seller may:</p>
                 <ul>
                     <ListItem>Temporarily suspend or permanently terminate your account.</ListItem>
@@ -73,38 +89,26 @@ export default function TermsAndConditionsPage() {
                 <p>All enforcement decisions are final.</p>
 
 
-                <SectionTitle>5. Service Availability</SectionTitle>
+                <SectionTitle>6. Service Availability</SectionTitle>
                 <ul>
                     <ListItem>Access is usually provided continuously.</ListItem>
                     <ListItem>In rare situations, the site may be offline for up to <strong>1 hour</strong> for maintenance or technical issues.</ListItem>
                 </ul>
 
-                <SectionTitle>6. Access Timing</SectionTitle>
+                <SectionTitle>7. Access Timing</SectionTitle>
                 <ul>
                     <ListItem>Note access is activated only after transaction verification on the Purchase Site.</ListItem>
                     <ListItem>This process may take <strong>1–2 hours</strong>, depending on seller availability.</ListItem>
                 </ul>
                 
-                <SectionTitle>7. Agreement Requirement</SectionTitle>
+                <SectionTitle>8. Agreement Requirement</SectionTitle>
                 <p>
                     You must explicitly agree to these Terms when registering or logging into your account. Use of this platform implies full acceptance.
                 </p>
 
 
-                <SectionTitle>8. Contact</SectionTitle>
-                <p>For any questions regarding these Terms:</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    <div>
-                        <h3 className="font-semibold text-lg">Owner</h3>
-                         <a href="mailto:aryan0106gupta@gmail.com" className="text-primary hover:underline block">aryan0106gupta@gmail.com</a>
-                         <a href="https://wa.me/919838040111" className="text-primary hover:underline block">WhatsApp: +91 98380 40111</a>
-                    </div>
-                     <div>
-                        <h3 className="font-semibold text-lg">Seller</h3>
-                         <a href="mailto:kuldeepsingh012011@gmail.com" className="text-primary hover:underline block">kuldeepsingh012011@gmail.com</a>
-                         <a href="https://wa.me/917754000411" className="text-primary hover:underline block">WhatsApp: +91 77540 00411</a>
-                    </div>
-                </div>
+                <SectionTitle>9. Contact</SectionTitle>
+                <p>For any questions regarding these Terms, please contact the relevant party listed in Section 1.</p>
 
             </div>
         </div>
