@@ -133,10 +133,14 @@ export function LoginForm() {
       });
       router.push("/");
     } catch (error: any) {
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email' || error.code === 'auth/invalid-credential') {
         form.setError('email', {
             type: 'manual',
-            message: "No user found with this email address."
+            message: "No user found with this email or password."
+        });
+        form.setError('password', {
+            type: 'manual',
+            message: " " // Empty message to just highlight the field
         });
       } else if (error.code === 'auth/wrong-password') {
          form.setError('password', {
@@ -217,6 +221,12 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+             <div className="text-sm">
+                New user?{" "}
+                <Link href="/user-manual" className="underline hover:text-primary">
+                    Read the user manual first
+                </Link>
+            </div>
           </CardContent>
           <CardFooter className="flex-col gap-4">
             <Button type="submit" className="w-full" disabled={!form.watch('agreeToTerms') || isSubmitting}>

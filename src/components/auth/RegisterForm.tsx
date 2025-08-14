@@ -283,6 +283,12 @@ export function RegisterForm() {
                 </FormItem>
               )}
             />
+            <div className="text-sm">
+                New user?{" "}
+                <Link href="/user-manual" className="underline hover:text-primary">
+                    Read the user manual first
+                </Link>
+            </div>
           </CardContent>
           <CardFooter className="flex-col gap-4">
             <Button type="submit" className="w-full" disabled={!form.watch('agreeToTerms') || isSubmitting}>
