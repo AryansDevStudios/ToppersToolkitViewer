@@ -89,43 +89,45 @@ export function AppHeader() {
     
     if (user) {
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-               <Avatar className={cn(
-                  "h-9 w-9",
-                   role === 'Admin' && "ring-2 ring-offset-2 ring-orange-500 ring-offset-background",
-                   role === 'User' && "ring-2 ring-offset-2 ring-sky-500 ring-offset-background"
-                )}>
-                  <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
-                </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {user.email}
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {role === 'Admin' && (
-                <DropdownMenuItem asChild>
-                <Link href="/admin">
-                    <Crown className="mr-2 h-4 w-4" />
-                    <span>Admin Panel</span>
-                </Link>
+        <div className="hidden md:block">
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className={cn(
+                    "h-9 w-9",
+                    role === 'Admin' && "ring-2 ring-offset-2 ring-orange-500 ring-offset-background",
+                    role === 'User' && "ring-2 ring-offset-2 ring-sky-500 ring-offset-background"
+                    )}>
+                    <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+                    </Avatar>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                    {user.email}
+                    </p>
+                </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {role === 'Admin' && (
+                    <DropdownMenuItem asChild>
+                    <Link href="/admin">
+                        <Crown className="mr-2 h-4 w-4" />
+                        <span>Admin Panel</span>
+                    </Link>
+                    </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
                 </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       )
     } else {
         return (
@@ -171,6 +173,14 @@ export function AppHeader() {
         <div className="flex flex-1 justify-end items-center space-x-2">
            {renderThemeToggle()}
            {renderAuthSection()}
+           {mounted && user && role === 'Admin' && (
+             <Button variant="ghost" asChild className="md:hidden">
+               <Link href="/admin">
+                 <Crown className="h-5 w-5" />
+                 <span className="sr-only">Admin</span>
+               </Link>
+             </Button>
+           )}
         </div>
 
       </div>
