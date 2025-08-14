@@ -1,19 +1,32 @@
 
 "use client";
 
-import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 
-const PdfViewer = dynamic(() => import('@/components/common/PdfViewer').then(mod => mod.PdfViewer), {
-  ssr: false,
-  loading: () => (
-    <div className="flex flex-col items-center justify-center h-full text-muted-foreground w-full h-[calc(100vh-12rem)] bg-background">
-      <Loader2 className="h-10 w-10 animate-spin mb-2" />
-      <p>Loading Viewer...</p>
-    </div>
-  ),
-});
+const PDF_VIEWER_BASE_URL = "https://6000-firebase-studio-1754737314701.cluster-isls3qj2gbd5qs4jkjqvhahfv6.cloudworkstations.dev/PDFviewer/web/viewer.html";
 
 export function PdfViewerWrapper({ url }: { url: string }) {
-    return <PdfViewer url={url} />;
+    if (!url) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground w-full h-[calc(100vh-12rem)] bg-background">
+                <p>No PDF URL provided.</p>
+            </div>
+        );
+    }
+
+    // Construct the viewer URL with the PDF file as a parameter
+    const viewerUrl = `${PDF_VIEWER_BASE_URL}?file=${encodeURIComponent(url)}`;
+
+    return (
+        <iframe
+            src={viewerUrl}
+            className="w-full h-full border-0"
+            title="PDF Viewer"
+        >
+             <div className="flex flex-col items-center justify-center h-full text-muted-foreground w-full h-[calc(100vh-12rem)] bg-background">
+                <Loader2 className="h-10 w-10 animate-spin mb-2" />
+                <p>Loading Viewer...</p>
+             </div>
+        </iframe>
+    );
 }
