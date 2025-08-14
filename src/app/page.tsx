@@ -24,18 +24,20 @@ export default function Home() {
 
   useEffect(() => {
     async function loadData() {
+      if (!user) return; // Don't fetch if no user
+      setDataLoading(true);
       const fetchedSubjects = await getSubjects();
       setSubjects(fetchedSubjects);
       setDataLoading(false);
     }
-    if (!loading && user) {
+    if (!loading) {
       loadData();
     }
   }, [user, loading]);
   
   if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -43,6 +45,7 @@ export default function Home() {
 
   if (!user) {
     redirect('/login');
+    return null; // Return null to prevent rendering anything while redirecting
   }
 
   if (dataLoading) {
@@ -64,7 +67,7 @@ export default function Home() {
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-4">
               High-quality, chapter-wise notes designed for academic excellence. Dive into any subject and start your journey to becoming a topper.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild size="lg">
                 <Link href="#subjects">
                   Browse Subjects <ArrowRight className="ml-2 h-4 w-4" />
