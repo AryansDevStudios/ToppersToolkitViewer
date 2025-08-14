@@ -105,9 +105,6 @@ export default function UserManualPage() {
                         Terms and Conditions
                     </Link>.
                  </p>
-                <Link href="/login" className="text-primary font-semibold hover:underline">
-                    &larr; Okay, I understand! Back to Login
-                </Link>
             </div>
         </div>
     );
