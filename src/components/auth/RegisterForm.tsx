@@ -153,12 +153,19 @@ export function RegisterForm() {
       });
       router.push("/");
     } catch (error: any) {
-       toast({
-        title: "Registration Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
+       if (error.code === 'auth/email-already-in-use') {
+        form.setError('email', {
+          type: 'manual',
+          message: 'This email address is already registered.'
+        });
+       } else {
+         form.setError('root.serverError', {
+            type: 'manual',
+            message: error.message
+        });
+       }
+    } finally {
+        setIsSubmitting(false);
     }
   }
 
@@ -245,6 +252,11 @@ export function RegisterForm() {
                 </FormItem>
               )}
             />
+            {form.formState.errors.root?.serverError && (
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.root.serverError.message}
+              </p>
+            )}
             <FormField
               control={form.control}
               name="agreeToTerms"

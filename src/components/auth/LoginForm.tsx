@@ -133,12 +133,24 @@ export function LoginForm() {
       });
       router.push("/");
     } catch (error: any) {
-      toast({
-        title: "Login Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+        form.setError('email', {
+            type: 'manual',
+            message: "No user found with this email address."
+        });
+      } else if (error.code === 'auth/wrong-password') {
+         form.setError('password', {
+            type: 'manual',
+            message: "Incorrect password. Please try again."
+        });
+      } else {
+         form.setError('root.serverError', {
+            type: 'manual',
+            message: error.message
+        });
+      }
+    } finally {
+        setIsSubmitting(false);
     }
   }
 
@@ -173,6 +185,11 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+             {form.formState.errors.root?.serverError && (
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.root.serverError.message}
+              </p>
+            )}
             <FormField
               control={form.control}
               name="agreeToTerms"
