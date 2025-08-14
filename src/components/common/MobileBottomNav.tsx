@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, ShoppingBag, LogOut, Crown, UserCircle } from "lucide-react";
+import { Home, Search, ShoppingBag, LogOut, Crown, UserCircle, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -57,7 +57,9 @@ const ProfileMenu = () => {
         return names[0][0].toUpperCase();
     };
 
-    if (!user) return null;
+    if (!user) return (
+        <NavItem href="/login" icon={LogIn} label="Login" isActive={false} />
+    );
 
     return (
         <DropdownMenu>
