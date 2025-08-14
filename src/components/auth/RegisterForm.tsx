@@ -22,9 +22,11 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { auth, db, createUserWithEmailAndPassword, updateProfile, doc, setDoc } from "@/lib/firebase";
+import { auth, db, createUserWithEmailAndPassword, updateProfile, doc, setDoc, signInWithEmailAndPassword } from "@/lib/firebase";
 import { Checkbox } from "../ui/checkbox";
 import Link from "next/link";
+import { logUserLogin } from "@/lib/data";
+import type { LoginLog } from "@/lib/types";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
@@ -40,6 +42,43 @@ const formSchema = z.object({
   }),
 });
 
+// Helper function to get OS and Browser from User Agent
+const getOSAndBrowser = (userAgent: string) => {
+    let os = "Unknown";
+    if (userAgent.indexOf("Win") != -1) os = "Windows";
+    if (userAgent.indexOf("Mac") != -1) os = "MacOS";
+    if (userAgent.indexOf("X11") != -1) os = "UNIX";
+    if (userAgent.indexOf("Linux") != -1) os = "Linux";
+    if (userAgent.indexOf("Android") != -1) os = "Android";
+    if (userAgent.indexOf("like Mac") != -1) os = "iOS";
+
+    let browser = "Unknown";
+    if (userAgent.indexOf("Chrome") != -1 ) browser = "Chrome";
+    if (userAgent.indexOf("Firefox") != -1 ) browser = "Firefox";
+    if (userAgent.indexOf("Safari") != -1 && userAgent.indexOf("Chrome") == -1) browser = "Safari";
+    if (userAgent.indexOf("MSIE") != -1 || userAgent.indexOf("Trident/") != -1) browser = "Internet Explorer";
+
+    return { os, browser };
+};
+
+// Helper function to get GPU information
+const getGpuInfo = () => {
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info');
+            if (debugInfo) {
+                const vendor = (gl as any).getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                const renderer = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                return `${vendor} - ${renderer}`;
+            }
+        }
+    } catch (e) {
+        // Silently fail in production
+    }
+    return "Unknown";
+};
 
 export function RegisterForm() {
     const { toast } = useToast();
@@ -77,12 +116,38 @@ export function RegisterForm() {
         role: "User",
         createdAt: Date.now(),
       });
+      
+      // Auto-login user
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      // --- Device Info Logging ---
+      const { userAgent, platform, hardwareConcurrency, deviceMemory } = navigator;
+      const { width, height } = window.screen;
+      const { os, browser } = getOSAndBrowser(userAgent);
+      const gpuInfo = getGpuInfo();
+
+      const deviceType = /Mobi|Android/i.test(userAgent) ? 'Mobile' : /Tablet/i.test(userAgent) ? 'Tablet' : 'Desktop';
+
+      const loginLog: Omit<LoginLog, 'timestamp'> = {
+        userAgent,
+        platform,
+        deviceType,
+        os,
+        browser,
+        screenResolution: `${width}x${height}`,
+        pointingMethod: 'ontouchstart' in window ? 'Touchscreen' : 'Mouse',
+        ram: deviceMemory,
+        cpuCores: hardwareConcurrency,
+        gpuInfo,
+      };
+      
+      await logUserLogin(userCredential.user.uid, loginLog);
 
       toast({
         title: "Registration Successful",
-        description: "Welcome! Please log in to continue.",
+        description: "Welcome! Redirecting you now...",
       });
-      router.push("/login");
+      router.push("/");
     } catch (error: any) {
        toast({
         title: "Registration Failed",

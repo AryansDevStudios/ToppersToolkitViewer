@@ -1,4 +1,6 @@
 
+"use client";
+
 import Link from "next/link";
 import {
   Card,
@@ -8,13 +10,48 @@ import {
 } from "@/components/ui/card";
 import { getSubjects } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Book, Info } from "lucide-react";
+import { ArrowRight, Book, Info, Loader2 } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
+import { useAuth } from "@/hooks/use-auth";
+import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { Subject } from "@/lib/types";
 
-export const revalidate = 0;
+export default function Home() {
+  const { user, loading } = useAuth();
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-export default async function Home() {
-  const subjects = await getSubjects();
+  useEffect(() => {
+    async function loadData() {
+      const fetchedSubjects = await getSubjects();
+      setSubjects(fetchedSubjects);
+      setDataLoading(false);
+    }
+    if (!loading && user) {
+      loadData();
+    }
+  }, [user, loading]);
+  
+  if (loading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  if (dataLoading) {
+     return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
