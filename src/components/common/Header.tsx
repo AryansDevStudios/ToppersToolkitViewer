@@ -18,13 +18,6 @@ import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { useState, useEffect } from "react";
 import { Skeleton } from "../ui/skeleton";
 import Image from "next/image";
@@ -60,7 +53,6 @@ function ThemeToggle() {
 export function AppHeader() {
   const { user, role, loading } = useAuth();
   const router = useRouter();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -74,8 +66,6 @@ export function AppHeader() {
     router.push('/login');
   };
 
-  const closeSheet = () => setIsSheetOpen(false);
-
   const getInitials = (name: string | null | undefined): string => {
     if (!name) return 'U';
     const names = name.split(' ');
@@ -84,25 +74,6 @@ export function AppHeader() {
     }
     return names[0][0].toUpperCase();
   };
-
-  const NavLinks = ({ inSheet = false }: { inSheet?: boolean }) => (
-    <>
-      <Button variant="ghost" asChild>
-        <Link href="/" onClick={inSheet ? closeSheet : undefined}>Home</Link>
-      </Button>
-      <Button variant="ghost" asChild>
-        <Link href="/browse" onClick={inSheet ? closeSheet : undefined}>Browse Notes</Link>
-      </Button>
-       <Button variant="ghost" asChild>
-        <a href="https://topperstoolkit.netlify.app" >Shop</a>
-      </Button>
-       {mounted && user && role === 'Admin' && (
-        <Button variant="ghost" asChild>
-          <Link href="/admin" onClick={inSheet ? closeSheet : undefined}>Admin</Link>
-        </Button>
-      )}
-    </>
-  );
   
   const renderThemeToggle = () => {
     if (!mounted) {
@@ -180,61 +151,28 @@ export function AppHeader() {
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex flex-1 items-center justify-end space-x-4">
-          <div className="flex items-center space-x-2">
-             <NavLinks />
-          </div>
-          <div className="flex items-center space-x-4">
-             {renderThemeToggle()}
-             {renderAuthSection()}
-          </div>
+        <nav className="hidden md:flex flex-1 items-center justify-center space-x-4">
+          <Button variant="ghost" asChild>
+            <Link href="/">Home</Link>
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link href="/browse">Browse Notes</Link>
+          </Button>
+          <Button variant="ghost" asChild>
+            <a href="https://topperstoolkit.netlify.app" target="_blank" rel="noopener noreferrer">Shop</a>
+          </Button>
+          {mounted && user && role === 'Admin' && (
+            <Button variant="ghost" asChild>
+              <Link href="/admin">Admin</Link>
+            </Button>
+          )}
         </nav>
-
-        {/* Mobile Navigation */}
-        <div className="flex md:hidden flex-1 justify-end items-center">
-          {renderThemeToggle()}
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Open Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-               <SheetHeader>
-                  <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
-                </SheetHeader>
-              <nav className="flex flex-col items-start space-y-4 pt-8">
-                <NavLinks inSheet={true} />
-                <div className="pt-4 border-t w-full">
-                   {!mounted || loading ? (
-                     <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                     </div>
-                  ) : user ? (
-                     <div className="space-y-4">
-                        <div className="font-medium">
-                            <p>{user.displayName || "User"}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
-                        </div>
-                        <Button onClick={() => { handleLogout(); closeSheet();}} className="w-full">
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Logout
-                        </Button>
-                     </div>
-                  ) : (
-                    <Button asChild className="w-full">
-                      <Link href="/login" onClick={closeSheet}>
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Login
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              </nav>
-            </SheetContent>
-          </Sheet>
+        
+        <div className="flex flex-1 justify-end items-center space-x-2">
+           {renderThemeToggle()}
+           {renderAuthSection()}
         </div>
+
       </div>
     </header>
   );

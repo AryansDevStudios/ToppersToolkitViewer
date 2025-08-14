@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/common/ThemeProvider";
 import { Footer } from "@/components/common/Footer";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { MobileBottomNav } from "@/components/common/MobileBottomNav";
 
 // Note: Metadata is still here but use client will make it not work for this component directly.
 // We can move it to a server component wrapper if needed, but for now we keep it simple.
@@ -37,8 +38,9 @@ function RootLayoutContent({
         >
           <div className="relative flex min-h-screen flex-col">
             {!isAuthPage && <AppHeader />}
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 pb-16 md:pb-0">{children}</main>
             {!isAuthPage && <Footer />}
+            {!isAuthPage && <MobileBottomNav />}
           </div>
           <Toaster />
         </ThemeProvider>
