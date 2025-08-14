@@ -46,7 +46,7 @@ export function AppHeader() {
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex flex-1 items-center justify-center space-x-4">
+        <nav className="hidden md:flex items-center space-x-4">
           <Button variant="ghost" asChild>
             <Link href="/">Home</Link>
           </Button>
@@ -63,7 +63,7 @@ export function AppHeader() {
           )}
         </nav>
         
-        <div className="flex flex-1 justify-end items-center space-x-2">
+        <div className="flex flex-1 items-center justify-end space-x-2">
           {/* Render a placeholder on the server and initial client render */}
           {!mounted ? (
             <div className="h-10 w-10" />
