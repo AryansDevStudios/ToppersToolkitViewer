@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import type { Note } from '@/lib/types';
 import { iconMap } from '@/lib/iconMap';
+import { redirect } from 'next/navigation';
 
 type NoteItem = (Note & { subject: string; chapter: string; chapterId: string; slug: string });
 
@@ -37,30 +38,42 @@ export default function BrowseAllNotesPage() {
   useEffect(() => {
     async function filterAndSetNotes() {
       if (authLoading || isLoading) return;
+      
+      if (!user) {
+        setFilteredNotes([]);
+        return;
+      }
 
       if (role === 'Admin') {
         setFilteredNotes(allNotes);
         return;
       }
       
-      if (user) {
-        if (!showAllNotes) {
-            const userData = await getUserById(user.uid);
-            const grantedNoteIds = new Set(userData?.noteAccess || []);
-            const granted = allNotes.filter(note => grantedNoteIds.has(note.id));
-            setFilteredNotes(granted);
-        } else {
-            setFilteredNotes(allNotes);
-        }
+      if (!showAllNotes) {
+          const userData = await getUserById(user.uid);
+          const grantedNoteIds = new Set(userData?.noteAccess || []);
+          const granted = allNotes.filter(note => grantedNoteIds.has(note.id));
+          setFilteredNotes(granted);
       } else {
-        // If not logged in, show all notes if toggle is on, otherwise none
-        setFilteredNotes(showAllNotes ? allNotes : []);
+          setFilteredNotes(allNotes);
       }
     }
     filterAndSetNotes();
   }, [showAllNotes, user, role, allNotes, authLoading, isLoading]);
 
-  const displayLoading = authLoading || isLoading;
+  if (authLoading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  const displayLoading = isLoading;
 
   return (
     <div className="container mx-auto px-4 py-8">

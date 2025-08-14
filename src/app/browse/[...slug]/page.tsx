@@ -3,7 +3,7 @@
 "use client";
 
 import Link from "next/link";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, redirect } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -134,7 +134,18 @@ export default function BrowsePage() {
     checkAccess();
 
   }, [authLoading, user, role, current, isNote, noteId]);
+  
+  if (authLoading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
+  if (!user) {
+      redirect('/login');
+  }
 
   if (!current) {
     return (
