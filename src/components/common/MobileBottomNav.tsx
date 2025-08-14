@@ -42,11 +42,6 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal }: { href: stri
 const ProfileMenu = () => {
     const { user, role, loading } = useAuth();
     const router = useRouter();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const handleLogout = async () => {
         await signOut(auth);
@@ -62,16 +57,15 @@ const ProfileMenu = () => {
         }
         return names[0][0].toUpperCase();
     };
-
-    if (!mounted || loading) {
-        return (
+    
+    if (loading) {
+         return (
             <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
                 <Skeleton className="h-7 w-7 rounded-full" />
                 <Skeleton className="h-2 w-10 rounded-sm" />
             </div>
         );
     }
-
 
     if (!user) {
         return <NavItem href="/login" icon={LogIn} label="Login" isActive={false} />;
@@ -128,6 +122,11 @@ const ProfileMenu = () => {
 
 export function MobileBottomNav() {
     const pathname = usePathname();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
@@ -152,7 +151,7 @@ export function MobileBottomNav() {
                        />
                     );
                 })}
-                <ProfileMenu />
+                {mounted ? <ProfileMenu /> : <div />}
             </div>
         </nav>
     );
