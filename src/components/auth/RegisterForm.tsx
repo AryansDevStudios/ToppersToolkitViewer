@@ -27,6 +27,8 @@ import { Checkbox } from "../ui/checkbox";
 import Link from "next/link";
 import { logUserLogin } from "@/lib/data";
 import type { LoginLog } from "@/lib/types";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
@@ -83,6 +85,7 @@ const getGpuInfo = () => {
 export function RegisterForm() {
     const { toast } = useToast();
     const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,6 +101,7 @@ export function RegisterForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
     try {
       const { email, password, name, classAndSection, srNo, username } = values;
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -154,6 +158,8 @@ export function RegisterForm() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+        setIsSubmitting(false);
     }
   }
 
@@ -268,8 +274,9 @@ export function RegisterForm() {
             />
           </CardContent>
           <CardFooter className="flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={!form.watch('agreeToTerms')}>
-              Create Account
+            <Button type="submit" className="w-full" disabled={!form.watch('agreeToTerms') || isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting ? "Creating Account..." : "Create Account"}
             </Button>
           </CardFooter>
         </form>
