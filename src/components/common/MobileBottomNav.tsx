@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, ShoppingBag, LogOut, Crown, UserCircle, LogIn } from "lucide-react";
+import { Home, Search, ShoppingBag, LogOut, Crown, UserCircle, LogIn, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -15,10 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "../ui/button";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Skeleton } from "../ui/skeleton";
 
 const NavItem = ({ href, icon: Icon, label, isActive, isExternal }: { href: string, icon: React.ElementType, label: string, isActive: boolean, isExternal?: boolean }) => {
     const LinkComponent = isExternal ? 'a' : Link;
@@ -39,8 +40,13 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal }: { href: stri
 
 
 const ProfileMenu = () => {
-    const { user, role } = useAuth();
+    const { user, role, loading } = useAuth();
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleLogout = async () => {
         await signOut(auth);
@@ -57,9 +63,19 @@ const ProfileMenu = () => {
         return names[0][0].toUpperCase();
     };
 
-    if (!user) return (
-        <NavItem href="/login" icon={LogIn} label="Login" isActive={false} />
-    );
+    if (!mounted || loading) {
+        return (
+            <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
+                <Skeleton className="h-7 w-7 rounded-full" />
+                <Skeleton className="h-2 w-10 rounded-sm" />
+            </div>
+        );
+    }
+
+
+    if (!user) {
+        return <NavItem href="/login" icon={LogIn} label="Login" isActive={false} />;
+    }
 
     return (
         <DropdownMenu>
