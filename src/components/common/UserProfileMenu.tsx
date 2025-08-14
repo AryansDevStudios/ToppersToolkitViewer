@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Crown } from "lucide-react";
+import { LogOut, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -59,6 +59,7 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
          {isMobile ? (
             <div className={triggerClasses}>
                 <Avatar className={cn(avatarClasses, ringClasses)}>
+                    <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
                     <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
                 </Avatar>
                 <span>Profile</span>
@@ -66,6 +67,7 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
          ) : (
             <Button variant="ghost" className={triggerClasses}>
                 <Avatar className={cn(avatarClasses, mobileRingClasses)}>
+                    <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
                     <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
                 </Avatar>
             </Button>
@@ -82,7 +84,7 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
         {role === 'Admin' && (
           <DropdownMenuItem asChild>
             <Link href="/admin">
-              <Crown className="mr-2 h-4 w-4" />
+              <UserCog className="mr-2 h-4 w-4" />
               <span>Admin Panel</span>
             </Link>
           </DropdownMenuItem>

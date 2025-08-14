@@ -73,8 +73,8 @@ export function AppHeader() {
 
           <div className="hidden md:block">
             {/* Defer rendering of auth-dependent UI until mounted */}
-            {!mounted ? (
-              <Skeleton className="h-9 w-9 rounded-full" />
+            {!mounted || loading ? (
+              <Skeleton className="h-10 w-24 rounded-md" />
             ) : user ? (
               <UserProfileMenu />
             ) : (
