@@ -9,7 +9,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left">
           <div>
             <h3 className="text-lg font-black mb-2">Topper's Toolkit Library</h3>
-            <p className="text-muted-foreground text-sm">This website is for viewing purchased digital study materials. All notes (PDFs) are accessible exclusively through your E-Library account after purchase from our <a href="https://topperstoolkit.netlify.app" className="text-primary font-semibold hover:underline">Shop</a> website.</p>
+            <p className="text-muted-foreground text-sm">This website is for viewing purchased digital study materials. All notes (PDFs) are accessible exclusively through your Library account after purchase from our <a href="https://topperstoolkit.netlify.app" className="text-primary font-semibold hover:underline">Shop</a> website.</p>
              <div className="mt-4 space-x-4">
                 <Link href="/terms" className="text-sm text-primary underline underline-offset-4 hover:opacity-80 transition-opacity">
                     Terms & Conditions

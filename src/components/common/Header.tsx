@@ -56,14 +56,14 @@ export function AppHeader() {
           <Button variant="ghost" asChild>
             <a href="https://topperstoolkit.netlify.app" target="_blank" rel="noopener noreferrer">Shop</a>
           </Button>
-          {mounted && user && role === 'Admin' && (
-            <Button variant="ghost" asChild>
-              <Link href="/admin">Admin</Link>
-            </Button>
-          )}
         </nav>
         
         <div className="flex flex-1 items-center justify-end space-x-2">
+           {mounted && user && role === 'Admin' && (
+              <Button variant="ghost" asChild className="hidden md:flex">
+                  <Link href="/admin">Admin Panel</Link>
+              </Button>
+            )}
           {/* Render a placeholder on the server and initial client render */}
           {!mounted ? (
             <div className="h-10 w-10" />
