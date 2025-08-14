@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, Menu } from "lucide-react";
+import { UserCircle, LogIn, Crown, LogOut, Sun, Moon, Loader2, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -174,9 +174,9 @@ export function AppHeader() {
            {renderThemeToggle()}
            {renderAuthSection()}
            {mounted && user && role === 'Admin' && (
-             <Button variant="ghost" asChild className="md:hidden">
+             <Button variant="ghost" size="icon" asChild className="md:hidden">
                <Link href="/admin">
-                 <Crown className="h-5 w-5" />
+                 <UserCog className="h-5 w-5" />
                  <span className="sr-only">Admin</span>
                </Link>
              </Button>

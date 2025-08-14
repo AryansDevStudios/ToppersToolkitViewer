@@ -65,7 +65,9 @@ const ProfileMenu = () => {
                  <div className={cn(
                     "flex flex-col items-center justify-center gap-1 text-xs font-medium w-full h-full cursor-pointer text-muted-foreground"
                 )}>
-                    <UserCircle className="h-6 w-6" />
+                    <Avatar className={cn("h-7 w-7", role === 'Admin' && "ring-2 ring-orange-500", role === 'User' && "ring-2 ring-sky-500")}>
+                        <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+                    </Avatar>
                     <span>Profile</span>
                 </div>
             </DropdownMenuTrigger>
