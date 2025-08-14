@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import type { Note } from '@/lib/types';
 import { iconMap } from '@/lib/iconMap';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 type NoteItem = (Note & { subject: string; chapter: string; chapterId: string; slug: string });
 
@@ -23,6 +23,13 @@ export default function BrowseAllNotesPage() {
   const [showAllNotes, setShowAllNotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { user, role, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     async function fetchNotes() {
@@ -32,8 +39,10 @@ export default function BrowseAllNotesPage() {
       setAllNotes(sortedNotes);
       setIsLoading(false);
     }
-    fetchNotes();
-  }, []);
+    if (user) {
+      fetchNotes();
+    }
+  }, [user]);
 
   useEffect(() => {
     async function filterAndSetNotes() {
@@ -61,17 +70,12 @@ export default function BrowseAllNotesPage() {
     filterAndSetNotes();
   }, [showAllNotes, user, role, allNotes, authLoading, isLoading]);
 
-  if (authLoading) {
+  if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!user) {
-    redirect('/login');
-    return null;
   }
 
   const displayLoading = isLoading;

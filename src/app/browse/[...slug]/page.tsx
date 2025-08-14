@@ -3,7 +3,7 @@
 "use client";
 
 import Link from "next/link";
-import { notFound, useParams, redirect } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -71,15 +71,22 @@ const LoadingState = () => (
 
 export default function BrowsePage() {
   const params = useParams();
+  const router = useRouter();
   const slug = Array.isArray(params.slug) ? params.slug : [params.slug];
-
+  const { user, role, loading: authLoading } = useAuth();
+  
   const [current, setCurrent] = useState<any>(null);
   const [parents, setParents] = useState<any[]>([]);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null); // null means loading
-  const { user, role, loading: authLoading } = useAuth();
   
   const isNote = current && "pdfUrl" in current;
   const noteId = isNote ? slug[slug.length - 1] : null;
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     async function fetchData() {
@@ -135,17 +142,12 @@ export default function BrowsePage() {
 
   }, [authLoading, user, role, current, isNote, noteId]);
   
-  if (authLoading) {
+  if (authLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!user) {
-      redirect('/login');
-      return null;
   }
 
   if (!current) {

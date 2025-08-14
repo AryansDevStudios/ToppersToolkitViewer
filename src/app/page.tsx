@@ -13,39 +13,42 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Book, Info, Loader2 } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
 import { useAuth } from "@/hooks/use-auth";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { Subject } from "@/lib/types";
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const router = useRouter();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    async function loadData() {
-      if (!user) return; // Don't fetch if no user
-      setDataLoading(true);
-      const fetchedSubjects = await getSubjects();
-      setSubjects(fetchedSubjects);
-      setDataLoading(false);
+    if (!loading && !user) {
+      router.push('/login');
     }
-    if (!loading) {
+  }, [user, loading, router]);
+  
+  useEffect(() => {
+    async function loadData() {
+      if (user) { // Only fetch data if the user is logged in
+        setDataLoading(true);
+        const fetchedSubjects = await getSubjects();
+        setSubjects(fetchedSubjects);
+        setDataLoading(false);
+      }
+    }
+    if (!loading && user) {
       loadData();
     }
   }, [user, loading]);
   
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!user) {
-    redirect('/login');
-    return null; // Return null to prevent rendering anything while redirecting
   }
 
   if (dataLoading) {
