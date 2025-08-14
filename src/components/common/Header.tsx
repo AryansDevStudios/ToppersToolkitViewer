@@ -84,7 +84,7 @@ export function AppHeader() {
 
   const renderAuthSection = () => {
     if (!mounted || loading) {
-       return <Skeleton className="h-9 w-9 rounded-full" />;
+       return <Skeleton className="h-9 w-9 rounded-full md:block hidden" />;
     }
     
     if (user) {

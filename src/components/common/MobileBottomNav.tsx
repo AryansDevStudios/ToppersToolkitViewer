@@ -151,7 +151,7 @@ export function MobileBottomNav() {
                        />
                     );
                 })}
-                {mounted ? <ProfileMenu /> : <div />}
+                {mounted ? <ProfileMenu /> : <div className="w-full h-full" />}
             </div>
         </nav>
     );
