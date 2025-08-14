@@ -10,7 +10,7 @@ import { UserProfileMenu } from "./UserProfileMenu";
 import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 
-const NavItem = ({ href, icon: Icon, label, isActive, isExternal }: { href: string, icon: React.ElementType, label: string, isActive: boolean, isExternal?: boolean }) => {
+const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className }: { href: string, icon: React.ElementType, label: string, isActive: boolean, isExternal?: boolean, className?: string }) => {
     const LinkComponent = isExternal ? 'a' : Link;
     return (
         <LinkComponent
@@ -18,7 +18,8 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal }: { href: stri
             {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             className={cn(
                 "flex flex-col items-center justify-center gap-1 text-xs font-medium w-full h-full",
-                isActive ? "text-primary" : "text-muted-foreground"
+                isActive ? "text-primary" : "text-muted-foreground",
+                className
             )}
         >
             <Icon className="h-6 w-6" />
@@ -43,7 +44,7 @@ export function MobileBottomNav() {
     ];
     
     const renderAuthSlot = () => {
-      // Before component is mounted, render a static placeholder to prevent hydration mismatch
+      // After mounting, show the correct UI based on auth state
       if (!mounted) {
         return (
           <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
@@ -53,11 +54,17 @@ export function MobileBottomNav() {
         );
       }
       
-      // After mounting, show the correct UI based on auth state
       if (user) {
         return <UserProfileMenu isMobile={true} />;
       } else {
-        return <NavItem href="/login" icon={LogIn} label="Login" isActive={pathname === '/login'} />;
+        return (
+          <Link href="/login" className="flex items-center justify-center w-full h-full p-1">
+             <div className="flex flex-col items-center justify-center gap-1 text-xs font-medium w-full h-full bg-primary text-primary-foreground rounded-md">
+                 <LogIn className="h-6 w-6" />
+                 <span>Login</span>
+             </div>
+          </Link>
+        )
       }
     };
 
