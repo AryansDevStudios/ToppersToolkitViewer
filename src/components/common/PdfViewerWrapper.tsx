@@ -3,7 +3,7 @@
 
 import { Loader2 } from "lucide-react";
 
-const PDF_VIEWER_BASE_URL = "https://6000-firebase-studio-1754737314701.cluster-isls3qj2gbd5qs4jkjqvhahfv6.cloudworkstations.dev/PDFviewer/web/viewer.html";
+const PDF_VIEWER_BASE_URL = "/PDFviewer/web/viewer.html";
 
 export function PdfViewerWrapper({ url }: { url: string }) {
     if (!url) {
