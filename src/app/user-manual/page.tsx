@@ -1,8 +1,8 @@
 
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookUser, ShoppingCart, LogIn, Search, ShieldQuestion } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { BookUser, ShoppingCart, LogIn, Search, ShieldCheck, ShieldQuestion } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: "User Manual - Topper's Toolkit Library",
@@ -39,13 +39,13 @@ export default function UserManualPage() {
                 <p className="text-muted-foreground text-lg max-w-2xl mx-auto">A simple guide for our students. Follow these steps to get started!</p>
             </header>
 
-            <Card>
+            <Card className="mb-8">
                 <CardHeader>
                     <CardTitle className="text-2xl">Step-by-Step Guide</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
                     <ManualStep icon={ShoppingCart} title="Step 1: Buy Notes from the Shop">
-                        <p>This website is only for viewing notes you have already bought.</p>
+                        <p>This website is for viewing notes you have already bought.</p>
                         <p>First, you must buy the notes from our main shop website.</p>
                         <p>
                             <Link href="https://topperstoolkit.netlify.app" className="text-primary font-semibold hover:underline" target="_blank">
@@ -57,29 +57,56 @@ export default function UserManualPage() {
                     <ManualStep icon={LogIn} title="Step 2: Create Your Account Here">
                          <p>After you buy the notes, come back to this website.</p>
                          <p>Click on <strong>'Register'</strong>. Use the <strong>same email address</strong> you used for your purchase.</p>
-                         <p>Fill in all your details to create your account.</p>
+                         <p>This is very important so we know which notes to give you access to!</p>
                     </ManualStep>
 
                     <ManualStep icon={Search} title="Step 3: Find and Read Your Notes">
-                         <p>Once you are logged in, you can click on <strong>'Browse'</strong> to see all the notes.</p>
-                         <p>You will only be able to open the notes that you have purchased. Other notes will show an "Access Denied" message.</p>
-                    </ManualStep>
-
-                     <ManualStep icon={ShieldQuestion} title="Having Trouble?">
-                        <p>If you can't access notes you paid for, or have other problems, please contact us.</p>
-                        <p>
-                            Contact details are at the bottom of the page. Or you can read the full {' '}
-                            <Link href="/terms" className="text-primary font-semibold hover:underline">
-                                Terms and Conditions
-                            </Link>.
-                        </p>
+                         <p>Once you are logged in, you can click on <strong>'Browse'</strong> to see all the subjects and notes.</p>
+                         <p>You will only be able to open the notes that you have purchased.</p>
                     </ManualStep>
                 </CardContent>
             </Card>
 
-             <div className="text-center mt-12">
+            <Card className="border-destructive/50">
+                <CardHeader>
+                   <div className="flex items-center gap-3">
+                     <ShieldCheck className="h-6 w-6 text-destructive" />
+                     <CardTitle className="text-2xl text-destructive">Very Important Rules</CardTitle>
+                   </div>
+                   <CardDescription>
+                        To protect our hard work, you must follow these rules.
+                   </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                    <p>
+                        The notes you buy are for your personal use only. You do not own them.
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                        <li>
+                            <strong>Do NOT share your account password.</strong> Your account is for you alone.
+                        </li>
+                        <li>
+                            <strong>Do NOT take screenshots, record your screen, or download the notes.</strong> The website is for viewing only.
+                        </li>
+                        <li>
+                            <strong>Do NOT try to sell or share the notes with others.</strong>
+                        </li>
+                    </ul>
+                    <p className="font-semibold text-card-foreground">
+                        If these rules are broken, your account will be immediately suspended without a refund, and we may take further action. Please be respectful of our work.
+                    </p>
+                </CardContent>
+            </Card>
+
+             <div className="text-center mt-12 space-y-4">
+                 <p className="text-muted-foreground">
+                    Still have questions? Contact us or read the full {' '}
+                    <Link href="/terms" className="text-primary font-semibold hover:underline">
+                        Terms and Conditions
+                    </Link>.
+                 </p>
                 <Link href="/login" className="text-primary font-semibold hover:underline">
-                    &larr; Back to Login
+                    &larr; Okay, I understand! Back to Login
                 </Link>
             </div>
         </div>
