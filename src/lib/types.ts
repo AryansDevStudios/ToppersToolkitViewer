@@ -53,6 +53,7 @@ export interface User {
   classAndSection?: string;
   username?: string;
   srNo?: string;
+  whatsappNumber?: string;
   password?: string;
   loginLogs?: LoginLog[];
   noteAccess?: string[];

@@ -39,6 +39,7 @@ const formSchema = z.object({
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
+  whatsappNumber: z.string().optional(),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
@@ -96,6 +97,7 @@ export function RegisterForm() {
       srNo: "",
       email: "",
       password: "",
+      whatsappNumber: "",
       agreeToTerms: false,
     },
   });
@@ -103,7 +105,7 @@ export function RegisterForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const { email, password, name, classAndSection, srNo, username } = values;
+      const { email, password, name, classAndSection, srNo, username, whatsappNumber } = values;
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
@@ -117,6 +119,7 @@ export function RegisterForm() {
         classAndSection,
         srNo,
         username,
+        whatsappNumber,
         role: "User",
         createdAt: Date.now(),
       });
@@ -234,6 +237,19 @@ export function RegisterForm() {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input placeholder="name@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="whatsappNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>WhatsApp Number (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+91 12345 67890" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -30,6 +30,7 @@ const formSchema = z.object({
   srNo: z.string().length(4, { message: "SR. No. must be 4 digits."}).regex(/^\d{4}$/, { message: "SR. No. must be a 4-digit number."}),
   email: z.string().email(),
   password: z.string().optional(),
+  whatsappNumber: z.string().optional(),
 });
 
 interface UserFormProps {
@@ -50,7 +51,8 @@ export function UserForm({ user }: UserFormProps) {
       username: user.username || "",
       srNo: user.srNo || "",
       email: user.email || "",
-      password: user.password || ""
+      password: user.password || "",
+      whatsappNumber: user.whatsappNumber || "",
     },
   });
 
@@ -62,6 +64,7 @@ export function UserForm({ user }: UserFormProps) {
           classAndSection: values.classAndSection.trim(),
           username: values.username.trim(),
           srNo: values.srNo.trim(),
+          whatsappNumber: values.whatsappNumber?.trim(),
         };
 
         const result = await upsertUser({
@@ -177,6 +180,19 @@ export function UserForm({ user }: UserFormProps) {
                   <FormLabel>SR. No.</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., 1234" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="whatsappNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>WhatsApp Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="+91 12345 67890" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
