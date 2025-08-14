@@ -158,8 +158,7 @@ export function RegisterForm() {
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 

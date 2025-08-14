@@ -138,8 +138,7 @@ export function LoginForm() {
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
