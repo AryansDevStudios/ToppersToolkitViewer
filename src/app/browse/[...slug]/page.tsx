@@ -1,18 +1,14 @@
 
-
-"use client";
-
 import Link from "next/link";
-import { notFound, useParams, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FileText, Folder, ShieldAlert, Loader2 } from "lucide-react";
-import { findItemBySlug, getUserById } from "@/lib/data";
+import { FileText, Folder } from "lucide-react";
+import { findItemBySlug } from "@/lib/data";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   Accordion,
@@ -20,11 +16,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
-import type { Chapter, Note, SubSubject } from "@/lib/types";
-import { useAuth } from "@/hooks/use-auth";
-import { useEffect, useState } from "react";
+import type { Chapter, Note } from "@/lib/types";
 import { iconMap } from "@/lib/iconMap";
+import { NoteViewer } from "@/components/common/NoteViewer";
+
+export const revalidate = 0;
 
 // Helper to group notes by chapter name, handling whitespace inconsistencies
 const groupNotesByChapter = (chapters: Chapter[]) => {
@@ -47,147 +43,37 @@ const groupNotesByChapter = (chapters: Chapter[]) => {
     }));
 };
 
-const AccessDenied = () => (
-    <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
-        <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
-        <h2 className="text-2xl font-bold text-destructive">Access Denied</h2>
-        <p className="mt-2 text-muted-foreground max-w-md">
-            You do not have permission to view this document. Please contact an administrator to request access.
-        </p>
-        <Button asChild className="mt-6">
-            <Link href="/browse">Back to Browse</Link>
-        </Button>
-    </div>
-);
-
-const LoadingState = () => (
-   <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
-        <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-        <h2 className="text-2xl font-bold">Verifying Access...</h2>
-        <p className="mt-2 text-muted-foreground">Please wait while we check your permissions.</p>
-    </div>
-)
-
-
-export default function BrowsePage() {
-  const params = useParams();
-  const router = useRouter();
-  const slug = Array.isArray(params.slug) ? params.slug : [params.slug];
-  const { user, role, loading: authLoading } = useAuth();
+export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
+  const slug = params.slug || [];
   
-  const [current, setCurrent] = useState<any>(null);
-  const [parents, setParents] = useState<any[]>([]);
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null); // null means loading
-  
-  const isNote = current && "pdfUrl" in current;
-  const noteId = isNote ? slug[slug.length - 1] : null;
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
-
-  useEffect(() => {
-    async function fetchData() {
-       const { current: currentItem, parents: parentItems } = await findItemBySlug(slug);
-       if (!currentItem) {
-          notFound();
-       }
-       setCurrent(currentItem);
-       setParents(parentItems);
-    }
-    fetchData();
-  }, [slug]);
-
-
-  useEffect(() => {
-    if (authLoading || !current) {
-        // Wait for auth and data to be loaded
-        return;
-    }
-    
-    if (!isNote) {
-        // If it's not a note page, access is always granted
-        setHasAccess(true);
-        return;
-    }
-
-    // Now, handle note access logic
-    setHasAccess(null); // Set to loading state while we check
-
-    async function checkAccess() {
-        if (!user) {
-            // No user logged in, so no access
-            setHasAccess(false);
-            return;
-        }
-
-        if (role === 'Admin') {
-            // Admins have automatic access
-            setHasAccess(true);
-            return;
-        }
-
-        // For regular users, check their noteAccess field
-        const userData = await getUserById(user.uid);
-        if (userData?.noteAccess?.includes(noteId!)) {
-            setHasAccess(true);
-        } else {
-            setHasAccess(false);
-        }
-    }
-
-    checkAccess();
-
-  }, [authLoading, user, role, current, isNote, noteId]);
-  
-  if (authLoading || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const { current, parents } = await findItemBySlug(slug);
 
   if (!current) {
-    return (
-       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    notFound();
   }
 
-
   const breadcrumbItems = parents
-    .slice(1)
+    .slice(1) // Remove the root "Browse"
     .map((p, i) => ({
       name: p.name,
       href: `/browse/${slug.slice(0, i + 1).join("/")}`,
     }))
     .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
-
+    
+  const isNote = "pdfUrl" in current;
   const isSubject = "subSubjects" in current;
   const isSubSubject = !isNote && "chapters" in current;
   
   let children: any[] = [];
   if (isSubject) children = current.subSubjects;
   else if (isSubSubject) children = groupNotesByChapter(current.chapters);
-
+  
+  const currentPageName = isNote ? current.type : current.name;
 
   const renderContent = () => {
     if (isNote) {
-        if (hasAccess === null) {
-            return <LoadingState />;
-        }
-        if (hasAccess) {
-            return (
-                <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
-                    <PdfViewerWrapper url={current.pdfUrl} />
-                </div>
-            );
-        }
-        return <AccessDenied />;
+      // The client component handles access check and rendering
+      return <NoteViewer noteId={current.id} pdfUrl={current.pdfUrl} />;
     }
     
     if (isSubSubject) {
@@ -265,11 +151,11 @@ export default function BrowsePage() {
     <div className="container mx-auto px-4 py-8">
       <Breadcrumbs
         items={breadcrumbItems.slice(0,-1)}
-        currentPageName={isNote ? current.type : current.name}
+        currentPageName={currentPageName}
       />
       <header className="mb-8">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-           {isNote ? current.type : current.name}
+           {currentPageName}
         </h1>
          {isSubSubject && (
           <p className="text-muted-foreground text-lg">
