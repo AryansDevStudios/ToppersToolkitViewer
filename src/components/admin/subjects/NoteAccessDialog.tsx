@@ -16,10 +16,12 @@ import { Users, UserCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { User, Note } from "@/lib/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 interface NoteAccessDialogProps {
   note: Note;
   users: User[];
+  isDropdownItem?: boolean;
 }
 
 const getInitials = (name: string | null | undefined): string => {
@@ -31,16 +33,26 @@ const getInitials = (name: string | null | undefined): string => {
     return names[0][0].toUpperCase();
 };
 
-export function NoteAccessDialog({ note, users }: NoteAccessDialogProps) {
+export function NoteAccessDialog({ note, users, isDropdownItem = true }: NoteAccessDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  
+  const Trigger = isDropdownItem ? (
+    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setIsOpen(true); }}>
+        <Users className="mr-2 h-4 w-4" />
+        View Access
+    </DropdownMenuItem>
+  ) : (
+     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsOpen(true)}>
+        <Users className="h-4 w-4" />
+        <span className="sr-only">View Access</span>
+      </Button>
+  );
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-7 w-7">
-          <Users className="h-4 w-4" />
-          <span className="sr-only">View Access</span>
-        </Button>
+        {Trigger}
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>

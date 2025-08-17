@@ -119,7 +119,7 @@ export default async function AdminSubjectsPage() {
                                                     <li key={note.id} className="flex items-center justify-between text-sm py-1 border-t border-dashed border-border last:border-b-0">
                                                       <span>- {note.type}</span>
                                                       <div className="flex items-center gap-1">
-                                                        <NoteAccessDialog note={note} users={usersWithAccess} />
+                                                        <NoteAccessDialog note={note} users={usersWithAccess} isDropdownItem={false} />
                                                         <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
                                                           <Link href={`/admin/notes/edit/${note.id}`}>
                                                             <Edit className="h-4 w-4" />
