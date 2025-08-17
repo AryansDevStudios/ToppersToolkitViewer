@@ -199,72 +199,81 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
     try {
         await runTransaction(db, async (transaction) => {
             const allSubjectsDocs = await getDocs(collection(db, 'subjects'));
-            const allSubjects = allSubjectsDocs.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject));
+            let allSubjects = allSubjectsDocs.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject));
 
-            let oldNoteData: Note | undefined;
-            let oldNoteLocation: { subjectId: string, subSubjectId: string, chapterId: string } | undefined;
+            let oldNoteData: Note | null = null;
+            let sourceSubject: Subject | null = null;
+            let sourceSubSubject: SubSubject | null = null;
+            let sourceChapter: Chapter | null = null;
 
-            // --- Find and remove the old note if updating ---
+            // --- Find Phase ---
             if (!isNewNote) {
                 for (const subj of allSubjects) {
                     for (const ss of subj.subSubjects) {
                         for (const chap of ss.chapters) {
-                            const noteIndex = chap.notes.findIndex(n => n.id === noteId);
-                            if (noteIndex > -1) {
-                                oldNoteData = chap.notes[noteIndex];
-                                chap.notes.splice(noteIndex, 1);
-                                oldNoteLocation = { subjectId: subj.id, subSubjectId: ss.id, chapterId: chap.id };
-                                // If chapter becomes empty after removing note, remove the chapter as well
-                                if (chap.notes.length === 0) {
-                                    ss.chapters = ss.chapters.filter(c => c.id !== chap.id);
-                                }
+                            const note = chap.notes.find(n => n.id === noteId);
+                            if (note) {
+                                oldNoteData = note;
+                                sourceSubject = subj;
+                                sourceSubSubject = ss;
+                                sourceChapter = chap;
                                 break;
                             }
                         }
-                        if (oldNoteLocation) break;
+                        if (oldNoteData) break;
                     }
-                    if (oldNoteLocation) {
-                         const subjectRefToUpdate = doc(db, "subjects", oldNoteLocation.subjectId);
-                         transaction.update(subjectRefToUpdate, { subSubjects: subj.subSubjects });
-                         break;
-                    }
+                    if (oldNoteData) break;
                 }
             }
-            // --- End of removal logic ---
-
-            // Now, find the target subject and add the note
-            const targetSubjectDocRef = doc(db, "subjects", subjectId);
-            // We need to re-get the doc if the update was on the same subject, otherwise get the new one.
-            const targetSubjectDoc = oldNoteLocation?.subjectId === subjectId 
-                ? allSubjects.find(s => s.id === subjectId)
-                : (await transaction.get(targetSubjectDocRef)).data() as Subject;
-
-            if (!targetSubjectDoc) throw new Error("Target subject not found!");
-
-            const targetSubSubjectIndex = targetSubjectDoc.subSubjects.findIndex(ss => ss.id === subSubjectId);
-            if (targetSubSubjectIndex === -1) throw new Error("Target sub-subject not found!");
             
-            const targetSubSubject = targetSubjectDoc.subSubjects[targetSubSubjectIndex];
+            const targetSubject = allSubjects.find(s => s.id === subjectId);
+            if (!targetSubject) throw new Error("Target subject not found!");
+
+            // --- Write Phase ---
+            // 1. Remove the old note if it exists and its location was found
+            if (sourceSubject && sourceSubSubject && sourceChapter && oldNoteData) {
+                const noteIndex = sourceChapter.notes.findIndex(n => n.id === noteId);
+                if (noteIndex > -1) {
+                    sourceChapter.notes.splice(noteIndex, 1);
+                }
+
+                // If the source chapter is now empty, remove it
+                if (sourceChapter.notes.length === 0) {
+                    const chapterIndex = sourceSubSubject.chapters.findIndex(c => c.id === sourceChapter!.id);
+                    if (chapterIndex > -1) {
+                        sourceSubSubject.chapters.splice(chapterIndex, 1);
+                    }
+                }
+                
+                // If the source subject is different from the target, update it.
+                // If it's the same, we'll update it later with the added note.
+                if (sourceSubject.id !== targetSubject.id) {
+                    const sourceSubjectRef = doc(db, "subjects", sourceSubject.id);
+                    transaction.set(sourceSubjectRef, sourceSubject);
+                }
+            }
+            
+            // 2. Add the new/updated note to the target location
+            const targetSubSubject = targetSubject.subSubjects.find(ss => ss.id === subSubjectId);
+            if (!targetSubSubject) throw new Error("Target sub-subject not found!");
             if (!targetSubSubject.chapters) targetSubSubject.chapters = [];
+            
+            let targetChapter = targetSubSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
+
+            if (!targetChapter) {
+                targetChapter = { id: uuidv4(), name: trimmedChapterName, notes: [] };
+                targetSubSubject.chapters.push(targetChapter);
+            }
 
             // Check for duplicates in the target location
-            const chapterForNote = targetSubSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
-            if (chapterForNote && chapterForNote.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase() && note.id !== noteId)) {
+            if (targetChapter.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase() && note.id !== noteId)) {
                 throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
             }
             
-            let chapterIndex = targetSubSubject.chapters.findIndex(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
-
-            if (chapterIndex === -1) {
-                const newChapter: Chapter = { id: uuidv4(), name: trimmedChapterName, notes: [] };
-                targetSubSubject.chapters.push(newChapter);
-                chapterIndex = targetSubSubject.chapters.length - 1;
-            }
-
             const jsDelivrUrl = linkType === 'github' ? convertToJsDelivr(originalUrl) : originalUrl;
             
             const newNote: Note = { 
-                id: noteId, // IMPORTANT: Preserving the ID
+                id: noteId,
                 type: trimmedType, 
                 pdfUrl: serveViaJsDelivr ? jsDelivrUrl : originalUrl,
                 originalPdfUrl: originalUrl,
@@ -274,10 +283,10 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
              };
 
-            const targetChapter = targetSubSubject.chapters[chapterIndex];
             targetChapter.notes.push(newNote);
             
-            transaction.update(targetSubjectDocRef, { subSubjects: targetSubjectDoc.subSubjects });
+            const targetSubjectRef = doc(db, "subjects", targetSubject.id);
+            transaction.set(targetSubjectRef, targetSubject);
         });
 
         revalidatePath("/admin/notes", "layout");
