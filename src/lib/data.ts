@@ -48,6 +48,7 @@ export const seedSubjects = async () => {
             batch.set(subjectRef, subjectData);
         }
         await batch.commit();
+        revalidatePath("/", "layout");
         return { success: true, message: "Database seeded successfully." };
     } catch (error) {
         return { success: false, error: "Failed to seed database." };
@@ -209,21 +210,48 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             
             const subSubject = subjectData.subSubjects[subSubjectIndex];
             if (!subSubject.chapters) subSubject.chapters = [];
+            
+            // Prevent duplicate notes on creation
+            if (isNewNote) {
+                let noteExists = false;
+                const chapterForNote = subSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
+                if (chapterForNote) {
+                    if (chapterForNote.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase())) {
+                        noteExists = true;
+                    }
+                }
+                if (noteExists) {
+                    throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
+                }
+            }
+
 
             let oldNoteData: Note | undefined;
 
             // If updating, first remove the old note to get its data
             if (!isNewNote) {
+                let found = false;
                 subjectData.subSubjects.forEach(ss => {
                     ss.chapters.forEach(c => {
                         const noteIndex = c.notes.findIndex(n => n.id === noteId);
                         if (noteIndex > -1) {
                            oldNoteData = c.notes[noteIndex];
-                           c.notes.splice(noteIndex, 1);
+                           // If chapter name is also changing, we must remove it from old chapter
+                           if (c.name.trim().toLowerCase() !== trimmedChapterName.toLowerCase()) {
+                                c.notes.splice(noteIndex, 1);
+                           } else if (oldNoteData.type.trim().toLowerCase() !== trimmedType.toLowerCase()) {
+                               // Also remove if type changes to allow re-checking for duplicates
+                               c.notes.splice(noteIndex, 1);
+                           } else {
+                               // If only URL or other minor details change, update in place
+                               c.notes[noteIndex] = { ...c.notes[noteIndex] }; // placeholder
+                               found = true;
+                           }
                         }
                     });
                 });
             }
+
 
             let chapterIndex = subSubject.chapters.findIndex(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
 
@@ -237,6 +265,15 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 subSubject.chapters.push(newChapter);
                 chapterIndex = subSubject.chapters.length - 1;
             }
+
+            // Check for duplicates again in the target chapter, in case the chapter was changed
+            if (id) { // Only for updates
+                 const targetChapter = subSubject.chapters[chapterIndex];
+                 if(targetChapter.notes.some(n => n.type.trim().toLowerCase() === trimmedType.toLowerCase() && n.id !== id)) {
+                      throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
+                 }
+            }
+
 
             const jsDelivrUrl = linkType === 'github' ? convertToJsDelivr(originalUrl) : originalUrl;
             
@@ -252,7 +289,16 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
              };
             if(isNewNote) newNote.createdAt = Date.now();
 
-            subSubject.chapters[chapterIndex].notes.push(newNote);
+            const targetChapter = subSubject.chapters[chapterIndex];
+            const existingNoteIndex = targetChapter.notes.findIndex(n => n.id === id);
+            
+            if (existingNoteIndex > -1) {
+                // Update existing note
+                targetChapter.notes[existingNoteIndex] = { ...targetChapter.notes[existingNoteIndex], ...newNote };
+            } else {
+                // Add new note
+                targetChapter.notes.push(newNote);
+            }
             
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
         });
