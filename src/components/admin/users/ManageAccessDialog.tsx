@@ -56,7 +56,13 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
             setIsLoading(true);
             getAllNotes()
                 .then(fetchedNotes => {
-                    const sortedNotes = fetchedNotes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    const sortedNotes = fetchedNotes.sort((a, b) => {
+                        if (a.subject < b.subject) return -1;
+                        if (a.subject > b.subject) return 1;
+                        if (a.chapter < b.chapter) return -1;
+                        if (a.chapter > b.chapter) return 1;
+                        return (a.createdAt || 0) - (b.createdAt || 0);
+                    });
                     setNotes(sortedNotes);
                     setIsLoading(false);
                 })
