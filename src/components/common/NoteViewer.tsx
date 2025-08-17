@@ -3,14 +3,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Folder, ShieldAlert, Loader2 } from "lucide-react";
+import { ShieldAlert, Loader2 } from "lucide-react";
 import { getUserById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo } from "react";

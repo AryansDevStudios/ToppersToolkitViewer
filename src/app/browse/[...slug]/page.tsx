@@ -20,21 +20,7 @@ import {
 import type { Chapter, Note, Subject } from "@/lib/types";
 import { iconMap } from "@/lib/iconMap";
 import React from 'react';
-import dynamic from "next/dynamic";
-
-const NoteViewer = dynamic(
-  () => import('@/components/common/NoteViewer').then(mod => mod.NoteViewer),
-  { 
-    ssr: false,
-    loading: () => (
-       <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
-          <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-          <h2 className="text-2xl font-bold">Loading Note...</h2>
-          <p className="mt-2 text-muted-foreground">Please wait while we load the document viewer.</p>
-      </div>
-    )
-  }
-);
+import { NoteViewer } from "@/components/common/NoteViewer";
 
 
 export const revalidate = 0;
