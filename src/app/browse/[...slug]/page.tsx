@@ -19,6 +19,7 @@ import {
 import type { Chapter, Note, Subject } from "@/lib/types";
 import { iconMap } from "@/lib/iconMap";
 import { NoteViewer } from "@/components/common/NoteViewer";
+import React from 'react';
 
 export const revalidate = 0;
 
@@ -57,7 +58,8 @@ const getBreadcrumbItemsForNote = (subjects: Subject[], noteWithContext: any) =>
     ];
 }
 
-export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
+export default async function BrowsePage({ params: paramsPromise }: { params: { slug: string[] } }) {
+  const params = React.use(Promise.resolve(paramsPromise));
   const slug = params.slug || [];
   
   const { current, parents } = await findItemBySlug(slug);
