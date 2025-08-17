@@ -208,6 +208,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             let sourceSubjectId: string | null = null;
             let sourceSubSubjectId: string | null = null;
             let sourceChapterId: string | null = null;
+            let oldNoteLocation: {subject: Subject, subSubject: SubSubject, chapter: Chapter} | null = null;
 
             if (!isNewNote) {
                 for (const subj of allSubjects) {
@@ -219,6 +220,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                                 sourceSubjectId = subj.id;
                                 sourceSubSubjectId = ss.id;
                                 sourceChapterId = chap.id;
+                                oldNoteLocation = {subject: subj, subSubject: ss, chapter: chap};
                                 break;
                             }
                         }
@@ -235,19 +237,14 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             if (!targetSubSubject) throw new Error("Target sub-subject not found!");
 
             // --- Write/Update Phase ---
-            // 1. Remove the old note if it exists and its location has changed
-            if (sourceSubjectId && sourceSubSubjectId && sourceChapterId && oldNoteData) {
-                const sourceSubject = allSubjects.find(s => s.id === sourceSubjectId)!;
-                const sourceSubSubject = sourceSubject.subSubjects.find(ss => ss.id === sourceSubSubjectId)!;
-                const sourceChapter = sourceSubSubject.chapters.find(c => c.id === sourceChapterId)!;
-
-                const noteIndex = sourceChapter.notes.findIndex(n => n.id === noteId);
+            // 1. Remove the old note if it exists.
+            if (oldNoteLocation) {
+                 const noteIndex = oldNoteLocation.chapter.notes.findIndex(n => n.id === noteId);
                 if (noteIndex > -1) {
-                    sourceChapter.notes.splice(noteIndex, 1);
+                    oldNoteLocation.chapter.notes.splice(noteIndex, 1);
                 }
-                
-                const sourceSubjectRef = doc(db, "subjects", sourceSubject.id);
-                transaction.set(sourceSubjectRef, sourceSubject);
+                const sourceSubjectRef = doc(db, "subjects", oldNoteLocation.subject.id);
+                transaction.set(sourceSubjectRef, oldNoteLocation.subject);
             }
             
             // 2. Add the new/updated note to the target location
@@ -260,7 +257,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 targetSubSubject.chapters.push(targetChapter);
             }
 
-            if (targetChapter.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase() && note.id !== noteId)) {
+             if (targetChapter.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase() && note.id !== noteId)) {
                 throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
             }
             
@@ -276,8 +273,13 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 icon: icon || 'FileText',
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
              };
-
-            targetChapter.notes.push(newNote);
+            
+            const existingNoteIndex = targetChapter.notes.findIndex(n => n.id === noteId);
+            if (existingNoteIndex > -1) {
+                targetChapter.notes[existingNoteIndex] = newNote;
+            } else {
+                targetChapter.notes.push(newNote);
+            }
             
             const targetSubjectRef = doc(db, "subjects", targetSubject.id);
             transaction.set(targetSubjectRef, targetSubject);
@@ -561,24 +563,16 @@ export const updateUserRole = async (userId: string, newRole: User['role']) => {
     }
 };
 
-export const updateUserNoteAccess = async (userId: string, noteId: string, hasAccess: boolean) => {
-    if (!userId || !noteId) {
-        return { success: false, error: "Invalid arguments provided." };
+export const updateUserAccessBatch = async (userId: string, noteAccess: string[]) => {
+    if (!userId) {
+        return { success: false, error: "User ID is required." };
     }
     const userDocRef = doc(db, "users", userId);
     try {
-        if (hasAccess) {
-            await updateDoc(userDocRef, {
-                noteAccess: arrayUnion(noteId)
-            });
-        } else {
-            await updateDoc(userDocRef, {
-                noteAccess: arrayRemove(noteId)
-            });
-        }
+        await updateDoc(userDocRef, { noteAccess });
         revalidatePath('/admin/users');
         revalidatePath('/browse', "layout");
-        return { success: true, message: `Access for note ${noteId} updated.` };
+        return { success: true, message: "User access updated successfully." };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -634,3 +628,4 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
         return { success: false, error: e.message };
     }
 };
+

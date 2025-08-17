@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getAllNotes, updateUserNoteAccess } from "@/lib/data";
+import { getAllNotes, updateUserAccessBatch } from "@/lib/data";
 import type { User, Note } from "@/lib/types";
 
 type NoteItem = Note & { subjectName: string; subSubjectName: string; chapter: string; };
@@ -57,13 +57,16 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [notes, setNotes] = useState<NoteItem[]>([]);
-    const [access, setAccess] = useState<Set<string>>(new Set(user.noteAccess || []));
+    const [access, setAccess] = useState<Set<string>>(new Set());
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
+
+    const initialAccess = useMemo(() => new Set(user.noteAccess || []), [user.noteAccess]);
 
     useEffect(() => {
         if (isOpen) {
             setIsLoading(true);
+            setAccess(new Set(user.noteAccess || []));
             getAllNotes()
                 .then(fetchedNotes => {
                     const sortedNotes = fetchedNotes.sort((a, b) => {
@@ -83,33 +86,46 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                     setIsLoading(false);
                 });
         }
-    }, [isOpen, toast]);
+    }, [isOpen, user.noteAccess, toast]);
 
     const handleAccessChange = (noteId: string, newAccess: boolean) => {
+        setAccess(prev => {
+            const newSet = new Set(prev);
+            if (newAccess) newSet.add(noteId);
+            else newSet.delete(noteId);
+            return newSet;
+        });
+    };
+    
+    const handleSave = () => {
         startTransition(async () => {
-             const result = await updateUserNoteAccess(user.id, noteId, newAccess);
-             if (result.success) {
-                setAccess(prev => {
-                    const newSet = new Set(prev);
-                    if (newAccess) newSet.add(noteId);
-                    else newSet.delete(noteId);
-                    return newSet;
-                });
+            const accessArray = Array.from(access);
+            const result = await updateUserAccessBatch(user.id, accessArray);
+            if (result.success) {
                 toast({
                     title: "Access Updated",
-                    description: `Permission for note has been ${newAccess ? 'granted' : 'revoked'}.`,
+                    description: "User permissions have been saved successfully.",
                 });
-             } else {
-                 toast({
+                setIsOpen(false);
+            } else {
+                toast({
                     title: "Update Failed",
                     description: result.error || "Could not update note access.",
                     variant: "destructive",
-                 });
-             }
+                });
+            }
         });
     };
 
     const groupedNotes = groupNotes(notes);
+    
+    const haveChanges = useMemo(() => {
+        if (initialAccess.size !== access.size) return true;
+        for (const id of initialAccess) {
+            if (!access.has(id)) return true;
+        }
+        return false;
+    }, [initialAccess, access]);
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -123,7 +139,7 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                 <DialogHeader>
                     <DialogTitle>Manage Note Access for {user.name}</DialogTitle>
                     <DialogDescription>
-                        Grant or revoke access to specific notes for this user.
+                        Grant or revoke access to specific notes. Click "Save Changes" when you're done.
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="h-[60vh] pr-6 border rounded-md">
@@ -192,7 +208,11 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                    </div>
                 </ScrollArea>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsOpen(false)}>Close</Button>
+                    <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isPending}>Close</Button>
+                    <Button onClick={handleSave} disabled={!haveChanges || isPending}>
+                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Changes
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
