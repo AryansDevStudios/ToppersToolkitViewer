@@ -54,6 +54,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const isEditing = !!note?.id;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,7 +99,21 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
           title: "Success",
           description: result.message,
         });
-        router.push("/admin/notes");
+        if (isEditing) {
+          router.push("/admin/notes");
+        } else {
+          // Reset form for the next upload
+          form.reset({
+            subjectId: values.subjectId, // keep subject
+            subSubjectId: values.subSubjectId, // keep sub-subject
+            chapterName: values.chapterName, // keep chapter
+            type: "", // clear type
+            pdfUrl: "", // clear URL
+            linkType: "github",
+            serveViaJsDelivr: true,
+            icon: "",
+          });
+        }
       } else {
         toast({
           title: "Operation Failed",
@@ -309,7 +324,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Submitting..." : note?.id ? "Save Changes" : "Upload Note"}
+              {isPending ? "Submitting..." : isEditing ? "Save Changes" : "Upload Note"}
             </Button>
           </CardFooter>
         </form>
