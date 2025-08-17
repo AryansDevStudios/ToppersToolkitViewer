@@ -133,6 +133,7 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; chapter:
                             for (const note of chapter.notes) {
                                 allNotes.push({
                                     ...note,
+                                    id: note.id, // Ensure the note's unique ID is used
                                     subject: `${subject.name} / ${subSubject.name}`,
                                     chapter: chapter.name,
                                     chapterId: `${subject.id}/${subSubject.id}/${chapter.id}`,
@@ -211,48 +212,43 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             const subSubject = subjectData.subSubjects[subSubjectIndex];
             if (!subSubject.chapters) subSubject.chapters = [];
             
-            // Prevent duplicate notes on creation
-            if (isNewNote) {
-                let noteExists = false;
-                const chapterForNote = subSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
-                if (chapterForNote) {
-                    if (chapterForNote.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase())) {
-                        noteExists = true;
-                    }
-                }
-                if (noteExists) {
-                    throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
-                }
-            }
-
-
+            // --- Start: Remove old note if updating ---
             let oldNoteData: Note | undefined;
-
-            // If updating, first remove the old note to get its data
             if (!isNewNote) {
-                let found = false;
-                subjectData.subSubjects.forEach(ss => {
-                    ss.chapters.forEach(c => {
-                        const noteIndex = c.notes.findIndex(n => n.id === noteId);
-                        if (noteIndex > -1) {
-                           oldNoteData = c.notes[noteIndex];
-                           // If chapter name is also changing, we must remove it from old chapter
-                           if (c.name.trim().toLowerCase() !== trimmedChapterName.toLowerCase()) {
-                                c.notes.splice(noteIndex, 1);
-                           } else if (oldNoteData.type.trim().toLowerCase() !== trimmedType.toLowerCase()) {
-                               // Also remove if type changes to allow re-checking for duplicates
-                               c.notes.splice(noteIndex, 1);
-                           } else {
-                               // If only URL or other minor details change, update in place
-                               c.notes[noteIndex] = { ...c.notes[noteIndex] }; // placeholder
-                               found = true;
-                           }
+                let noteRemoved = false;
+                for (const subj of await getSubjects()) {
+                    const subjectRefToUpdate = doc(db, "subjects", subj.id);
+                    const subjectToUpdateDoc = await transaction.get(subjectRefToUpdate);
+                    if (!subjectToUpdateDoc.exists()) continue;
+
+                    const subjectToUpdateData = subjectToUpdateDoc.data() as Subject;
+
+                    for (const ss of subjectToUpdateData.subSubjects) {
+                        for (const chap of ss.chapters) {
+                            const noteIndex = chap.notes.findIndex(n => n.id === noteId);
+                            if (noteIndex > -1) {
+                                oldNoteData = chap.notes[noteIndex];
+                                chap.notes.splice(noteIndex, 1);
+                                noteRemoved = true;
+                                break;
+                            }
                         }
-                    });
-                });
+                        if (noteRemoved) break;
+                    }
+                    // After potential removal, update the document inside the transaction
+                    transaction.update(subjectRefToUpdate, { subSubjects: subjectToUpdateData.subSubjects });
+                    if (noteRemoved) break;
+                }
             }
+            // --- End: Remove old note if updating ---
 
 
+            // Prevent duplicate notes on creation or when details change
+            const chapterForNote = subSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
+            if (chapterForNote && chapterForNote.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase() && note.id !== noteId)) {
+                throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
+            }
+            
             let chapterIndex = subSubject.chapters.findIndex(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
 
             if (chapterIndex === -1) {
@@ -265,15 +261,6 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 subSubject.chapters.push(newChapter);
                 chapterIndex = subSubject.chapters.length - 1;
             }
-
-            // Check for duplicates again in the target chapter, in case the chapter was changed
-            if (id) { // Only for updates
-                 const targetChapter = subSubject.chapters[chapterIndex];
-                 if(targetChapter.notes.some(n => n.type.trim().toLowerCase() === trimmedType.toLowerCase() && n.id !== id)) {
-                      throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
-                 }
-            }
-
 
             const jsDelivrUrl = linkType === 'github' ? convertToJsDelivr(originalUrl) : originalUrl;
             
@@ -290,15 +277,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             if(isNewNote) newNote.createdAt = Date.now();
 
             const targetChapter = subSubject.chapters[chapterIndex];
-            const existingNoteIndex = targetChapter.notes.findIndex(n => n.id === id);
-            
-            if (existingNoteIndex > -1) {
-                // Update existing note
-                targetChapter.notes[existingNoteIndex] = { ...targetChapter.notes[existingNoteIndex], ...newNote };
-            } else {
-                // Add new note
-                targetChapter.notes.push(newNote);
-            }
+            targetChapter.notes.push(newNote); // Add the new or updated note
             
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
         });
@@ -312,6 +291,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
         return { success: false, error: e.message };
     }
 };
+
 
 export const deleteNote = async (noteId: string, chapterId: string) => {
      if (!noteId || !chapterId) return { success: false, error: "Invalid arguments" };
