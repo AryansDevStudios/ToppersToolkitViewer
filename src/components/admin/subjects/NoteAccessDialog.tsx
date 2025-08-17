@@ -38,7 +38,6 @@ export function NoteAccessDialog({ note, users, isDropdownItem = true }: NoteAcc
   
   const Trigger = isDropdownItem ? (
     <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setIsOpen(true); }}>
-        <Users className="mr-2 h-4 w-4" />
         View Access
     </DropdownMenuItem>
   ) : (
