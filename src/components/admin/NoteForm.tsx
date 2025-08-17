@@ -84,6 +84,9 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     : [];
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    // Optimistic UI: Redirect immediately
+    router.push("/admin/notes");
+
     startTransition(async () => {
       const result = await upsertNote({
         id: note?.id,
@@ -93,13 +96,13 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
         icon: values.icon,
       });
 
+      // Show result after the fact
       if (result.success) {
         toast({
           title: "Success",
           description: result.message,
         });
-        router.push("/admin/notes");
-        router.refresh();
+        // No need to refresh here, revalidatePath will handle it
       } else {
         toast({
           title: "Operation Failed",
@@ -127,6 +130,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       form.setValue("subSubjectId", ""); // Reset sub-subject on subject change
                     }}
                     defaultValue={field.value}
+                    disabled={isPending}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -156,6 +160,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
+                      disabled={isPending}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -182,7 +187,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                 <FormItem>
                   <FormLabel>Chapter Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Motion" {...field} />
+                    <Input placeholder="e.g., Motion" {...field} disabled={isPending} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -195,7 +200,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                 <FormItem>
                   <FormLabel>Note Type</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Handwritten Notes, Question Bank" {...field} />
+                    <Input placeholder="e.g., Handwritten Notes, Question Bank" {...field} disabled={isPending}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -212,6 +217,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       className="flex space-x-4"
+                      disabled={isPending}
                     >
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
@@ -238,7 +244,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                 <FormItem>
                   <FormLabel>PDF URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://..." {...field} />
+                    <Input placeholder="https://..." {...field} disabled={isPending} />
                   </FormControl>
                    <FormDescription>
                     {linkType === 'github' ? "Enter the standard GitHub blob URL." : "Enter the direct URL to the PDF."}
@@ -263,6 +269,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                                 <Switch
                                     checked={field.value}
                                     onCheckedChange={field.onChange}
+                                    disabled={isPending}
                                 />
                             </FormControl>
                         </FormItem>
@@ -278,6 +285,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    disabled={isPending}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -305,7 +313,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : note?.id ? "Save Changes" : "Upload Note"}
+              {isPending ? "Submitting..." : note?.id ? "Save Changes" : "Upload Note"}
             </Button>
           </CardFooter>
         </form>
