@@ -1,4 +1,3 @@
-
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,6 +7,8 @@ export const metadata: Metadata = {
     title: "User Manual - Topper's Toolkit Library",
     description: "A simple guide to using the Topper's Toolkit Library.",
 };
+
+export const revalidate = 432000; // 5 days
 
 const ManualStep = ({ icon: Icon, title, children }: { icon: React.ElementType, title: string, children: React.ReactNode }) => (
     <div className="flex items-start gap-4">

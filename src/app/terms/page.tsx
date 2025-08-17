@@ -1,4 +1,3 @@
-
 import { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -6,6 +5,8 @@ export const metadata: Metadata = {
     title: "Terms and Conditions - Topper's Toolkit Library",
     description: 'Please read our terms and conditions carefully before using our service.',
 };
+
+export const revalidate = 432000; // 5 days
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     <h2 className="text-2xl font-bold mt-8 mb-4 border-b pb-2">{children}</h2>

@@ -13,6 +13,8 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 
+export const revalidate = 432000; // 5 days
+
 async function SubjectsList() {
   const subjects = await getSubjects();
 
