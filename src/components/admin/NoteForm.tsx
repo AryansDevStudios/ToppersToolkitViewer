@@ -63,7 +63,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       chapterName: note?.chapterName || "",
       type: note?.type || "",
       pdfUrl: note?.originalPdfUrl || note?.pdfUrl || "",
-      linkType: note?.linkType || "other",
+      linkType: note?.linkType || "github",
       serveViaJsDelivr: note?.serveViaJsDelivr === undefined ? true : note.serveViaJsDelivr,
       icon: note?.icon || "",
     },
