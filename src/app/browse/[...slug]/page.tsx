@@ -1,4 +1,5 @@
 
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -59,7 +60,7 @@ const getBreadcrumbItemsForNote = (subjects: Subject[], noteWithContext: any) =>
 }
 
 export default async function BrowsePage({ params: paramsPromise }: { params: { slug: string[] } }) {
-  const params = React.use(Promise.resolve(paramsPromise));
+  const params = React.use(paramsPromise);
   const slug = params.slug || [];
   
   const { current, parents } = await findItemBySlug(slug);
