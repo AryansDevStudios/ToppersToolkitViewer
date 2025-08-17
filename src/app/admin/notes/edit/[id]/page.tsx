@@ -12,10 +12,8 @@ const getSerializableSubjects = (subjects: Subject[]) => {
 
 export default async function EditNotePage({ params }: { params: { id: string } }) {
   const { id } = params;
-  const [note, allSubjects] = await Promise.all([
-    getNoteById(id),
-    getSubjects()
-  ]);
+  const note = await getNoteById(id);
+  const allSubjects = await getSubjects();
 
   if (!note) {
     notFound();

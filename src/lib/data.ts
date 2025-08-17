@@ -196,76 +196,75 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
     const trimmedChapterName = data.chapterName.trim();
     const trimmedType = data.type.trim();
 
-    const subjectDocRef = doc(db, "subjects", subjectId);
-
     try {
         await runTransaction(db, async (transaction) => {
-            const subjectDoc = await transaction.get(subjectDocRef);
-            if (!subjectDoc.exists()) {
-                throw new Error("Subject not found!");
-            }
+            const allSubjectsDocs = await getDocs(collection(db, 'subjects'));
+            const allSubjects = allSubjectsDocs.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject));
 
-            const subjectData = subjectDoc.data() as Subject;
-            const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
-            if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
-            
-            const subSubject = subjectData.subSubjects[subSubjectIndex];
-            if (!subSubject.chapters) subSubject.chapters = [];
-            
-            // --- Start: Remove old note if updating ---
             let oldNoteData: Note | undefined;
+            let oldNoteLocation: { subjectId: string, subSubjectId: string, chapterId: string } | undefined;
+
+            // --- Find and remove the old note if updating ---
             if (!isNewNote) {
-                let noteRemoved = false;
-                for (const subj of await getSubjects()) {
-                    const subjectRefToUpdate = doc(db, "subjects", subj.id);
-                    const subjectToUpdateDoc = await transaction.get(subjectRefToUpdate);
-                    if (!subjectToUpdateDoc.exists()) continue;
-
-                    const subjectToUpdateData = subjectToUpdateDoc.data() as Subject;
-
-                    for (const ss of subjectToUpdateData.subSubjects) {
+                for (const subj of allSubjects) {
+                    for (const ss of subj.subSubjects) {
                         for (const chap of ss.chapters) {
                             const noteIndex = chap.notes.findIndex(n => n.id === noteId);
                             if (noteIndex > -1) {
                                 oldNoteData = chap.notes[noteIndex];
                                 chap.notes.splice(noteIndex, 1);
-                                noteRemoved = true;
+                                oldNoteLocation = { subjectId: subj.id, subSubjectId: ss.id, chapterId: chap.id };
+                                // If chapter becomes empty after removing note, remove the chapter as well
+                                if (chap.notes.length === 0) {
+                                    ss.chapters = ss.chapters.filter(c => c.id !== chap.id);
+                                }
                                 break;
                             }
                         }
-                        if (noteRemoved) break;
+                        if (oldNoteLocation) break;
                     }
-                    // After potential removal, update the document inside the transaction
-                    transaction.update(subjectRefToUpdate, { subSubjects: subjectToUpdateData.subSubjects });
-                    if (noteRemoved) break;
+                    if (oldNoteLocation) {
+                         const subjectRefToUpdate = doc(db, "subjects", oldNoteLocation.subjectId);
+                         transaction.update(subjectRefToUpdate, { subSubjects: subj.subSubjects });
+                         break;
+                    }
                 }
             }
-            // --- End: Remove old note if updating ---
+            // --- End of removal logic ---
 
+            // Now, find the target subject and add the note
+            const targetSubjectDocRef = doc(db, "subjects", subjectId);
+            // We need to re-get the doc if the update was on the same subject, otherwise get the new one.
+            const targetSubjectDoc = oldNoteLocation?.subjectId === subjectId 
+                ? allSubjects.find(s => s.id === subjectId)
+                : (await transaction.get(targetSubjectDocRef)).data() as Subject;
 
-            // Prevent duplicate notes on creation or when details change
-            const chapterForNote = subSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
+            if (!targetSubjectDoc) throw new Error("Target subject not found!");
+
+            const targetSubSubjectIndex = targetSubjectDoc.subSubjects.findIndex(ss => ss.id === subSubjectId);
+            if (targetSubSubjectIndex === -1) throw new Error("Target sub-subject not found!");
+            
+            const targetSubSubject = targetSubjectDoc.subSubjects[targetSubSubjectIndex];
+            if (!targetSubSubject.chapters) targetSubSubject.chapters = [];
+
+            // Check for duplicates in the target location
+            const chapterForNote = targetSubSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
             if (chapterForNote && chapterForNote.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase() && note.id !== noteId)) {
                 throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
             }
             
-            let chapterIndex = subSubject.chapters.findIndex(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
+            let chapterIndex = targetSubSubject.chapters.findIndex(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
 
             if (chapterIndex === -1) {
-                // Chapter doesn't exist, create it
-                const newChapter: Chapter = {
-                    id: uuidv4(),
-                    name: trimmedChapterName,
-                    notes: [],
-                };
-                subSubject.chapters.push(newChapter);
-                chapterIndex = subSubject.chapters.length - 1;
+                const newChapter: Chapter = { id: uuidv4(), name: trimmedChapterName, notes: [] };
+                targetSubSubject.chapters.push(newChapter);
+                chapterIndex = targetSubSubject.chapters.length - 1;
             }
 
             const jsDelivrUrl = linkType === 'github' ? convertToJsDelivr(originalUrl) : originalUrl;
             
             const newNote: Note = { 
-                id: noteId, 
+                id: noteId, // IMPORTANT: Preserving the ID
                 type: trimmedType, 
                 pdfUrl: serveViaJsDelivr ? jsDelivrUrl : originalUrl,
                 originalPdfUrl: originalUrl,
@@ -274,21 +273,19 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 icon: icon || 'FileText',
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
              };
-            if(isNewNote) newNote.createdAt = Date.now();
 
-            const targetChapter = subSubject.chapters[chapterIndex];
-            targetChapter.notes.push(newNote); // Add the new or updated note
+            const targetChapter = targetSubSubject.chapters[chapterIndex];
+            targetChapter.notes.push(newNote);
             
-            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+            transaction.update(targetSubjectDocRef, { subSubjects: targetSubjectDoc.subSubjects });
         });
 
-        revalidatePath("/admin/notes");
-        revalidatePath("/admin/subjects");
+        revalidatePath("/admin/notes", "layout");
         revalidatePath("/browse", "layout");
-        revalidatePath("/admin");
         return { success: true, message: `Note successfully ${isNewNote ? 'created' : 'updated'}.` };
     } catch (e: any) {
-        return { success: false, error: e.message };
+        console.error("Error in upsertNote:", e);
+        return { success: false, error: e.message || "An unknown error occurred" };
     }
 };
 
