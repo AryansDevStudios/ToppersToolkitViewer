@@ -60,8 +60,7 @@ const getBreadcrumbItemsForNote = (subjects: Subject[], noteWithContext: any) =>
     ];
 }
 
-export default async function BrowsePage({ params: paramsPromise }: { params: { slug: string[] } }) {
-  const params = React.use(paramsPromise);
+export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
   const slug = params.slug || [];
   
   const { current, parents } = await findItemBySlug(slug);
@@ -90,13 +89,8 @@ export default async function BrowsePage({ params: paramsPromise }: { params: { 
           name: p.name,
           href: `/browse/${slug.slice(0, i + 1).join("/")}`,
         }))
-        .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
      
-     if (breadcrumbItems.length > 0) {
-        currentPageName = breadcrumbItems.pop()!.name;
-     } else {
-        currentPageName = current.name;
-     }
+     currentPageName = current.name;
   }
     
   const isSubject = "subSubjects" in current;
