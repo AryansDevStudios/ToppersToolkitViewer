@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FileText, Folder } from "lucide-react";
+import { FileText, Folder, Loader2 } from "lucide-react";
 import { findItemBySlug, getNoteById, getSubjects } from "@/lib/data";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
@@ -19,8 +19,23 @@ import {
 } from "@/components/ui/accordion";
 import type { Chapter, Note, Subject } from "@/lib/types";
 import { iconMap } from "@/lib/iconMap";
-import { NoteViewer } from "@/components/common/NoteViewer";
 import React from 'react';
+import dynamic from "next/dynamic";
+
+const NoteViewer = dynamic(
+  () => import('@/components/common/NoteViewer').then(mod => mod.NoteViewer),
+  { 
+    ssr: false,
+    loading: () => (
+       <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
+          <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
+          <h2 className="text-2xl font-bold">Loading Note...</h2>
+          <p className="mt-2 text-muted-foreground">Please wait while we load the document viewer.</p>
+      </div>
+    )
+  }
+);
+
 
 export const revalidate = 0;
 
