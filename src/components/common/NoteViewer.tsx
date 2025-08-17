@@ -12,9 +12,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileText, Folder, ShieldAlert, Loader2 } from "lucide-react";
 import { getUserById } from "@/lib/data";
-import { PdfViewerWrapper } from "@/components/common/PdfViewerWrapper";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
+import dynamic from 'next/dynamic';
+
+const PdfViewerWrapper = dynamic(() => import('@/components/common/PdfViewerWrapper').then(mod => mod.PdfViewerWrapper), {
+    ssr: false,
+    loading: () => (
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground w-full h-[calc(100vh-12rem)] bg-background">
+            <Loader2 className="h-10 w-10 animate-spin mb-2" />
+            <p>Loading Viewer...</p>
+        </div>
+    )
+});
+
 
 const AccessDenied = () => (
     <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
