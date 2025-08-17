@@ -1,5 +1,5 @@
 
-import { getSubjects } from "@/lib/data";
+import { getSubjects, getUsers } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   Accordion,
@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Library, Folder, FileText, Edit, Eye } from "lucide-react";
+import { PlusCircle, Library, Folder, FileText, Edit, Eye, Users } from "lucide-react";
 import { SubjectForm } from "@/components/admin/subjects/SubjectForm";
 import { SubSubjectForm } from "@/components/admin/subjects/SubSubjectForm";
 import { ChapterForm } from "@/components/admin/subjects/ChapterForm";
@@ -16,11 +16,14 @@ import { DeleteDialog } from "@/components/admin/subjects/DeleteDialog";
 import { iconMap } from "@/lib/iconMap";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { NoteAccessDialog } from "@/components/admin/subjects/NoteAccessDialog";
+import type { User } from "@/lib/types";
 
 export const revalidate = 0;
 
 export default async function AdminSubjectsPage() {
   const subjects = await getSubjects();
+  const users: User[] = await getUsers();
 
   return (
     <div className="space-y-8">
@@ -110,25 +113,29 @@ export default async function AdminSubjectsPage() {
                                             </div>
                                             {chapter.notes && chapter.notes.length > 0 ? (
                                               <ul className="space-y-2 pl-8">
-                                                {chapter.notes.map(note => (
-                                                  <li key={note.id} className="flex items-center justify-between text-sm py-1 border-t border-dashed border-border last:border-b-0">
-                                                    <span>- {note.type}</span>
-                                                    <div className="flex items-center gap-1">
-                                                      <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
-                                                        <Link href={`/admin/notes/edit/${note.id}`}>
-                                                          <Edit className="h-4 w-4" />
-                                                          <span className="sr-only">Edit Note</span>
-                                                        </Link>
-                                                      </Button>
-                                                      <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
-                                                         <a href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
-                                                          <Eye className="h-4 w-4" />
-                                                          <span className="sr-only">View PDF</span>
-                                                         </a>
-                                                      </Button>
-                                                    </div>
-                                                  </li>
-                                                ))}
+                                                {chapter.notes.map(note => {
+                                                  const usersWithAccess = users.filter(user => user.noteAccess?.includes(note.id));
+                                                  return (
+                                                    <li key={note.id} className="flex items-center justify-between text-sm py-1 border-t border-dashed border-border last:border-b-0">
+                                                      <span>- {note.type}</span>
+                                                      <div className="flex items-center gap-1">
+                                                        <NoteAccessDialog note={note} users={usersWithAccess} />
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                                                          <Link href={`/admin/notes/edit/${note.id}`}>
+                                                            <Edit className="h-4 w-4" />
+                                                            <span className="sr-only">Edit Note</span>
+                                                          </Link>
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                                                           <a href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
+                                                            <Eye className="h-4 w-4" />
+                                                            <span className="sr-only">View PDF</span>
+                                                           </a>
+                                                        </Button>
+                                                      </div>
+                                                    </li>
+                                                  )
+                                                })}
                                               </ul>
                                             ) : <p className="text-xs text-muted-foreground italic pl-8 pt-2 border-t border-dashed">No notes in this chapter.</p>}
                                         </div>
