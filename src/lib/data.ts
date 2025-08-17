@@ -9,6 +9,7 @@ import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
+import { cache } from 'react';
 
 const convertToJsDelivr = (githubUrl: string): string => {
     try {
@@ -55,7 +56,7 @@ export const seedSubjects = async () => {
     }
 };
 
-export const getSubjects = async (): Promise<Subject[]> => {
+export const getSubjects = cache(async (): Promise<Subject[]> => {
     try {
         const subjectsCollection = collection(db, 'subjects');
         const subjectsSnapshot = await getDocs(subjectsCollection);
@@ -74,7 +75,7 @@ export const getSubjects = async (): Promise<Subject[]> => {
     } catch (error) {
         return [];
     }
-};
+});
 
 export const findItemBySlug = async (slug: string[]) => {
   if (!slug || slug.length === 0) {
@@ -121,9 +122,9 @@ export const findItemBySlug = async (slug: string[]) => {
   return { current: currentItem, parents };
 };
 
-export const getAllNotes = async (): Promise<(Note & { subject: string; subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[]> => {
+export const getAllNotes = cache(async (): Promise<(Note & { subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[]> => {
     const allSubjects = await getSubjects();
-    const allNotes: (Note & { subject: string; subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[] = [];
+    const allNotes: (Note & { subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[] = [];
     for (const subject of allSubjects) {
         if (subject.subSubjects) {
             for (const subSubject of subject.subSubjects) {
@@ -134,7 +135,6 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; subjectN
                                 allNotes.push({
                                     ...note,
                                     id: note.id, // Ensure the note's unique ID is used
-                                    subject: `${subject.name} / ${subSubject.name}`,
                                     subjectName: subject.name,
                                     subSubjectName: subSubject.name,
                                     chapter: chapter.name,
@@ -149,7 +149,7 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; subjectN
         }
     }
     return allNotes;
-};
+});
 
 export const getNoteById = async (id: string): Promise<(Note & { subjectId: string; subSubjectId: string; chapterId: string; chapterName: string; }) | null> => {
     if (!id) return null;
@@ -504,7 +504,7 @@ export const deleteChapter = async (subjectId: string, subSubjectId: string, cha
 
 // --- User Management ---
 
-export const getUserById = async (userId: string): Promise<User | null> => {
+export const getUserById = cache(async (userId: string): Promise<User | null> => {
   try {
     const userDocRef = doc(db, 'users', userId);
     const userDoc = await getDoc(userDocRef);
@@ -515,10 +515,10 @@ export const getUserById = async (userId: string): Promise<User | null> => {
   } catch (error) {
     return null;
   }
-};
+});
 
 
-export const getUsers = async (): Promise<User[]> => {
+export const getUsers = cache(async (): Promise<User[]> => {
   try {
     const usersCollection = collection(db, 'users');
     const usersSnapshot = await getDocs(usersCollection);
@@ -529,7 +529,7 @@ export const getUsers = async (): Promise<User[]> => {
   } catch (error) {
     return [];
   }
-};
+});
 
 export const upsertUser = async (userData: Partial<User> & { id: string }) => {
     const { id, ...dataToUpdate } = userData;
@@ -629,3 +629,5 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
     }
 };
 
+
+    
