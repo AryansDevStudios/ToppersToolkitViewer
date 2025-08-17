@@ -8,12 +8,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Library, Folder, FileText } from "lucide-react";
+import { PlusCircle, Library, Folder, FileText, Edit, Eye } from "lucide-react";
 import { SubjectForm } from "@/components/admin/subjects/SubjectForm";
 import { SubSubjectForm } from "@/components/admin/subjects/SubSubjectForm";
 import { ChapterForm } from "@/components/admin/subjects/ChapterForm";
 import { DeleteDialog } from "@/components/admin/subjects/DeleteDialog";
 import { iconMap } from "@/lib/iconMap";
+import Link from "next/link";
 
 export const revalidate = 0;
 
@@ -106,20 +107,43 @@ export default async function AdminSubjectsPage() {
                                   </div>
                                   
                                   {subSubject.chapters && subSubject.chapters.length > 0 ? (
-                                    <ul className="space-y-2">
+                                    <div className="space-y-4">
                                         {subSubject.chapters.map(chapter => (
-                                          <li key={chapter.id} className="flex items-center justify-between rounded-md p-2 hover:bg-muted/50">
-                                             <div className="flex items-center gap-3">
-                                                <FileText className="h-4 w-4 text-primary/70" />
-                                                <span>{chapter.name}</span>
-                                             </div>
-                                             <div className="flex items-center gap-2">
-                                                <ChapterForm subjectId={subject.id} subSubjectId={subSubject.id} chapter={chapter} />
-                                                <DeleteDialog type="Chapter" subjectId={subject.id} subSubjectId={subSubject.id} chapterId={chapter.id} />
-                                            </div>
-                                          </li>
+                                          <div key={chapter.id} className="p-3 rounded-md bg-muted/30 border">
+                                              <div className="flex items-center justify-between mb-3">
+                                                 <div className="flex items-center gap-3 font-semibold">
+                                                    <FileText className="h-5 w-5 text-primary/70" />
+                                                    <span>{chapter.name}</span>
+                                                 </div>
+                                                 <div className="flex items-center gap-2">
+                                                    <ChapterForm subjectId={subject.id} subSubjectId={subSubject.id} chapter={chapter} />
+                                                    <DeleteDialog type="Chapter" subjectId={subject.id} subSubjectId={subSubject.id} chapterId={chapter.id} />
+                                                </div>
+                                              </div>
+                                              {chapter.notes && chapter.notes.length > 0 ? (
+                                                <ul className="space-y-2 pl-8">
+                                                  {chapter.notes.map(note => (
+                                                    <li key={note.id} className="flex items-center justify-between text-sm">
+                                                      <span>- {note.type}</span>
+                                                      <div className="flex items-center gap-1">
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                                                          <Link href={`/admin/notes/edit/${note.id}`}>
+                                                            <Edit className="h-4 w-4" />
+                                                          </Link>
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+                                                           <a href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
+                                                            <Eye className="h-4 w-4" />
+                                                           </a>
+                                                        </Button>
+                                                      </div>
+                                                    </li>
+                                                  ))}
+                                                </ul>
+                                              ) : <p className="text-xs text-muted-foreground italic pl-8">No notes in this chapter.</p>}
+                                          </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                   ) : <p className="text-sm text-muted-foreground italic mt-2">No chapters yet.</p>}
 
                                </AccordionContent>
