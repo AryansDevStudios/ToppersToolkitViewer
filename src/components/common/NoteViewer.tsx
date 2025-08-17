@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Folder, ShieldAlert, Loader2 } from "lucide-react";
 import { getUserById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import dynamic from 'next/dynamic';
 
 const PdfViewerWrapper = dynamic(() => import('@/components/common/PdfViewerWrapper').then(mod => mod.PdfViewerWrapper), {
@@ -53,7 +53,7 @@ interface NoteViewerProps {
     pdfUrl: string;
 }
 
-export function NoteViewer({ noteId, pdfUrl }: NoteViewerProps) {
+const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
     const { user, role, loading: authLoading } = useAuth();
     const router = useRouter();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
@@ -106,4 +106,6 @@ export function NoteViewer({ noteId, pdfUrl }: NoteViewerProps) {
     }
     
     return <AccessDenied />;
-}
+};
+
+export const NoteViewer = memo(NoteViewerComponent);
