@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getAllNotes, updateUserAccessBatch } from "@/lib/data";
 import type { User, Note } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 type NoteItem = Note & { subjectName: string; subSubjectName: string; chapter: string; };
 
