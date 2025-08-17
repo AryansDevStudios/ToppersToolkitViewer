@@ -58,7 +58,7 @@ export default async function AdminNotesPage() {
               <TableRow>
                 <TableHead>Note Details</TableHead>
                 <TableHead className="hidden md:table-cell">Type</TableHead>
-                <TableHead className="hidden md:table-cell">Subject / Sub-Subject</TableHead>
+                <TableHead className="hidden md:table-cell">Sub-Subject / Subject</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -73,15 +73,15 @@ export default async function AdminNotesPage() {
                           <div>
                             <Badge variant="outline">{note.type}</Badge>
                           </div>
-                          <div>{note.subjectName} / {note.subSubjectName}</div>
+                          <div>{note.subSubjectName} / {note.subjectName}</div>
                         </div>
                       </TableCell>
                        <TableCell className="hidden md:table-cell">
                         <Badge variant="outline">{note.type}</Badge>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <div>{note.subjectName}</div>
-                        <div className="text-xs text-muted-foreground">{note.subSubjectName}</div>
+                        <div>{note.subSubjectName}</div>
+                        <div className="text-xs text-muted-foreground">{note.subjectName}</div>
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
