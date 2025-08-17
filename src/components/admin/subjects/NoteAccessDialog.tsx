@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogDescription
 } from "@/components/ui/dialog";
-import { Users, UserCircle } from "lucide-react";
+import { Users, UserCircle, CheckCircle2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { User, Note } from "@/lib/types";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -61,7 +61,13 @@ export function NoteAccessDialog({ note, users, isDropdownItem = true }: NoteAcc
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[40vh] pr-6">
-            {users.length > 0 ? (
+            {note.isPublic ? (
+               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+                    <CheckCircle2 className="h-12 w-12 mb-4 text-green-500" />
+                    <p className="font-semibold text-base">This note is public.</p>
+                    <p className="text-sm">All registered users have access.</p>
+                </div>
+            ) : users.length > 0 ? (
                 <ul className="space-y-3">
                     {users.map((user) => (
                         <li key={user.id} className="flex items-center gap-3 p-2 rounded-md bg-muted/50">

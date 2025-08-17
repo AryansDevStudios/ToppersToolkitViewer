@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Loader2 } from "lucide-react";
-import { getUserById } from "@/lib/data";
+import { getUserById, getNoteById as fetchNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo } from "react";
 import dynamic from 'next/dynamic';
+import type { Note } from "@/lib/types";
 
 const PdfViewerWrapper = dynamic(() => import('@/components/common/PdfViewerWrapper').then(mod => mod.PdfViewerWrapper), {
     ssr: false,
@@ -67,6 +68,13 @@ const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
         async function checkAccess() {
             if (!user) {
                 setHasAccess(false);
+                return;
+            }
+            
+            // First, check if the note itself is public
+            const noteData = await fetchNoteById(noteId);
+            if (noteData?.isPublic) {
+                setHasAccess(true);
                 return;
             }
 

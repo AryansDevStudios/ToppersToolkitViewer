@@ -42,6 +42,7 @@ const formSchema = z.object({
   linkType: z.enum(["github", "other"]),
   serveViaJsDelivr: z.boolean(),
   icon: z.string().optional(),
+  isPublic: z.boolean(),
 });
 
 // We expect a version of Subject without the icon for client-side components
@@ -68,6 +69,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       linkType: note?.linkType || "github",
       serveViaJsDelivr: note?.serveViaJsDelivr === undefined ? true : note.serveViaJsDelivr,
       icon: note?.icon || "",
+      isPublic: note?.isPublic || false,
     },
   });
 
@@ -113,6 +115,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
             linkType: "github",
             serveViaJsDelivr: true,
             icon: "",
+            isPublic: false,
           });
           router.refresh();
         }
@@ -217,6 +220,27 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                   </FormControl>
                   <FormMessage />
                 </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isPublic"
+              render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                      <div className="space-y-0.5">
+                          <FormLabel>Make Public</FormLabel>
+                          <FormDescription>
+                              Allow access to all registered users.
+                          </FormDescription>
+                      </div>
+                      <FormControl>
+                          <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              disabled={isPending}
+                          />
+                      </FormControl>
+                  </FormItem>
               )}
             />
             <FormField

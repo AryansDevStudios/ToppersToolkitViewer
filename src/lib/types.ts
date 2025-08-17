@@ -23,6 +23,7 @@ export interface Note {
   serveViaJsDelivr?: boolean;
   icon?: string;
   createdAt?: number;
+  isPublic?: boolean;
 }
 
 export interface Chapter {

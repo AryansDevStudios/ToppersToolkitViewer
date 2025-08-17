@@ -191,8 +191,8 @@ export const getDashboardStats = async () => {
     };
 };
 
-export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; linkType: 'github' | 'other'; serveViaJsDelivr: boolean; icon?: string; }) => {
-    const { id, subjectId, subSubjectId, pdfUrl: originalUrl, icon, linkType, serveViaJsDelivr } = data;
+export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; linkType: 'github' | 'other'; serveViaJsDelivr: boolean; icon?: string; isPublic?: boolean; }) => {
+    const { id, subjectId, subSubjectId, pdfUrl: originalUrl, icon, linkType, serveViaJsDelivr, isPublic } = data;
     const isNewNote = !id;
     const noteId = isNewNote ? uuidv4() : id!;
     const trimmedChapterName = data.chapterName.trim();
@@ -272,6 +272,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 serveViaJsDelivr,
                 icon: icon || 'FileText',
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
+                isPublic: isPublic || false,
              };
             
             const existingNoteIndex = targetChapter.notes.findIndex(n => n.id === noteId);
