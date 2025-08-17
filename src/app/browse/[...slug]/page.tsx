@@ -52,7 +52,8 @@ const getBreadcrumbItemsForNote = (subjects: Subject[], noteWithContext: any) =>
 
     return [
         { name: subject.name, href: `/browse/${subject.id}` },
-        { name: subSubject.name, href: `/browse/${subject.id}/${subSubject.id}` }
+        { name: subSubject.name, href: `/browse/${subject.id}/${subSubject.id}` },
+        { name: noteWithContext.chapterName, href: `/browse/${subject.id}/${subSubject.id}` }, // Chapter is not a direct link but part of the trail
     ];
 }
 
@@ -68,12 +69,14 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   const isNote = "pdfUrl" in current;
   let breadcrumbItems: {name: string, href: string}[] = [];
   let currentPageName: string = '';
+  let noteChapterName: string = '';
 
   if (isNote) {
       const allSubjects = await getSubjects();
       const noteWithContext = await getNoteById(current.id);
       if (noteWithContext) {
           breadcrumbItems = getBreadcrumbItemsForNote(allSubjects, noteWithContext);
+          noteChapterName = noteWithContext.chapterName;
       }
       currentPageName = current.type;
   } else {
@@ -84,9 +87,11 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
           href: `/browse/${slug.slice(0, i + 1).join("/")}`,
         }))
         .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
-     currentPageName = isNote ? current.type : current.name;
+     
      if (breadcrumbItems.length > 0) {
         currentPageName = breadcrumbItems.pop()!.name;
+     } else {
+        currentPageName = current.name;
      }
   }
     
@@ -97,6 +102,8 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   if (isSubject) children = current.subSubjects;
   else if (isSubSubject) children = groupNotesByChapter(current.chapters);
   
+  const pageTitle = isNote ? noteChapterName : currentPageName;
+
   const renderContent = () => {
     if (isNote) {
       // The client component handles access check and rendering
@@ -182,9 +189,13 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
       />
       <header className="mb-8">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
-           {currentPageName}
+           {pageTitle}
         </h1>
-         {isSubSubject && (
+         {isNote ? (
+          <p className="text-muted-foreground text-lg">
+            {current.type}
+          </p>
+         ) : isSubSubject && (
           <p className="text-muted-foreground text-lg">
             Select a chapter to view its materials.
           </p>
