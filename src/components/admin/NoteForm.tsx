@@ -31,6 +31,7 @@ import { useTransition } from "react";
 import { iconMap, iconNames } from "@/lib/iconMap";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
+import { DeleteNoteDialog } from "./DeleteNoteDialog";
 
 const formSchema = z.object({
   subjectId: z.string().min(1, { message: "Please select a subject." }),
@@ -113,6 +114,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
             serveViaJsDelivr: true,
             icon: "",
           });
+          router.refresh();
         }
       } else {
         toast({
@@ -322,7 +324,16 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
               )}
             />
           </CardContent>
-          <CardFooter className="flex justify-end">
+          <CardFooter className="flex justify-between">
+            <div>
+              {isEditing && note.id && note.chapterId && (
+                <DeleteNoteDialog 
+                  noteId={note.id} 
+                  chapterId={note.chapterId} 
+                  isTriggerButton
+                />
+              )}
+            </div>
             <Button type="submit" disabled={isPending}>
               {isPending ? "Submitting..." : isEditing ? "Save Changes" : "Upload Note"}
             </Button>

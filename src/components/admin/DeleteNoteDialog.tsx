@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition } from "react";
@@ -17,13 +18,15 @@ import { deleteNote } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 
 interface DeleteNoteDialogProps {
   noteId: string;
   chapterId: string;
+  isTriggerButton?: boolean;
 }
 
-export function DeleteNoteDialog({ noteId, chapterId }: DeleteNoteDialogProps) {
+export function DeleteNoteDialog({ noteId, chapterId, isTriggerButton = false }: DeleteNoteDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -34,7 +37,7 @@ export function DeleteNoteDialog({ noteId, chapterId }: DeleteNoteDialogProps) {
       const result = await deleteNote(noteId, chapterId);
       if (result.success) {
         toast({ title: "Note Deleted", description: result.message });
-        router.refresh(); 
+        router.push('/admin/notes');
         setIsOpen(false);
       } else {
         toast({
@@ -46,15 +49,26 @@ export function DeleteNoteDialog({ noteId, chapterId }: DeleteNoteDialogProps) {
     });
   };
 
+  const TriggerComponent = isTriggerButton ? (
+     <Button type="button" variant="destructive" onClick={() => setIsOpen(true)}>
+        <Trash2 className="mr-2 h-4 w-4" />
+        Delete Note
+      </Button>
+  ) : (
+     <DropdownMenuItem
+        onSelect={(e) => e.preventDefault()}
+        onClick={() => setIsOpen(true)}
+        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+      >
+        <Trash2 className="mr-2 h-4 w-4" />
+        Delete
+      </DropdownMenuItem>
+  )
+
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <DropdownMenuItem
-          onSelect={(e) => e.preventDefault()}
-          className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-        >
-          Delete
-        </DropdownMenuItem>
+        {TriggerComponent}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
