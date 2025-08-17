@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FileText, Folder } from "lucide-react";
-import { findItemBySlug } from "@/lib/data";
+import { findItemBySlug, getNoteById, getSubjects } from "@/lib/data";
 import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import {
   Accordion,
@@ -16,7 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import type { Chapter, Note } from "@/lib/types";
+import type { Chapter, Note, Subject } from "@/lib/types";
 import { iconMap } from "@/lib/iconMap";
 import { NoteViewer } from "@/components/common/NoteViewer";
 
@@ -43,6 +43,19 @@ const groupNotesByChapter = (chapters: Chapter[]) => {
     }));
 };
 
+const getBreadcrumbItemsForNote = (subjects: Subject[], noteWithContext: any) => {
+    const subject = subjects.find(s => s.id === noteWithContext.subjectId);
+    if (!subject) return [];
+    
+    const subSubject = subject.subSubjects.find(ss => ss.id === noteWithContext.subSubjectId);
+    if (!subSubject) return [];
+
+    return [
+        { name: subject.name, href: `/browse/${subject.id}` },
+        { name: subSubject.name, href: `/browse/${subject.id}/${subSubject.id}` }
+    ];
+}
+
 export default async function BrowsePage({ params }: { params: { slug: string[] } }) {
   const slug = params.slug || [];
   
@@ -51,16 +64,32 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   if (!current) {
     notFound();
   }
-
-  const breadcrumbItems = parents
-    .slice(1) // Remove the root "Browse"
-    .map((p, i) => ({
-      name: p.name,
-      href: `/browse/${slug.slice(0, i + 1).join("/")}`,
-    }))
-    .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
-    
+  
   const isNote = "pdfUrl" in current;
+  let breadcrumbItems: {name: string, href: string}[] = [];
+  let currentPageName: string = '';
+
+  if (isNote) {
+      const allSubjects = await getSubjects();
+      const noteWithContext = await getNoteById(current.id);
+      if (noteWithContext) {
+          breadcrumbItems = getBreadcrumbItemsForNote(allSubjects, noteWithContext);
+      }
+      currentPageName = current.type;
+  } else {
+     breadcrumbItems = parents
+        .slice(1) // Remove the root "Browse"
+        .map((p, i) => ({
+          name: p.name,
+          href: `/browse/${slug.slice(0, i + 1).join("/")}`,
+        }))
+        .concat(slug.length > (parents.length - 1) ? [{ name: current.name, href: `/browse/${slug.join('/')}` }] : []);
+     currentPageName = isNote ? current.type : current.name;
+     if (breadcrumbItems.length > 0) {
+        currentPageName = breadcrumbItems.pop()!.name;
+     }
+  }
+    
   const isSubject = "subSubjects" in current;
   const isSubSubject = !isNote && "chapters" in current;
   
@@ -68,8 +97,6 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   if (isSubject) children = current.subSubjects;
   else if (isSubSubject) children = groupNotesByChapter(current.chapters);
   
-  const currentPageName = isNote ? current.type : current.name;
-
   const renderContent = () => {
     if (isNote) {
       // The client component handles access check and rendering
@@ -150,7 +177,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumbs
-        items={breadcrumbItems.slice(0,-1)}
+        items={breadcrumbItems}
         currentPageName={currentPageName}
       />
       <header className="mb-8">
