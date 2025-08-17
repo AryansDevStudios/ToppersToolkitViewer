@@ -121,9 +121,9 @@ export const findItemBySlug = async (slug: string[]) => {
   return { current: currentItem, parents };
 };
 
-export const getAllNotes = async (): Promise<(Note & { subject: string; chapter: string; chapterId: string; slug: string })[]> => {
+export const getAllNotes = async (): Promise<(Note & { subject: string; subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[]> => {
     const allSubjects = await getSubjects();
-    const allNotes: (Note & { subject: string; chapter: string; chapterId: string; slug: string })[] = [];
+    const allNotes: (Note & { subject: string; subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[] = [];
     for (const subject of allSubjects) {
         if (subject.subSubjects) {
             for (const subSubject of subject.subSubjects) {
@@ -135,6 +135,8 @@ export const getAllNotes = async (): Promise<(Note & { subject: string; chapter:
                                     ...note,
                                     id: note.id, // Ensure the note's unique ID is used
                                     subject: `${subject.name} / ${subSubject.name}`,
+                                    subjectName: subject.name,
+                                    subSubjectName: subSubject.name,
                                     chapter: chapter.name,
                                     chapterId: `${subject.id}/${subSubject.id}/${chapter.id}`,
                                     slug: `/browse/${subject.id}/${subSubject.id}/${note.id}`
@@ -201,12 +203,12 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             const allSubjectsDocs = await getDocs(collection(db, 'subjects'));
             let allSubjects = allSubjectsDocs.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject));
 
+            // --- Read/Find Phase ---
             let oldNoteData: Note | null = null;
-            let sourceSubject: Subject | null = null;
-            let sourceSubSubject: SubSubject | null = null;
-            let sourceChapter: Chapter | null = null;
+            let sourceSubjectId: string | null = null;
+            let sourceSubSubjectId: string | null = null;
+            let sourceChapterId: string | null = null;
 
-            // --- Find Phase ---
             if (!isNewNote) {
                 for (const subj of allSubjects) {
                     for (const ss of subj.subSubjects) {
@@ -214,9 +216,9 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                             const note = chap.notes.find(n => n.id === noteId);
                             if (note) {
                                 oldNoteData = note;
-                                sourceSubject = subj;
-                                sourceSubSubject = ss;
-                                sourceChapter = chap;
+                                sourceSubjectId = subj.id;
+                                sourceSubSubjectId = ss.id;
+                                sourceChapterId = chap.id;
                                 break;
                             }
                         }
@@ -228,34 +230,27 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             
             const targetSubject = allSubjects.find(s => s.id === subjectId);
             if (!targetSubject) throw new Error("Target subject not found!");
+            
+            const targetSubSubject = targetSubject.subSubjects.find(ss => ss.id === subSubjectId);
+            if (!targetSubSubject) throw new Error("Target sub-subject not found!");
 
-            // --- Write Phase ---
-            // 1. Remove the old note if it exists and its location was found
-            if (sourceSubject && sourceSubSubject && sourceChapter && oldNoteData) {
+            // --- Write/Update Phase ---
+            // 1. Remove the old note if it exists and its location has changed
+            if (sourceSubjectId && sourceSubSubjectId && sourceChapterId && oldNoteData) {
+                const sourceSubject = allSubjects.find(s => s.id === sourceSubjectId)!;
+                const sourceSubSubject = sourceSubject.subSubjects.find(ss => ss.id === sourceSubSubjectId)!;
+                const sourceChapter = sourceSubSubject.chapters.find(c => c.id === sourceChapterId)!;
+
                 const noteIndex = sourceChapter.notes.findIndex(n => n.id === noteId);
                 if (noteIndex > -1) {
                     sourceChapter.notes.splice(noteIndex, 1);
                 }
-
-                // If the source chapter is now empty, remove it
-                if (sourceChapter.notes.length === 0) {
-                    const chapterIndex = sourceSubSubject.chapters.findIndex(c => c.id === sourceChapter!.id);
-                    if (chapterIndex > -1) {
-                        sourceSubSubject.chapters.splice(chapterIndex, 1);
-                    }
-                }
                 
-                // If the source subject is different from the target, update it.
-                // If it's the same, we'll update it later with the added note.
-                if (sourceSubject.id !== targetSubject.id) {
-                    const sourceSubjectRef = doc(db, "subjects", sourceSubject.id);
-                    transaction.set(sourceSubjectRef, sourceSubject);
-                }
+                const sourceSubjectRef = doc(db, "subjects", sourceSubject.id);
+                transaction.set(sourceSubjectRef, sourceSubject);
             }
             
             // 2. Add the new/updated note to the target location
-            const targetSubSubject = targetSubject.subSubjects.find(ss => ss.id === subSubjectId);
-            if (!targetSubSubject) throw new Error("Target sub-subject not found!");
             if (!targetSubSubject.chapters) targetSubSubject.chapters = [];
             
             let targetChapter = targetSubSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
@@ -265,7 +260,6 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 targetSubSubject.chapters.push(targetChapter);
             }
 
-            // Check for duplicates in the target location
             if (targetChapter.notes.some(note => note.type.trim().toLowerCase() === trimmedType.toLowerCase() && note.id !== noteId)) {
                 throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
             }

@@ -23,22 +23,32 @@ import { useToast } from "@/hooks/use-toast";
 import { getAllNotes, updateUserNoteAccess } from "@/lib/data";
 import type { User, Note } from "@/lib/types";
 
-type NoteItem = Note & { subject: string; chapter: string; };
+type NoteItem = Note & { subjectName: string; subSubjectName: string; chapter: string; };
 
 interface ManageAccessDialogProps {
   user: User;
 }
 
 const groupNotes = (notes: NoteItem[]) => {
-    const grouped: { [subject: string]: { [chapter: string]: NoteItem[] } } = {};
+    const grouped: { 
+        [subject: string]: { 
+            [subSubject: string]: {
+                 [chapter: string]: NoteItem[] 
+            } 
+        } 
+    } = {};
+
     notes.forEach(note => {
-        if (!grouped[note.subject]) {
-            grouped[note.subject] = {};
+        if (!grouped[note.subjectName]) {
+            grouped[note.subjectName] = {};
         }
-        if (!grouped[note.subject][note.chapter]) {
-            grouped[note.subject][note.chapter] = [];
+        if (!grouped[note.subjectName][note.subSubjectName]) {
+            grouped[note.subjectName][note.subSubjectName] = {};
         }
-        grouped[note.subject][note.chapter].push(note);
+        if (!grouped[note.subjectName][note.subSubjectName][note.chapter]) {
+            grouped[note.subjectName][note.subSubjectName][note.chapter] = [];
+        }
+        grouped[note.subjectName][note.subSubjectName][note.chapter].push(note);
     });
     return grouped;
 };
@@ -57,8 +67,10 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
             getAllNotes()
                 .then(fetchedNotes => {
                     const sortedNotes = fetchedNotes.sort((a, b) => {
-                        if (a.subject < b.subject) return -1;
-                        if (a.subject > b.subject) return 1;
+                        if (a.subjectName < b.subjectName) return -1;
+                        if (a.subjectName > b.subjectName) return 1;
+                        if (a.subSubjectName < b.subSubjectName) return -1;
+                        if (a.subSubjectName > b.subSubjectName) return 1;
                         if (a.chapter < b.chapter) return -1;
                         if (a.chapter > b.chapter) return 1;
                         return (a.createdAt || 0) - (b.createdAt || 0);
@@ -122,7 +134,7 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                         </div>
                      ) : (
                         <Accordion type="multiple" className="w-full">
-                           {Object.entries(groupedNotes).map(([subject, chapters]) => (
+                           {Object.entries(groupedNotes).map(([subject, subSubjects]) => (
                              <AccordionItem value={subject} key={subject}>
                                <AccordionTrigger className="text-lg font-semibold">
                                  <div className="flex items-center gap-2">
@@ -132,33 +144,44 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                                </AccordionTrigger>
                                <AccordionContent className="pl-4">
                                  <Accordion type="multiple" className="w-full">
-                                    {Object.entries(chapters).map(([chapter, notesInChapter]) => (
-                                      <AccordionItem value={chapter} key={chapter}>
-                                        <AccordionTrigger>
-                                           <div className="flex items-center gap-2">
-                                             <Folder className="h-5 w-5 text-primary/80" />
-                                             {chapter}
-                                           </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="pl-6">
-                                          <ul className="space-y-3 py-2">
-                                            {notesInChapter.map(note => (
-                                               <li key={note.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
-                                                 <div className="flex items-center gap-2">
-                                                    <FileText className="h-4 w-4 text-muted-foreground" />
-                                                    <Label htmlFor={`access-${note.id}`} className="font-normal">{note.type}</Label>
-                                                 </div>
-                                                 <Switch
-                                                   id={`access-${note.id}`}
-                                                   checked={access.has(note.id)}
-                                                   onCheckedChange={(checked) => handleAccessChange(note.id, checked)}
-                                                   disabled={isPending}
-                                                 />
-                                               </li>
-                                            ))}
-                                          </ul>
-                                        </AccordionContent>
-                                      </AccordionItem>
+                                    {Object.entries(subSubjects).map(([subSubject, chapters]) => (
+                                       <AccordionItem value={subSubject} key={subSubject}>
+                                            <AccordionTrigger className="text-md font-semibold">
+                                                <div className="flex items-center gap-2">
+                                                    <Folder className="h-5 w-5 text-primary/80" />
+                                                    {subSubject}
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="pl-6">
+                                                <Accordion type="multiple" className="w-full">
+                                                    {Object.entries(chapters).map(([chapter, notesInChapter]) => (
+                                                        <AccordionItem value={chapter} key={chapter}>
+                                                            <AccordionTrigger>
+                                                                <div className="flex items-center gap-2">
+                                                                    <FileText className="h-5 w-5 text-primary/70" />
+                                                                    {chapter}
+                                                                </div>
+                                                            </AccordionTrigger>
+                                                            <AccordionContent className="pl-6">
+                                                                <ul className="space-y-3 py-2">
+                                                                    {notesInChapter.map(note => (
+                                                                    <li key={note.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
+                                                                        <Label htmlFor={`access-${note.id}`} className="font-normal">{note.type}</Label>
+                                                                        <Switch
+                                                                            id={`access-${note.id}`}
+                                                                            checked={access.has(note.id)}
+                                                                            onCheckedChange={(checked) => handleAccessChange(note.id, checked)}
+                                                                            disabled={isPending}
+                                                                        />
+                                                                    </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    ))}
+                                                </Accordion>
+                                            </AccordionContent>
+                                       </AccordionItem>
                                     ))}
                                  </Accordion>
                                </AccordionContent>
@@ -175,3 +198,4 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
         </Dialog>
     );
 }
+
