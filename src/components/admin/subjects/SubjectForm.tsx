@@ -56,7 +56,10 @@ export function SubjectForm({ subject, trigger }: SubjectFormProps) {
   });
 
   const resetForm = () => {
-      form.reset({ name: subject?.name || "", icon: subject?.icon || "" });
+      form.reset({ 
+        name: isEditing ? subject?.name || "" : "",
+        icon: isEditing ? subject?.icon || "" : ""
+      });
   };
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -72,7 +75,11 @@ export function SubjectForm({ subject, trigger }: SubjectFormProps) {
           title: "Success",
           description: result.message,
         });
-        setIsOpen(false);
+        if (isEditing) {
+          setIsOpen(false);
+        } else {
+          form.reset({ name: "", icon: "" });
+        }
         router.refresh();
       } else {
         toast({

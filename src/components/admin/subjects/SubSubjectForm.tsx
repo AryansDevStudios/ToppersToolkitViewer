@@ -58,7 +58,10 @@ export function SubSubjectForm({ subjectId, subSubject, trigger }: SubSubjectFor
   });
 
   const resetForm = () => {
-    form.reset({ name: subSubject?.name || "", icon: subSubject?.icon || "" });
+    form.reset({ 
+      name: isEditing ? subSubject?.name || "" : "",
+      icon: isEditing ? subSubject?.icon || "" : "" 
+    });
   };
 
 
@@ -76,7 +79,11 @@ export function SubSubjectForm({ subjectId, subSubject, trigger }: SubSubjectFor
           title: "Success",
           description: result.message,
         });
-        setIsOpen(false);
+        if (isEditing) {
+          setIsOpen(false);
+        } else {
+          form.reset({ name: "", icon: "" });
+        }
         router.refresh();
       } else {
         toast({

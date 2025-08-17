@@ -48,7 +48,7 @@ export function ChapterForm({ subjectId, subSubjectId, chapter, trigger }: Chapt
   });
   
   const resetForm = () => {
-    form.reset({ name: chapter?.name || "" });
+    form.reset({ name: isEditing ? chapter?.name || "" : "" });
   };
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -65,7 +65,11 @@ export function ChapterForm({ subjectId, subSubjectId, chapter, trigger }: Chapt
           title: "Success",
           description: result.message,
         });
-        setIsOpen(false);
+        if (isEditing) {
+          setIsOpen(false);
+        } else {
+          form.reset({ name: "" });
+        }
         router.refresh();
       } else {
         toast({
