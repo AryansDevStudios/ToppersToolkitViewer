@@ -84,9 +84,6 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     : [];
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Optimistic UI: Redirect immediately
-    router.push("/admin/notes");
-
     startTransition(async () => {
       const result = await upsertNote({
         id: note?.id,
@@ -96,13 +93,12 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
         icon: values.icon,
       });
 
-      // Show result after the fact
       if (result.success) {
         toast({
           title: "Success",
           description: result.message,
         });
-        // No need to refresh here, revalidatePath will handle it
+        router.push("/admin/notes");
       } else {
         toast({
           title: "Operation Failed",
