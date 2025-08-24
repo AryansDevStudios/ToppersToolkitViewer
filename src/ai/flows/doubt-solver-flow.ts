@@ -1,57 +1,55 @@
 'use server';
-/**
- * @fileOverview A doubt-solving AI agent for students.
- *
- * - solveDoubt - A function that handles the doubt-solving process.
- */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
+import { z } from 'genkit';
 
-const DoubtSolverInputSchema = z.string().min(1, "Question cannot be empty");
-const DoubtSolverOutputSchema = z.string();
-
-// Define AI prompt
-const doubtSolverPrompt = ai.definePrompt({
-  name: 'doubtSolverPrompt',
-  input: { schema: DoubtSolverInputSchema },
-  output: { schema: DoubtSolverOutputSchema },
-  prompt: `You are "Topper's AI Assistant", an expert high-school academic tutor.
-
-Instructions:
-- Directly answer the student's question in detail.
-- Do NOT introduce yourself or repeat the question.
-- Use simple explanations, step-by-step reasoning, and examples when useful.
-- If the question is outside academics, politely decline.
-- Format your response with Markdown (headings, bullet points, bold text, etc).
+const doubtSolverPrompt = ai.definePrompt(
+  {
+    name: 'doubtSolverPrompt',
+    input: { schema: z.string() },
+    output: { schema: z.string() },
+    config: {
+      model: 'googleai/gemini-2.5-flash-lite',
+      temperature: 0.5,
+       safetySettings: [
+        {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_NONE',
+        },
+        {
+            category: 'HARM_CATEGORY_HARASSMENT',
+            threshold: 'BLOCK_NONE',
+        },
+      ],
+    },
+    prompt: `You are "Topper\'s AI Assistant", an expert academic tutor for high school students.
+Answer the student\'s question directly and thoroughly.
+Do not introduce yourself. Do not add any conversational filler like "Hello!".
+Format your response in Markdown for clarity (using headings, lists, bold text, etc.).
 
 Student's question:
 {{{input}}}`,
-});
-
-// Define the main AI flow
-const doubtSolverFlow = ai.defineFlow(
-  {
-    name: 'doubtSolverFlow',
-    inputSchema: DoubtSolverInputSchema,
-    outputSchema: DoubtSolverOutputSchema,
   },
-  async (prompt) => {
-    // Extra safeguard inside the flow
+);
+
+export const solveDoubt = ai.defineFlow(
+  {
+    name: 'solveDoubt',
+    inputSchema: z.object({ prompt: z.string() }),
+    outputSchema: z.string(),
+  },
+  async ({ prompt }) => {
     if (!prompt || !prompt.trim()) {
-      throw new Error("AI flow received an empty question.");
+      throw new Error('Prompt cannot be empty.');
     }
 
     const result = await doubtSolverPrompt(prompt);
-    const output = result.text?.trim();
+    const answer = result.text;
 
-    if (!output) {
-      throw new Error("AI model returned an empty or invalid response.");
+    if (!answer) {
+      throw new Error('The AI failed to generate a response. Please try again.');
     }
 
-    return output;
+    return answer;
   }
 );
-
-// Export the flow directly for client-side use
-export const solveDoubt = doubtSolverFlow;
