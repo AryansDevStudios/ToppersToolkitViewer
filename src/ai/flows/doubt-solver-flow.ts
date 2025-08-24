@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A doubt-solving AI agent for students.
@@ -6,52 +5,53 @@
  * - solveDoubt - A function that handles the doubt-solving process.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
 
-const DoubtSolverInputSchema = z.string();
+const DoubtSolverInputSchema = z.string().min(1, "Question cannot be empty");
 const DoubtSolverOutputSchema = z.string();
 
-export async function solveDoubt(prompt: string): Promise<string> {
-    if (!prompt || !prompt.trim()) {
-        throw new Error("Prompt cannot be empty.");
-    }
-    return doubtSolverFlow(prompt);
-}
-
+// Define AI prompt
 const doubtSolverPrompt = ai.definePrompt({
-    name: 'doubtSolverPrompt',
-    input: {schema: DoubtSolverInputSchema},
-    output: {schema: DoubtSolverOutputSchema},
-    prompt: `You are "Topper's AI Assistant", an expert academic tutor.
-Answer the student's question directly and thoroughly.
-Do not introduce yourself.
-Format your response in Markdown for clarity.
+  name: 'doubtSolverPrompt',
+  input: { schema: DoubtSolverInputSchema },
+  output: { schema: DoubtSolverOutputSchema },
+  prompt: `You are "Topper's AI Assistant", an expert high-school academic tutor.
 
-Here is the student's question:
+Instructions:
+- Directly answer the student's question in detail.
+- Do NOT introduce yourself or repeat the question.
+- Use simple explanations, step-by-step reasoning, and examples when useful.
+- If the question is outside academics, politely decline.
+- Format your response with Markdown (headings, bullet points, bold text, etc).
+
+Student's question:
 {{{input}}}`,
 });
 
+// Define the main AI flow
 const doubtSolverFlow = ai.defineFlow(
-    {
-        name: 'doubtSolverFlow',
-        inputSchema: DoubtSolverInputSchema,
-        outputSchema: DoubtSolverOutputSchema,
-    },
-    async (prompt) => {
-        const result = await doubtSolverPrompt(prompt);
-        const output = result.text;
-
-        if (!output) {
-            const history = result.history;
-            if (history && history.length > 0) {
-                const lastEvent = history[history.length - 1];
-                if (lastEvent.type === 'response' && lastEvent.output.error) {
-                    throw new Error(`AI model failed to generate response: ${lastEvent.output.error.message}`);
-                }
-            }
-            throw new Error("AI model returned an empty response.");
-        }
-        return output;
+  {
+    name: 'doubtSolverFlow',
+    inputSchema: DoubtSolverInputSchema,
+    outputSchema: DoubtSolverOutputSchema,
+  },
+  async (prompt) => {
+    // Extra safeguard inside the flow
+    if (!prompt || !prompt.trim()) {
+      throw new Error("AI flow received an empty question.");
     }
+
+    const result = await doubtSolverPrompt(prompt);
+    const output = result.text?.trim();
+
+    if (!output) {
+      throw new Error("AI model returned an empty or invalid response.");
+    }
+
+    return output;
+  }
 );
+
+// Export the flow directly for client-side use
+export const solveDoubt = doubtSolverFlow;
