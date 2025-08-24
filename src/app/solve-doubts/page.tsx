@@ -53,11 +53,13 @@ export default function DoubtSolverPage() {
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await solveDoubt(input);
+      // Pass the input as an object with the key matching the flow's parameter name
+      const response = await solveDoubt({ prompt: currentInput });
       const assistantMessage: Message = { role: 'assistant', content: response };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error: any) {
