@@ -21,8 +21,8 @@ export async function solveDoubt(prompt: string): Promise<string> {
 
 const doubtSolverPrompt = ai.definePrompt({
     name: 'doubtSolverPrompt',
-    inputSchema: DoubtSolverInputSchema,
-    outputSchema: DoubtSolverOutputSchema,
+    input: {schema: DoubtSolverInputSchema},
+    output: {schema: DoubtSolverOutputSchema},
     prompt: `You are "Topper's AI Assistant", an expert academic tutor.
 Answer the student's question directly and thoroughly.
 Do not introduce yourself.
