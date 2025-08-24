@@ -29,7 +29,7 @@ Do not introduce yourself.
 Format your response in Markdown for clarity.
 
 Here is the student's question:
-{{prompt}}`,
+{{{input}}}`,
 });
 
 const doubtSolverFlow = ai.defineFlow(
