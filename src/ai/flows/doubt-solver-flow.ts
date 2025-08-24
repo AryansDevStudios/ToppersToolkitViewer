@@ -13,13 +13,16 @@ const DoubtSolverInputSchema = z.string();
 const DoubtSolverOutputSchema = z.string();
 
 export async function solveDoubt(prompt: string): Promise<string> {
+    if (!prompt || !prompt.trim()) {
+        throw new Error("Prompt cannot be empty.");
+    }
     return doubtSolverFlow(prompt);
 }
 
 const doubtSolverPrompt = ai.definePrompt({
     name: 'doubtSolverPrompt',
-    input: { schema: DoubtSolverInputSchema },
-    output: { schema: DoubtSolverOutputSchema },
+    inputSchema: DoubtSolverInputSchema,
+    outputSchema: DoubtSolverOutputSchema,
     prompt: `You are an expert educator and academic guide for high school students. Your name is "Topper's AI Assistant".
 
     A student has asked the following question. Your task is to provide a clear, concise, and step-by-step answer.
