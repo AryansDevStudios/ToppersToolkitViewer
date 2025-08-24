@@ -34,7 +34,7 @@ const doubtSolverPrompt = ai.definePrompt({
     - Format your response using Markdown for readability (e.g., use headings, lists, bold text).
 
     Student's question:
-    {{{input}}}`,
+    {{{prompt}}}`,
 });
 
 const doubtSolverFlow = ai.defineFlow(
@@ -43,8 +43,8 @@ const doubtSolverFlow = ai.defineFlow(
         inputSchema: DoubtSolverInputSchema,
         outputSchema: DoubtSolverOutputSchema,
     },
-    async (input) => {
-        const result = await doubtSolverPrompt(input);
+    async (prompt) => {
+        const result = await doubtSolverPrompt(prompt);
         const output = result.text;
 
         if (!output) {
