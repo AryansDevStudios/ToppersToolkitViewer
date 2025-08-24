@@ -7,7 +7,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const DoubtSolverInputSchema = z.string();
 const DoubtSolverOutputSchema = z.string();
@@ -18,6 +18,8 @@ export async function solveDoubt(prompt: string): Promise<string> {
 
 const doubtSolverPrompt = ai.definePrompt({
     name: 'doubtSolverPrompt',
+    input: { schema: DoubtSolverInputSchema },
+    output: { schema: DoubtSolverOutputSchema },
     prompt: `You are an expert educator and academic guide for high school students. Your name is "Topper's AI Assistant".
 
     A student has asked the following question. Your task is to provide a clear, concise, and step-by-step answer.
@@ -39,8 +41,8 @@ const doubtSolverFlow = ai.defineFlow(
         outputSchema: DoubtSolverOutputSchema,
     },
     async (input) => {
-        const result = await doubtSolverPrompt({input});
-        const output = result.output;
+        const result = await doubtSolverPrompt(input);
+        const output = result.text;
 
         if (!output) {
             const history = result.history;
