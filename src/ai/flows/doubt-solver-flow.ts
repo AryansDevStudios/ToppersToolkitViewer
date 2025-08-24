@@ -39,7 +39,19 @@ const doubtSolverFlow = ai.defineFlow(
         outputSchema: DoubtSolverOutputSchema,
     },
     async (input) => {
-        const {output} = await doubtSolverPrompt({input});
-        return output ?? "Sorry, I couldn't generate a response.";
+        const result = await doubtSolverPrompt({input});
+        const output = result.output;
+
+        if (!output) {
+            const history = result.history;
+            if (history && history.length > 0) {
+                const lastEvent = history[history.length - 1];
+                if (lastEvent.type === 'response' && lastEvent.output.error) {
+                    throw new Error(`AI model failed to generate response: ${lastEvent.output.error.message}`);
+                }
+            }
+            throw new Error("AI model returned an empty response.");
+        }
+        return output;
     }
 );
