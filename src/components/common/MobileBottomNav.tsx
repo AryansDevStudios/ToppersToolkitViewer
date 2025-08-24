@@ -40,7 +40,7 @@ export function MobileBottomNav() {
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Search, label: "Browse" },
-      { href: "/solve-doubts", icon: Sparkles, label: "AI Help" },
+      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
     ];
     
     const renderAuthSlot = () => {
@@ -80,7 +80,7 @@ export function MobileBottomNav() {
                          icon={item.icon}
                          label={item.label}
                          isActive={isActive}
-                         isExternal={item.external}
+                         isExternal={item.isExternal}
                        />
                     );
                 })}
