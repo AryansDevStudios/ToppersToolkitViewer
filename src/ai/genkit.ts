@@ -1,3 +1,5 @@
+'use server';
+
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 import { next as genkitNext } from '@genkit-ai/next';
@@ -10,7 +12,7 @@ export const ai = genkit({
     genkitNext(),
   ],
   logSinks: [
-    (level, ...args) => {
+    async (level, ...args) => {
       console.log(`[${level}]`, ...args);
     },
   ],
