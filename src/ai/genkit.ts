@@ -1,14 +1,13 @@
-import { genkit, readableFromAsync } from 'genkit';
+import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
-import { next } from '@genkit-ai/next';
-import { defineFlow, runFlow } from 'genkit/flow';
+import { next as genkitNext } from '@genkit-ai/next';
 
 export const ai = genkit({
   plugins: [
     googleAI({
       apiVersion: 'v1beta',
     }),
-    next(),
+    genkitNext(),
   ],
   logSinks: [
     (level, ...args) => {
