@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, ShoppingBag, LogIn } from "lucide-react";
+import { Home, Search, ShoppingBag, LogIn, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -40,7 +40,7 @@ export function MobileBottomNav() {
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Search, label: "Browse" },
-      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", external: true },
+      { href: "/solve-doubts", icon: Sparkles, label: "AI Help" },
     ];
     
     const renderAuthSlot = () => {
@@ -89,4 +89,3 @@ export function MobileBottomNav() {
         </nav>
     );
 }
-
