@@ -660,5 +660,4 @@ export async function saveChatMessage(userId: string, message: ChatMessage) {
     await setDoc(chatDocRef, { 
         messages: arrayUnion(message)
     }, { merge: true });
-    revalidatePath('/solve-doubts');
 }

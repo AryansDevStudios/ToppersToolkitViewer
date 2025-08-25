@@ -54,11 +54,11 @@ export default function SolveDoubtsPage() {
             const allowed = role === 'Admin' || hasAiAccess;
             setIsAllowed(allowed);
             if (allowed) {
-                const fetchHistory = async () => {
-                    const history = await getChatHistory(user.uid);
-                    setMessages(history);
-                };
-                fetchHistory();
+                setIsLoading(true);
+                getChatHistory(user.uid)
+                  .then(history => setMessages(history))
+                  .catch(() => setError("Failed to load chat history."))
+                  .finally(() => setIsLoading(false));
             }
         }
     }, [authLoading, user, role, hasAiAccess]);
@@ -84,11 +84,11 @@ export default function SolveDoubtsPage() {
 
         try {
             const response = await solveDoubt(input, user.uid);
-            const modelMessage: ChatMessage = { role: 'model', content: response, timestamp: Date.now() };
-            setMessages(prev => [...prev, modelMessage]);
+            // The flow now saves the model message, so we just need to refetch history
+             const updatedHistory = await getChatHistory(user.uid);
+             setMessages(updatedHistory);
         } catch (err: any) {
-            const errorMessage = `An error occurred. Details: ${JSON.stringify(err, Object.getOwnPropertyNames(err), 2)}`;
-            setError(errorMessage);
+            setError(`Sorry, an error occurred while getting your answer. Please try again.`);
         } finally {
             setIsLoading(false);
         }
@@ -141,7 +141,7 @@ export default function SolveDoubtsPage() {
                                 )}
                             </div>
                         ))}
-                         {isLoading && (
+                         {isLoading && messages.length > 0 && messages[messages.length-1].role === 'user' && (
                             <div className="flex items-start gap-3 justify-start">
                                 <Avatar className="h-9 w-9 border-2 border-primary">
                                     <AvatarFallback><Bot className="h-5 w-5" /></AvatarFallback>

@@ -1,21 +1,33 @@
 'use server';
 /**
- * Academic doubt solver AI agent using Gemini 2.5 Flash.
+ * @fileOverview Academic doubt solver AI agent using Gemini 2.5 Flash.
+ *
+ * This file defines the Genkit flow for an AI-powered academic doubt solver.
+ * It includes a tool to search the local knowledge base (notes) and a prompt
+ * designed to provide contextual answers to student questions.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { getChatHistory, saveChatMessage, getAllNotes } from '@/lib/data';
-import { ChatMessage } from '@/lib/types';
+import type { ChatMessage } from '@/lib/types';
 
-/* -----------------------------
+/* ---------------------------------
+ * Input Schema Definition
+ * --------------------------------- */
+const DoubtSolverInputSchema = z.object({
+  userId: z.string(),
+  question: z.string(),
+});
+
+/* ---------------------------------
  * Tool: Knowledge Base Search
- * ----------------------------- */
+ * --------------------------------- */
 const KnowledgeBaseTool = ai.defineTool(
   {
     name: 'getRelevantSubjects',
     description:
-      "Searches the website's curriculum to find relevant subjects, sub-subjects, or chapters for a user's academic question.",
+      "Searches the website's curriculum to find relevant subjects, sub-subjects, or chapters for a user's academic question. This tool MUST be used first to check for existing content before answering.",
     inputSchema: z.object({
       query: z.string().describe("The student's academic question or topic of interest."),
     }),
@@ -52,32 +64,28 @@ const KnowledgeBaseTool = ai.defineTool(
   },
 );
 
-/* -----------------------------
+/* ---------------------------------
  * Prompt Definition (Gemini 2.5 Flash)
- * ----------------------------- */
-const DoubtSolverInputSchema = z.object({
-  userId: z.string(),
-  question: z.string(),
-});
-
+ * --------------------------------- */
 const prompt = ai.definePrompt(
   {
     name: 'doubtSolverPrompt',
-    model: 'gemini-2.5-flash', // 👈 fixed model
+    model: 'gemini-2.5-flash',
     input: { schema: DoubtSolverInputSchema },
     output: { schema: z.string() },
     tools: [KnowledgeBaseTool],
     system: `You are "Topper's AI Tutor," a friendly and expert academic assistant for students.
-- Always use the 'getRelevantSubjects' tool first to check the website's content.
-- If relevant content is found, use it as the primary source in your answer.
-- If no content is found, use general knowledge but mention that notes aren't available on the site yet.
-- Respond naturally if the question is conversational (e.g., "hello").
-- Keep answers clear, encouraging, and easy to understand for students.
-- Use Markdown for formatting (lists, **bold text**, etc.).`,
+- Your primary function is to answer academic questions.
+- Your first step is ALWAYS to use the 'getRelevantSubjects' tool to check the website's content for context.
+- If the tool finds relevant content, you MUST use it as the primary source for your answer.
+- If the tool finds no relevant content, use your general knowledge but inform the user that specific notes on this topic are not yet available on the website.
+- If the user's query is conversational (e.g., "hello", "how are you?"), respond naturally without using the tool.
+- Keep answers clear, encouraging, and easy for students to understand.
+- Use Markdown for formatting (lists, **bold text**, etc.) to improve readability.`,
     prompt: `{{#if history}}
 This is the chat history so far:
 {{#each history}}
-{{role}}: {{content}}
+{{role}}: {{{content}}}
 {{/each}}
 {{/if}}
 
@@ -96,9 +104,9 @@ The user's new question is:
   },
 );
 
-/* -----------------------------
+/* ---------------------------------
  * Flow Definition
- * ----------------------------- */
+ * --------------------------------- */
 const doubtSolverFlow = ai.defineFlow(
   {
     name: 'doubtSolverFlow',
@@ -108,44 +116,34 @@ const doubtSolverFlow = ai.defineFlow(
   async (input) => {
     const { userId, question } = input;
 
-    // Save user message
-    const userMessage: ChatMessage = {
-      role: 'user',
-      content: question,
-      timestamp: Date.now(),
-    };
-    await saveChatMessage(userId, userMessage);
+    // Save user message to history
+    await saveChatMessage(userId, { role: 'user', content: question, timestamp: Date.now() });
 
     // Call the AI prompt
     const result = await prompt(input);
 
-    // Handle both return shapes (string or { output })
+    // Handle both possible return shapes (string or { output: string }) for robustness
     let output: string;
     if (typeof result === 'string') {
       output = result;
-    } else if (result && typeof result === 'object' && 'output' in result) {
-      output = (result as { output: string }).output;
+    } else if (result && typeof result === 'object' && 'output' in result && typeof result.output === 'string') {
+      output = result.output;
     } else {
       throw new Error(
-        `Unexpected prompt result: ${JSON.stringify(result, null, 2)}`,
+        `Unexpected or invalid prompt result format: ${JSON.stringify(result, null, 2)}`,
       );
     }
 
-    // Save model message
-    const modelMessage: ChatMessage = {
-      role: 'model',
-      content: output,
-      timestamp: Date.now(),
-    };
-    await saveChatMessage(userId, modelMessage);
+    // Save model response to history
+    await saveChatMessage(userId, { role: 'model', content: output, timestamp: Date.now() });
 
     return output;
   },
 );
 
-/* -----------------------------
- * Exported Function
- * ----------------------------- */
+/* ---------------------------------
+ * Exported Server Action
+ * --------------------------------- */
 export async function solveDoubt(
   question: string,
   userId: string,
