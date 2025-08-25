@@ -82,6 +82,7 @@ const doubtSolverPrompt = ai.definePrompt(
 - Keep answers clear, encouraging, and easy for students to understand.
 - Use Markdown for formatting (lists, **bold text**, etc.) to improve readability.`,
     input: { schema: DoubtSolverInputSchema },
+    output: { schema: z.string() },
   },
   async (input) => {
     const history = await getChatHistory(input.userId);
