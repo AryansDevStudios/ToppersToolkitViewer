@@ -1,10 +1,6 @@
-
 'use server';
 /**
- * @fileOverview An academic doubt solver AI agent for students.
- *
- * - solveDoubt - A function that handles the student's question.
- * - KnowledgeBaseTool - A tool to search the website's content.
+ * Academic doubt solver AI agent using Gemini 2.5 Flash.
  */
 
 import { ai } from '@/ai/genkit';
@@ -12,59 +8,72 @@ import { z } from 'zod';
 import { getChatHistory, saveChatMessage, getAllNotes } from '@/lib/data';
 import { ChatMessage } from '@/lib/types';
 
+/* -----------------------------
+ * Tool: Knowledge Base Search
+ * ----------------------------- */
 const KnowledgeBaseTool = ai.defineTool(
-    {
-        name: 'getRelevantSubjects',
-        description: "Searches the website's curriculum to find relevant subjects, sub-subjects, or chapters for a user's academic question.",
-        inputSchema: z.object({
-            query: z.string().describe("The user's academic question or topic of interest."),
-        }),
-        outputSchema: z.string().describe("A summary of relevant subjects, sub-subjects, and chapters from the knowledge base, or a message indicating no relevant content was found."),
-    },
-    async ({ query }) => {
-        const notes = await getAllNotes();
-        const lowerCaseQuery = query.toLowerCase();
+  {
+    name: 'getRelevantSubjects',
+    description:
+      "Searches the website's curriculum to find relevant subjects, sub-subjects, or chapters for a user's academic question.",
+    inputSchema: z.object({
+      query: z.string().describe("The student's academic question or topic of interest."),
+    }),
+    outputSchema: z.string().describe(
+      'A summary of relevant subjects, sub-subjects, and chapters from the knowledge base, or a message indicating no relevant content was found.',
+    ),
+  },
+  async ({ query }) => {
+    const notes = await getAllNotes();
+    const lowerCaseQuery = query.toLowerCase();
 
-        const relevantNotes = notes.filter(note => 
-            note.subjectName.toLowerCase().includes(lowerCaseQuery) ||
-            note.subSubjectName.toLowerCase().includes(lowerCaseQuery) ||
-            note.chapter.toLowerCase().includes(lowerCaseQuery) ||
-            note.type.toLowerCase().includes(lowerCaseQuery)
-        );
+    const relevantNotes = notes.filter(
+      (note) =>
+        note.subjectName.toLowerCase().includes(lowerCaseQuery) ||
+        note.subSubjectName.toLowerCase().includes(lowerCaseQuery) ||
+        note.chapter.toLowerCase().includes(lowerCaseQuery) ||
+        note.type.toLowerCase().includes(lowerCaseQuery),
+    );
 
-        if (relevantNotes.length === 0) {
-            return "No specific subjects, chapters, or notes matching the query were found in the knowledge base.";
-        }
-
-        // Create a concise summary of findings
-        const summary = new Set<string>();
-        relevantNotes.forEach(note => {
-            summary.add(`Subject: ${note.subjectName} -> Sub-Subject: ${note.subSubjectName} -> Chapter: ${note.chapter}`);
-        });
-
-        return `Found the following relevant content in the knowledge base:\n- ${Array.from(summary).join('\n- ')}`;
+    if (relevantNotes.length === 0) {
+      return 'No specific subjects, chapters, or notes matching the query were found in the knowledge base.';
     }
+
+    const summary = new Set<string>();
+    relevantNotes.forEach((note) => {
+      summary.add(
+        `Subject: ${note.subjectName} -> Sub-Subject: ${note.subSubjectName} -> Chapter: ${note.chapter}`,
+      );
+    });
+
+    return `Found the following relevant content in the knowledge base:\n- ${Array.from(summary).join(
+      '\n- ',
+    )}`;
+  },
 );
 
+/* -----------------------------
+ * Prompt Definition (Gemini 2.5 Flash)
+ * ----------------------------- */
 const DoubtSolverInputSchema = z.object({
-    userId: z.string(),
-    question: z.string(),
+  userId: z.string(),
+  question: z.string(),
 });
 
 const prompt = ai.definePrompt(
   {
     name: 'doubtSolverPrompt',
+    model: 'gemini-2.5-flash', // 👈 fixed model
     input: { schema: DoubtSolverInputSchema },
     output: { schema: z.string() },
     tools: [KnowledgeBaseTool],
-    system: `You are "Topper's AI Tutor," a friendly and expert academic assistant for students. Your purpose is to help solve their doubts clearly and concisely.
-- Your primary knowledge source is the information provided by the 'getRelevantSubjects' tool. Always use this tool first to see if there's relevant content on the website before answering.
-- If the tool provides relevant subjects, use that information as the primary context for your answer.
-- If the user's question is about a topic found within the website's content (as reported by the tool), guide them towards that content. For example: "I found information on that in the 'Motion' chapter of Physics. Here's an explanation... You can find more details in your study materials."
-- If the tool finds no relevant content, answer the question using your general knowledge, but mention that specific notes on this topic aren't available on the site yet.
-- If the question is conversational (e.g., "hello", "how are you?"), respond naturally and friendly.
-- Keep your answers helpful, encouraging, and easy to understand for a student.
-- Format your answers using Markdown for better readability (e.g., use lists, bold text).`,
+    system: `You are "Topper's AI Tutor," a friendly and expert academic assistant for students.
+- Always use the 'getRelevantSubjects' tool first to check the website's content.
+- If relevant content is found, use it as the primary source in your answer.
+- If no content is found, use general knowledge but mention that notes aren't available on the site yet.
+- Respond naturally if the question is conversational (e.g., "hello").
+- Keep answers clear, encouraging, and easy to understand for students.
+- Use Markdown for formatting (lists, **bold text**, etc.).`,
     prompt: `{{#if history}}
 This is the chat history so far:
 {{#each history}}
@@ -77,51 +86,72 @@ The user's new question is:
   },
   async (input) => {
     const history = await getChatHistory(input.userId);
-    const genkitHistory = history.map(msg => ({ role: msg.role as 'user' | 'model', content: msg.content }));
-
     return {
-      history: genkitHistory,
+      history: history.map((msg) => ({
+        role: msg.role as 'user' | 'model',
+        content: msg.content,
+      })),
       question: input.question,
     };
-  }
+  },
 );
 
-
+/* -----------------------------
+ * Flow Definition
+ * ----------------------------- */
 const doubtSolverFlow = ai.defineFlow(
-    {
-        name: 'doubtSolverFlow',
-        inputSchema: DoubtSolverInputSchema,
-        outputSchema: z.string(),
-    },
-    async (input) => {
-        const { userId, question } = input;
-        
-        const userMessage: ChatMessage = { role: 'user', content: question, timestamp: Date.now() };
-        await saveChatMessage(userId, userMessage);
-        
-        const result = await prompt(input);
-        
-        let output: string | undefined;
+  {
+    name: 'doubtSolverFlow',
+    inputSchema: DoubtSolverInputSchema,
+    outputSchema: z.string(),
+  },
+  async (input) => {
+    const { userId, question } = input;
 
-        if (typeof result?.output === 'string') {
-          output = result.output;
-        } else if (typeof result === 'string') {
-          output = result;
-        }
+    // Save user message
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: question,
+      timestamp: Date.now(),
+    };
+    await saveChatMessage(userId, userMessage);
 
-        if (output) {
-            const modelMessage: ChatMessage = { role: 'model', content: output, timestamp: Date.now() };
-            await saveChatMessage(userId, modelMessage);
-            return output;
-        }
+    // Call the AI prompt
+    const result = await prompt(input);
 
-        return "I'm sorry, I couldn't come up with a response. Please try again.";
+    // Handle both return shapes (string or { output })
+    let output: string;
+    if (typeof result === 'string') {
+      output = result;
+    } else if (result && typeof result === 'object' && 'output' in result) {
+      output = (result as { output: string }).output;
+    } else {
+      throw new Error(
+        `Unexpected prompt result: ${JSON.stringify(result, null, 2)}`,
+      );
     }
+
+    // Save model message
+    const modelMessage: ChatMessage = {
+      role: 'model',
+      content: output,
+      timestamp: Date.now(),
+    };
+    await saveChatMessage(userId, modelMessage);
+
+    return output;
+  },
 );
 
-export async function solveDoubt(question: string, userId: string): Promise<string> {
-    if (!userId) {
-        throw new Error("User not authenticated");
-    }
-    return doubtSolverFlow({ question, userId });
+/* -----------------------------
+ * Exported Function
+ * ----------------------------- */
+export async function solveDoubt(
+  question: string,
+  userId: string,
+): Promise<string> {
+  if (!userId) {
+    throw new Error('User not authenticated');
+  }
+  return doubtSolverFlow({ question, userId });
 }
