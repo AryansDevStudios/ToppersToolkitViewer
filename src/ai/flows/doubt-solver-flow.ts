@@ -1,14 +1,14 @@
+
 'use server';
 
 import { ai } from '@/ai/genkit';
 import { getAllNotes, getChatHistory, saveChatMessage } from '@/lib/data';
 import { z } from 'zod';
-import { defineTool, configureGenkit } from 'genkit';
 import type { ChatMessage } from '@/lib/types';
 import { googleAI } from '@genkit-ai/googleai';
 
 // Define the tool for searching the knowledge base
-const KnowledgeBaseTool = defineTool(
+const KnowledgeBaseTool = ai.defineTool(
   {
     name: 'knowledgeBaseSearch',
     description: 'Search the knowledge base for information on a given topic. Use this tool first to find relevant context before answering a question.',
@@ -50,7 +50,7 @@ const doubtSolverPrompt = ai.definePrompt(
   {
     name: 'doubtSolverPrompt',
     tools: [KnowledgeBaseTool],
-    model: googleAI('gemini-1.5-flash'), // Using a powerful model that's good with tools
+    model: googleAI('gemini-1.5-flash'),
     system: `
       You are a friendly and helpful AI assistant for a student platform called "Topper's Toolkit".
       Your primary role is to answer student's questions based on the notes available in the knowledge base.
@@ -101,15 +101,16 @@ export async function solveDoubt(userId: string, question: string): Promise<Chat
     const modelMessage: ChatMessage = { role: 'model', content: output, timestamp: Date.now() };
     await saveChatMessage(userId, modelMessage);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(`[solveDoubt] Error generating response for user ${userId}:`, error);
     // Save an error message to the chat so the user sees it
     const errorMessage: ChatMessage = {
       role: 'model',
-      content: 'I apologize, but I encountered an error while trying to generate a response. Please try again later.',
+      content: `I apologize, but I encountered an error while trying to generate a response. Details: ${error.message}`,
       timestamp: Date.now(),
     };
     await saveChatMessage(userId, errorMessage);
+    throw error; // Re-throw so client knows it failed
   }
 
   // 5. Return the final, complete chat history
