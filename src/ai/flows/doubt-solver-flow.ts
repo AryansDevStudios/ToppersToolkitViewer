@@ -103,14 +103,13 @@ export async function solveDoubt(userId: string, question: string): Promise<Chat
 
   } catch (error: any) {
     console.error(`[solveDoubt] Error generating response for user ${userId}:`, error);
-    // Save an error message to the chat so the user sees it
     const errorMessage: ChatMessage = {
       role: 'model',
-      content: `I apologize, but I encountered an error while trying to generate a response. Details: ${error.message}`,
+      content: `An error occurred. Details:\n${JSON.stringify({ name: error.name, message: error.message, stack: error.stack, digest: (error as any).digest }, null, 2)}`,
       timestamp: Date.now(),
     };
     await saveChatMessage(userId, errorMessage);
-    throw error; // Re-throw so client knows it failed
+    throw error;
   }
 
   // 5. Return the final, complete chat history
