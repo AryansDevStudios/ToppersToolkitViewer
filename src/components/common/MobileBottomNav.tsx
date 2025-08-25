@@ -30,7 +30,7 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className }: {
 
 export function MobileBottomNav() {
     const pathname = usePathname();
-    const { user, loading } = useAuth();
+    const { user, loading, role, hasAiAccess } = useAuth();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -40,9 +40,14 @@ export function MobileBottomNav() {
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Search, label: "Browse" },
-      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
     ];
     
+    if (mounted && (role === 'Admin' || hasAiAccess)) {
+        navItems.push({ href: "/solve-doubts", icon: Sparkles, label: "AI Help" });
+    }
+
+    navItems.push({ href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true });
+
     const renderAuthSlot = () => {
       // After mounting, show the correct UI based on auth state
       if (!mounted) {
@@ -67,10 +72,12 @@ export function MobileBottomNav() {
         )
       }
     };
+    
+    const gridColsClass = navItems.length === 5 ? 'grid-cols-5' : 'grid-cols-4';
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
-            <div className="container grid h-16 max-w-lg grid-cols-4 items-center p-0">
+            <div className={cn("container grid h-16 max-w-lg items-center p-0", gridColsClass)}>
                 {navItems.map((item) => {
                     const isActive = (item.href === "/" && pathname === "/") || (item.href !== "/" && pathname.startsWith(item.href));
                     return (

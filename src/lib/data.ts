@@ -1,8 +1,7 @@
 
-
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, ChatMessage } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove } from "firebase/firestore";
@@ -564,6 +563,21 @@ export const updateUserRole = async (userId: string, newRole: User['role']) => {
     }
 };
 
+export const updateUserAiAccess = async (userId: string, hasAiAccess: boolean) => {
+    if (!userId) {
+        return { success: false, error: "User ID is required." };
+    }
+    const userDocRef = doc(db, "users", userId);
+    try {
+        await updateDoc(userDocRef, { hasAiAccess });
+        revalidatePath('/admin/users');
+        return { success: true, message: "AI chat access updated successfully." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+};
+
+
 export const updateUserAccessBatch = async (userId: string, noteAccess: string[]) => {
     if (!userId) {
         return { success: false, error: "User ID is required." };
@@ -630,5 +644,21 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
     }
 };
 
+// --- AI Chat ---
+export async function getChatHistory(userId: string): Promise<ChatMessage[]> {
+    const chatDocRef = doc(db, 'chats', userId);
+    const docSnap = await getDoc(chatDocRef);
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        return (data.messages || []).sort((a: ChatMessage, b: ChatMessage) => a.timestamp - b.timestamp);
+    }
+    return [];
+}
 
-    
+export async function saveChatMessage(userId: string, message: ChatMessage) {
+    const chatDocRef = doc(db, 'chats', userId);
+    await setDoc(chatDocRef, { 
+        messages: arrayUnion(message)
+    }, { merge: true });
+    revalidatePath('/solve-doubts');
+}

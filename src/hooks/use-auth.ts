@@ -24,6 +24,7 @@ const setSessionCookie = async (user: FirebaseUser | null) => {
 export function useAuth() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [role, setRole] = useState<User['role'] | null>(null);
+  const [hasAiAccess, setHasAiAccess] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,10 +34,12 @@ export function useAuth() {
         setUser(firebaseUser);
         const userData = await getUserById(firebaseUser.uid);
         setRole(userData?.role || 'User');
+        setHasAiAccess(userData?.hasAiAccess || false);
         await setSessionCookie(firebaseUser);
       } else {
         setUser(null);
         setRole(null);
+        setHasAiAccess(false);
         await setSessionCookie(null);
       }
       setLoading(false);
@@ -46,5 +49,5 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, role, loading };
+  return { user, role, hasAiAccess, loading };
 }

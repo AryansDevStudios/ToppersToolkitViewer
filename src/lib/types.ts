@@ -46,6 +46,12 @@ export interface Subject {
   subSubjects: SubSubject[];
 }
 
+export interface ChatMessage {
+  role: 'user' | 'model';
+  content: string;
+  timestamp: number;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -58,5 +64,6 @@ export interface User {
   password?: string;
   loginLogs?: LoginLog[];
   noteAccess?: string[];
+  hasAiAccess?: boolean; // New permission for AI Chat
   createdAt?: number;
 }
