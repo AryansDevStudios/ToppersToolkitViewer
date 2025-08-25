@@ -81,8 +81,9 @@ const doubtSolverPrompt = ai.definePrompt(
 - If the user's query is conversational (e.g., "hello", "how are you?"), respond naturally without using the tool.
 - Keep answers clear, encouraging, and easy for students to understand.
 - Use Markdown for formatting (lists, **bold text**, etc.) to improve readability.`,
+    input: { schema: DoubtSolverInputSchema },
   },
-  async (input: z.infer<typeof DoubtSolverInputSchema>) => {
+  async (input) => {
     const history = await getChatHistory(input.userId);
     return {
       prompt: `{{#if history}}
@@ -114,11 +115,8 @@ const doubtSolverFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const { response } = await ai.generate({
-        prompt: await doubtSolverPrompt.render(input),
-        model: 'googleai/gemini-2.5-flash',
-        tools: [KnowledgeBaseTool],
-      });
+      // Correctly call the prompt and get the response text
+      const response = await doubtSolverPrompt(input);
       return response.text;
     } catch (error) {
       console.error('Error in doubtSolverFlow:', error);
