@@ -83,7 +83,11 @@ const prompt = ai.definePrompt(
 - If the user's query is conversational (e.g., "hello", "how are you?"), respond naturally without using the tool.
 - Keep answers clear, encouraging, and easy for students to understand.
 - Use Markdown for formatting (lists, **bold text**, etc.) to improve readability.`,
-    prompt: `{{#if history}}
+  },
+  async (input) => {
+    const history = await getChatHistory(input.userId);
+    return {
+      prompt: `{{#if history}}
 This is the chat history so far:
 {{#each history}}
 {{role}}: {{{content}}}
@@ -92,10 +96,6 @@ This is the chat history so far:
 
 The user's new question is:
 {{{question}}}`,
-  },
-  async (input) => {
-    const history = await getChatHistory(input.userId);
-    return {
       history: history.map((msg) => ({
         role: msg.role as 'user' | 'model',
         content: msg.content,
@@ -120,7 +120,9 @@ const doubtSolverFlow = ai.defineFlow(
     await saveChatMessage(userId, { role: 'user', content: question, timestamp: Date.now() });
 
     try {
-      const { output } = await prompt(input);
+      // Correctly assign the direct string output from the prompt
+      const output = await prompt(input);
+      
       if (!output) {
           throw new Error('Received an empty response from the AI model.');
       }
