@@ -1,190 +1,182 @@
+'use client';
 
-"use client";
-
-import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Send, ShieldAlert, Sparkles, User, Bot } from 'lucide-react';
-import { getChatHistory } from '@/lib/data';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Loader2, User, Bot, Send, ShieldAlert, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { solveDoubt } from '@/ai/flows/doubt-solver-flow';
 import type { ChatMessage } from '@/lib/types';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import ReactMarkdown from 'react-markdown';
-import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-const AccessDenied = () => (
-    <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
-        <h2 className="text-2xl font-bold text-destructive">Access Denied</h2>
-        <p className="mt-2 text-muted-foreground max-w-md">
-            You do not have permission to use the AI Doubt Solver. Please contact an administrator to request access.
-        </p>
-    </div>
-);
+const Message = ({ message, userName }: { message: ChatMessage, userName: string }) => {
+  const isModel = message.role === 'model';
+  const getInitials = (name: string | null | undefined): string => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return names[0].substring(0, 2).toUpperCase();
+  };
 
-const Initializing = () => (
-     <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-        <h2 className="text-2xl font-bold">Initializing Chat...</h2>
-        <p className="mt-2 text-muted-foreground">Please wait while we check your permissions.</p>
+  return (
+    <div className={`flex items-start gap-3 ${isModel ? '' : 'justify-end'}`}>
+      {isModel && (
+        <Avatar className="h-8 w-8 border">
+          <AvatarFallback>
+            <Bot className="h-5 w-5" />
+          </AvatarFallback>
+        </Avatar>
+      )}
+      <div
+        className={`max-w-lg rounded-lg px-4 py-3 ${
+          isModel
+            ? 'bg-muted text-foreground'
+            : 'bg-primary text-primary-foreground'
+        }`}
+      >
+        <div className="prose prose-sm dark:prose-invert max-w-none">
+          <ReactMarkdown>{message.content}</ReactMarkdown>
+        </div>
+      </div>
+       {!isModel && (
+        <Avatar className="h-8 w-8 border">
+          <AvatarFallback>{getInitials(userName)}</AvatarFallback>
+        </Avatar>
+      )}
     </div>
-)
+  );
+};
+
 
 export default function SolveDoubtsPage() {
-    const { user, role, hasAiAccess, loading: authLoading } = useAuth();
-    const router = useRouter();
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [input, setInput] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
-    const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { user, role, hasAiAccess, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-        }
-    }, [authLoading, user, router]);
+  const canUseFeature = !authLoading && user && (role === 'Admin' || hasAiAccess);
 
-     useEffect(() => {
-        if (!authLoading && user) {
-            const allowed = role === 'Admin' || hasAiAccess;
-            setIsAllowed(allowed);
-            if (allowed) {
-                setIsLoading(true);
-                getChatHistory(user.uid)
-                  .then(history => setMessages(history))
-                  .catch(() => setError("Failed to load chat history."))
-                  .finally(() => setIsLoading(false));
-            }
-        }
-    }, [authLoading, user, role, hasAiAccess]);
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!canUseFeature) {
+        // Render access denied message, so no redirect needed
+      }
+    }
+  }, [user, authLoading, router, canUseFeature]);
 
-     useEffect(() => {
-        if (scrollAreaRef.current) {
-            scrollAreaRef.current.scrollTo({
-                top: scrollAreaRef.current.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-    }, [messages]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isPending || !user) return;
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!input.trim() || isLoading || !user) return;
-
-        const currentInput = input;
-        setInput('');
-        setIsLoading(true);
-        setError(null);
-        
-        // Temporarily add user message for immediate feedback
-        setMessages(prev => [...prev, { role: 'user', content: currentInput, timestamp: Date.now() }]);
-
-        try {
-            // The server action now returns the full updated history
-            const updatedHistory = await solveDoubt(currentInput, user.uid);
-            setMessages(updatedHistory);
-        } catch (err: any) {
-             const errorMessage = `An error occurred. Details:\n${JSON.stringify({
-                name: err.name,
-                message: err.message,
-                stack: err.stack,
-                digest: err.digest,
-            }, null, 2)}`;
-            setError(errorMessage);
-            // On error, revert the optimistic user message
-            setMessages(prev => prev.slice(0, -1));
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const question = input;
+    setInput('');
+    setError(null);
     
-    if (authLoading || isAllowed === null) {
-        return <Initializing />;
-    }
+    // Optimistically add user message
+    setMessages(prev => [...prev, { role: 'user', content: question, timestamp: Date.now() }]);
 
-    if (!isAllowed) {
-        return <AccessDenied />;
-    }
+    startTransition(async () => {
+      try {
+        const updatedHistory = await solveDoubt(user.uid, question);
+        setMessages(updatedHistory);
+      } catch (err: any) {
+        console.error("Doubt Solver Error:", err);
+        const errorMessage = err.message || JSON.stringify(err, null, 2);
+        setError(`Sorry, an error occurred. Please try again.\n\nDetails: ${errorMessage}`);
+        // Remove optimistic message on error
+        setMessages(prev => prev.slice(0, -1));
+      }
+    });
+  };
 
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages]);
+
+
+  if (authLoading) {
     return (
-        <div className="container mx-auto px-4 py-8 h-[calc(100vh-4rem)] flex flex-col">
-            <header className="mb-8 text-center">
-                <div className="inline-block bg-primary/10 text-primary rounded-full p-3 mb-4">
-                    <Sparkles className="h-8 w-8" />
-                </div>
-                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                    AI Doubt Solver
-                </h1>
-                <p className="text-muted-foreground text-lg mt-2">
-                    Your personal AI tutor. Ask any academic question!
-                </p>
-            </header>
-
-            <div className="flex-1 flex flex-col bg-card border rounded-lg overflow-hidden">
-                <ScrollArea className="flex-1 p-4 md:p-6" ref={scrollAreaRef}>
-                     <div className="space-y-6">
-                        {messages.map((msg, index) => (
-                            <div key={index} className={cn("flex items-start gap-3", msg.role === 'user' ? "justify-end" : "justify-start")}>
-                                {msg.role === 'model' && (
-                                    <Avatar className="h-9 w-9 border-2 border-primary">
-                                        <AvatarFallback><Bot className="h-5 w-5" /></AvatarFallback>
-                                    </Avatar>
-                                )}
-                                <div className={cn(
-                                    "max-w-xl p-3 rounded-xl prose dark:prose-invert prose-p:my-0 prose-headings:my-2 prose-ul:my-2 prose-ol:my-2",
-                                    msg.role === 'user'
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
-                                )}>
-                                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                                </div>
-                                {msg.role === 'user' && (
-                                    <Avatar className="h-9 w-9">
-                                        <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
-                                    </Avatar>
-                                )}
-                            </div>
-                        ))}
-                         {isLoading && (
-                            <div className="flex items-start gap-3 justify-start">
-                                <Avatar className="h-9 w-9 border-2 border-primary">
-                                    <AvatarFallback><Bot className="h-5 w-5" /></AvatarFallback>
-                                </Avatar>
-                                <div className="bg-muted p-3 rounded-xl flex items-center space-x-2">
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                    <span>Thinking...</span>
-                                </div>
-                            </div>
-                         )}
-                    </div>
-                </ScrollArea>
-                <div className="p-4 bg-background/50 border-t">
-                     {error && <p className="text-destructive text-sm mb-2 text-center whitespace-pre-wrap">{error}</p>}
-                    <form onSubmit={handleSubmit} className="flex gap-2">
-                        <Textarea
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask your question here..."
-                            className="flex-1 resize-none"
-                            rows={1}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSubmit(e);
-                                }
-                            }}
-                        />
-                        <Button type="submit" disabled={isLoading || !input.trim()} size="icon" className="h-auto w-10">
-                            <Send className="h-5 w-5" />
-                        </Button>
-                    </form>
-                </div>
-            </div>
-        </div>
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
+  }
+
+  if (!canUseFeature) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center p-4 text-center">
+        <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+        <h1 className="text-3xl font-bold text-destructive">Access Denied</h1>
+        <p className="mt-2 text-muted-foreground">
+          You do not have permission to use the AI Doubt Solver.
+        </p>
+        <Button asChild className="mt-6">
+          <a href="mailto:kuldeepsingh012011@gmail.com">Contact Support</a>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto max-w-4xl p-4 h-[calc(100vh-4rem)] flex flex-col">
+       <Card className="flex-1 flex flex-col h-full">
+         <CardHeader className="text-center">
+           <div className="inline-block mx-auto bg-primary/10 text-primary rounded-full p-3 mb-2 w-fit">
+              <Sparkles className="h-8 w-8" />
+            </div>
+            <CardTitle className="text-3xl font-bold">AI Doubt Solver</CardTitle>
+            <CardDescription>
+              Ask any question about your subjects, and I'll find the answer in your notes.
+            </CardDescription>
+         </CardHeader>
+        <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden p-4">
+          <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
+            <div className="space-y-6">
+              {messages.map((msg, index) => (
+                <Message key={index} message={msg} userName={user?.displayName || 'User'} />
+              ))}
+            </div>
+          </ScrollArea>
+           {error && (
+            <div className="rounded-lg border bg-destructive/10 p-3 text-sm text-destructive">
+              <pre className="whitespace-pre-wrap font-sans">{error}</pre>
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t pt-4">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask a question about physics, history, etc..."
+              className="flex-1"
+              disabled={isPending}
+            />
+            <Button type="submit" disabled={!input.trim() || isPending}>
+              {isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              <span className="sr-only">Send</span>
+            </Button>
+          </form>
+        </CardContent>
+       </Card>
+    </div>
+  );
 }

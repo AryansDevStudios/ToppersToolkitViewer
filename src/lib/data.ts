@@ -646,18 +646,37 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
 
 // --- AI Chat ---
 export async function getChatHistory(userId: string): Promise<ChatMessage[]> {
+    if (!userId) return [];
     const chatDocRef = doc(db, 'chats', userId);
-    const docSnap = await getDoc(chatDocRef);
-    if (docSnap.exists()) {
-        const data = docSnap.data();
-        return (data.messages || []).sort((a: ChatMessage, b: ChatMessage) => a.timestamp - b.timestamp);
+    try {
+        const docSnap = await getDoc(chatDocRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Ensure messages is an array and sort it
+            return (Array.isArray(data.messages) ? data.messages : []).sort(
+                (a: ChatMessage, b: ChatMessage) => a.timestamp - b.timestamp
+            );
+        }
+    } catch (error) {
+        console.error("Error fetching chat history:", error);
     }
     return [];
 }
 
 export async function saveChatMessage(userId: string, message: ChatMessage) {
-    const chatDocRef = doc(db, 'chats', userId);
-    await setDoc(chatDocRef, { 
-        messages: arrayUnion(message)
-    }, { merge: true });
+  if (!userId) return;
+  const chatDocRef = doc(db, 'chats', userId);
+  try {
+    // Use setDoc with merge to create the doc if it doesn't exist.
+    // arrayUnion adds the message to the array, preventing duplicates of the exact same object.
+    await setDoc(
+      chatDocRef,
+      {
+        messages: arrayUnion(message),
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error("Error saving chat message:", error);
+  }
 }

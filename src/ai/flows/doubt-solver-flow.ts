@@ -1,163 +1,117 @@
-
 'use server';
-/**
- * @fileOverview Academic doubt solver AI agent using Gemini 2.5 Flash.
- *
- * This file defines the Genkit flow for an AI-powered academic doubt solver.
- * It includes a tool to search the local knowledge base (notes) and a prompt
- * designed to provide contextual answers to student questions.
- */
 
 import { ai } from '@/ai/genkit';
+import { getAllNotes, getChatHistory, saveChatMessage } from '@/lib/data';
 import { z } from 'zod';
-import { getChatHistory, saveChatMessage, getAllNotes } from '@/lib/data';
+import { defineTool, configureGenkit } from 'genkit';
 import type { ChatMessage } from '@/lib/types';
+import { googleAI } from '@genkit-ai/googleai';
 
-/* ---------------------------------
- * Input Schema Definition
- * --------------------------------- */
-const DoubtSolverInputSchema = z.object({
-  userId: z.string(),
-  question: z.string(),
-});
-
-/* ---------------------------------
- * Tool: Knowledge Base Search
- * --------------------------------- */
-const KnowledgeBaseTool = ai.defineTool(
+// Define the tool for searching the knowledge base
+const KnowledgeBaseTool = defineTool(
   {
-    name: 'getRelevantSubjects',
-    description:
-      "Searches the website's curriculum to find relevant subjects, sub-subjects, or chapters for a user's academic question. This tool MUST be used first to check for existing content before answering.",
+    name: 'knowledgeBaseSearch',
+    description: 'Search the knowledge base for information on a given topic. Use this tool first to find relevant context before answering a question.',
     inputSchema: z.object({
-      query: z.string().describe("The student's academic question or topic of interest."),
+      query: z.string().describe('The topic or question to search for in the notes.'),
     }),
-    outputSchema: z.string().describe(
-      'A summary of relevant subjects, sub-subjects, and chapters from the knowledge base, or a message indicating no relevant content was found.',
-    ),
+    outputSchema: z.string().describe('A summary of the relevant information found, or a message indicating no information was found.'),
   },
-  async ({ query }) => {
+  async (input) => {
+    console.log(`[KnowledgeBaseTool] Searching for: ${input.query}`);
     const notes = await getAllNotes();
-    const lowerCaseQuery = query.toLowerCase();
+    const query = input.query.toLowerCase();
+    
+    // A simple text search implementation
+    const relevantNotes = notes
+      .filter(note => 
+        note.type.toLowerCase().includes(query) ||
+        note.chapter.toLowerCase().includes(query) ||
+        note.subSubjectName.toLowerCase().includes(query) ||
+        note.subjectName.toLowerCase().includes(query)
+      )
+      .map(note => `- ${note.type} in chapter "${note.chapter}" (Subject: ${note.subjectName} > ${note.subSubjectName})`)
+      .slice(0, 10); // Limit context size
 
-    const relevantNotes = notes.filter(
-      (note) =>
-        note.subjectName.toLowerCase().includes(lowerCaseQuery) ||
-        note.subSubjectName.toLowerCase().includes(lowerCaseQuery) ||
-        note.chapter.toLowerCase().includes(lowerCaseQuery) ||
-        note.type.toLowerCase().includes(lowerCaseQuery),
-    );
-
-    if (relevantNotes.length === 0) {
-      return 'No specific subjects, chapters, or notes matching the query were found in the knowledge base.';
+    if (relevantNotes.length > 0) {
+      const context = `Found the following relevant notes:\n${relevantNotes.join('\n')}`;
+      console.log(`[KnowledgeBaseTool] Found context:\n${context}`);
+      return context;
+    } else {
+      console.log(`[KnowledgeBaseTool] No relevant notes found for: ${input.query}`);
+      return "No specific information found in the knowledge base for this query. Answer based on general knowledge.";
     }
-
-    const summary = new Set<string>();
-    relevantNotes.forEach((note) => {
-      summary.add(
-        `Subject: ${note.subjectName} -> Sub-Subject: ${note.subSubjectName} -> Chapter: ${note.chapter}`,
-      );
-    });
-
-    return `Found the following relevant content in the knowledge base:\n- ${Array.from(summary).join(
-      '\n- ',
-    )}`;
-  },
+  }
 );
 
-/* ---------------------------------
- * Prompt Definition (Gemini 2.5 Flash)
- * --------------------------------- */
+
+// Define the main prompt for the doubt solver
 const doubtSolverPrompt = ai.definePrompt(
   {
     name: 'doubtSolverPrompt',
-    model: 'googleai/gemini-2.5-flash',
     tools: [KnowledgeBaseTool],
-    system: `You are "Topper's AI Tutor," a friendly and expert academic assistant for students.
-- Your primary function is to answer academic questions.
-- Your first step is ALWAYS to use the 'getRelevantSubjects' tool to check the website's content for context.
-- If the tool finds relevant content, you MUST use it as the primary source for your answer.
-- If the tool finds no relevant content, use your general knowledge but inform the user that specific notes on this topic are not yet available on the website.
-- If the user's query is conversational (e.g., "hello", "how are you?"), respond naturally without using the tool.
-- Keep answers clear, encouraging, and easy for students to understand.
-- Use Markdown for formatting (lists, **bold text**, etc.) to improve readability.`,
-    input: { schema: DoubtSolverInputSchema },
-    output: { schema: z.string() },
-  },
-  async (input) => {
-    const history = await getChatHistory(input.userId);
-    return {
-      prompt: `{{#if history}}
-This is the chat history so far:
-{{#each history}}
-{{role}}: {{{content}}}
-{{/each}}
-{{/if}}
+    model: googleAI('gemini-1.5-flash'), // Using a powerful model that's good with tools
+    system: `
+      You are a friendly and helpful AI assistant for a student platform called "Topper's Toolkit".
+      Your primary role is to answer student's questions based on the notes available in the knowledge base.
 
-The user's new question is:
-{{{question}}}`,
-      history: history.map((msg) => ({
-        role: msg.role as 'user' | 'model',
-        content: msg.content,
-      })),
-      question: input.question,
-    };
-  },
-);
-
-/* ---------------------------------
- * Flow Definition
- * --------------------------------- */
-const doubtSolverFlow = ai.defineFlow(
-  {
-    name: 'doubtSolverFlow',
-    inputSchema: DoubtSolverInputSchema,
-    outputSchema: z.string(),
-  },
-  async (input) => {
-    try {
-      const { output } = await doubtSolverPrompt(input);
-      return output!;
-    } catch (error) {
-      console.error('Error in doubtSolverFlow:', error);
-      throw error;
-    }
-  },
-);
-
-/* ---------------------------------
- * Exported Server Action
- * --------------------------------- */
-export async function solveDoubt(
-  question: string,
-  userId: string,
-): Promise<ChatMessage[]> {
-  if (!userId) {
-    throw new Error('User not authenticated');
+      Here's how you should operate:
+      1. ALWAYS use the 'knowledgeBaseSearch' tool first to find relevant information about the user's question.
+      2. Use the information returned by the tool as the primary context for your answer.
+      3. If the tool finds relevant notes, base your answer on that information and mention that you found it in their notes.
+      4. If the tool returns no specific information, inform the user that you couldn't find anything in their notes and then provide a general answer.
+      5. Keep your answers concise, clear, and easy to understand for a student.
+      6. If the user asks a question unrelated to academics, politely decline to answer and guide them back to study-related topics.
+      7. Format your responses using Markdown for better readability (e.g., use lists, bold text).
+    `,
+    output: {
+      schema: z.string().describe('The final answer to the user.'),
+    },
   }
-  
-  // 1. Save the user's message
+);
+
+
+// The main server action that the client will call
+export async function solveDoubt(userId: string, question: string): Promise<ChatMessage[]> {
+  console.log(`[solveDoubt] Received question from user ${userId}: "${question}"`);
+
+  // 1. Save the user's new message
   const userMessage: ChatMessage = { role: 'user', content: question, timestamp: Date.now() };
   await saveChatMessage(userId, userMessage);
-  
+
+  // 2. Get the updated conversation history
+  const history = await getChatHistory(userId);
+
+  // 3. Generate the AI's response
   try {
-    // 2. Run the AI flow to get the model's response
-    const modelResponse = await doubtSolverFlow({ question, userId });
+    const promptInput = {
+      history: history.map(msg => ({ role: msg.role, content: [{ text: msg.content }] })),
+      question,
+    };
     
-    if (!modelResponse) {
-      throw new Error('Received an empty response from the AI model.');
+    // Call the prompt and get the response
+    const response = await doubtSolverPrompt(promptInput);
+    const output = response.output(); // Correctly get the output string
+
+    if (!output) {
+      throw new Error("The model did not return a valid response.");
     }
     
-    // 3. Save the model's message
-    const modelMessage: ChatMessage = { role: 'model', content: modelResponse, timestamp: Date.now() };
+    // 4. Save the model's response
+    const modelMessage: ChatMessage = { role: 'model', content: output, timestamp: Date.now() };
     await saveChatMessage(userId, modelMessage);
 
-    // 4. Return the full, updated chat history
-    return getChatHistory(userId);
-
   } catch (error) {
-    console.error("Error in solveDoubt server action:", error);
-    // Re-throw so the client can catch it and display the error
-    throw error;
+    console.error(`[solveDoubt] Error generating response for user ${userId}:`, error);
+    // Save an error message to the chat so the user sees it
+    const errorMessage: ChatMessage = {
+      role: 'model',
+      content: 'I apologize, but I encountered an error while trying to generate a response. Please try again later.',
+      timestamp: Date.now(),
+    };
+    await saveChatMessage(userId, errorMessage);
   }
+
+  // 5. Return the final, complete chat history
+  return getChatHistory(userId);
 }
