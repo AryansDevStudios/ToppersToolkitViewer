@@ -80,7 +80,7 @@ const prompt = ai.definePrompt(
 
         The user's new question is:
         {{{question}}}`,
-        context: {
+        ...{
             history: genkitHistory,
             question: input.question,
         }
