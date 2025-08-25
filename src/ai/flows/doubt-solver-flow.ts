@@ -70,7 +70,7 @@ const KnowledgeBaseTool = ai.defineTool(
 const prompt = ai.definePrompt(
   {
     name: 'doubtSolverPrompt',
-    model: 'gemini-2.5-flash',
+    model: 'googleai/gemini-2.5-flash',
     input: { schema: DoubtSolverInputSchema },
     output: { schema: z.string() },
     tools: [KnowledgeBaseTool],
@@ -115,29 +115,23 @@ const doubtSolverFlow = ai.defineFlow(
   },
   async (input) => {
     const { userId, question } = input;
-
-    // Save user message to history
+    
     await saveChatMessage(userId, { role: 'user', content: question, timestamp: Date.now() });
 
-    // Call the AI prompt
-    const result = await prompt(input);
+    try {
+      const { output } = await prompt(input);
+      if (!output) {
+          throw new Error('Received an empty response from the AI model.');
+      }
+      
+      await saveChatMessage(userId, { role: 'model', content: output, timestamp: Date.now() });
 
-    // Handle both possible return shapes (string or { output: string }) for robustness
-    let output: string;
-    if (typeof result === 'string') {
-      output = result;
-    } else if (result && typeof result === 'object' && 'output' in result && typeof result.output === 'string') {
-      output = result.output;
-    } else {
-      throw new Error(
-        `Unexpected or invalid prompt result format: ${JSON.stringify(result, null, 2)}`,
-      );
+      return output;
+    } catch (error) {
+      console.error('Error in doubtSolverFlow:', error);
+      // Re-throw the error so the client knows something went wrong.
+      throw new Error(`An error occurred in the AI flow. Please check server logs for details.`);
     }
-
-    // Save model response to history
-    await saveChatMessage(userId, { role: 'model', content: output, timestamp: Date.now() });
-
-    return output;
   },
 );
 
