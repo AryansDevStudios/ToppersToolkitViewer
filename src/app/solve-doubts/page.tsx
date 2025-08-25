@@ -87,7 +87,8 @@ export default function SolveDoubtsPage() {
             const modelMessage: ChatMessage = { role: 'model', content: response, timestamp: Date.now() };
             setMessages(prev => [...prev, modelMessage]);
         } catch (err: any) {
-            setError(err.message || "An error occurred while fetching the response.");
+            const errorMessage = `An error occurred. Details: ${JSON.stringify(err, Object.getOwnPropertyNames(err), 2)}`;
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -154,7 +155,7 @@ export default function SolveDoubtsPage() {
                     </div>
                 </ScrollArea>
                 <div className="p-4 bg-background/50 border-t">
-                     {error && <p className="text-destructive text-sm mb-2 text-center">{error}</p>}
+                     {error && <p className="text-destructive text-sm mb-2 text-center whitespace-pre-wrap">{error}</p>}
                     <form onSubmit={handleSubmit} className="flex gap-2">
                         <Textarea
                             value={input}
