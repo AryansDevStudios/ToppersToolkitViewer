@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Academic doubt solver AI agent using Gemini 2.5 Flash.
@@ -129,8 +130,8 @@ const doubtSolverFlow = ai.defineFlow(
       return output;
     } catch (error) {
       console.error('Error in doubtSolverFlow:', error);
-      // Re-throw the error so the client knows something went wrong.
-      throw new Error(`An error occurred in the AI flow. Please check server logs for details.`);
+      // Re-throw the original error so the client can receive full details.
+      throw error;
     }
   },
 );

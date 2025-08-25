@@ -88,7 +88,13 @@ export default function SolveDoubtsPage() {
              const updatedHistory = await getChatHistory(user.uid);
              setMessages(updatedHistory);
         } catch (err: any) {
-            setError(`Sorry, an error occurred while getting your answer. Please try again.`);
+            const errorMessage = `An error occurred. Details:\n${JSON.stringify({
+                name: err.name,
+                message: err.message,
+                stack: err.stack,
+                digest: err.digest,
+            }, null, 2)}`;
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
