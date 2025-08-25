@@ -9,19 +9,18 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { getSubjects, getChatHistory, saveChatMessage, getAllNotes } from '@/lib/data';
+import { getChatHistory, saveChatMessage, getAllNotes } from '@/lib/data';
 import { auth } from '@/lib/firebase';
 import { ChatMessage } from '@/lib/types';
-import { defineTool } from 'genkit';
 
-const KnowledgeBaseTool = defineTool(
+const KnowledgeBaseTool = ai.defineTool(
     {
         name: 'getRelevantSubjects',
         description: "Searches the website's curriculum to find relevant subjects, sub-subjects, or chapters for a user's academic question.",
-        input: z.object({
+        inputSchema: z.object({
             query: z.string().describe("The user's academic question or topic of interest."),
         }),
-        output: z.string().describe("A summary of relevant subjects, sub-subjects, and chapters from the knowledge base, or a message indicating no relevant content was found."),
+        outputSchema: z.string().describe("A summary of relevant subjects, sub-subjects, and chapters from the knowledge base, or a message indicating no relevant content was found."),
     },
     async ({ query }) => {
         const notes = await getAllNotes();
