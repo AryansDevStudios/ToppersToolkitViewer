@@ -91,7 +91,7 @@ export async function solveDoubt(userId: string, question: string): Promise<Chat
     
     // Call the prompt and get the response
     const response = await doubtSolverPrompt(promptInput);
-    const output = response.output(); // Correctly get the output string
+    const output = response.output(); 
 
     if (!output) {
       throw new Error("The model did not return a valid response.");
