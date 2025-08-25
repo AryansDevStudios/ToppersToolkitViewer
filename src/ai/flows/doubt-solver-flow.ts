@@ -99,7 +99,15 @@ const doubtSolverFlow = ai.defineFlow(
         const userMessage: ChatMessage = { role: 'user', content: question, timestamp: Date.now() };
         await saveChatMessage(userId, userMessage);
         
-        const { output } = await prompt(input);
+        const result = await prompt(input);
+        
+        let output: string | undefined;
+
+        if (typeof result?.output === 'string') {
+          output = result.output;
+        } else if (typeof result === 'string') {
+          output = result;
+        }
 
         if (output) {
             const modelMessage: ChatMessage = { role: 'model', content: output, timestamp: Date.now() };
