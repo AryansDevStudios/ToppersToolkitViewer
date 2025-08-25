@@ -116,9 +116,8 @@ const doubtSolverFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      // Correctly call the prompt and get the response text
-      const response = await doubtSolverPrompt(input);
-      return response.text;
+      const { output } = await doubtSolverPrompt(input);
+      return output!;
     } catch (error) {
       console.error('Error in doubtSolverFlow:', error);
       throw error;
