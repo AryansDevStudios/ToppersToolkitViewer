@@ -10,7 +10,6 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { getChatHistory, saveChatMessage, getAllNotes } from '@/lib/data';
-import { auth } from '@/lib/firebase';
 import { ChatMessage } from '@/lib/types';
 
 const KnowledgeBaseTool = ai.defineTool(
@@ -47,11 +46,15 @@ const KnowledgeBaseTool = ai.defineTool(
     }
 );
 
+const DoubtSolverInputSchema = z.object({
+    userId: z.string(),
+    question: z.string(),
+});
 
 const prompt = ai.definePrompt(
   {
     name: 'doubtSolverPrompt',
-    input: { schema: z.string() },
+    input: { schema: DoubtSolverInputSchema },
     output: { schema: z.string() },
     tools: [KnowledgeBaseTool],
     system: `You are "Topper's AI Tutor," a friendly and expert academic assistant for students. Your purpose is to help solve their doubts clearly and concisely.
@@ -63,11 +66,8 @@ const prompt = ai.definePrompt(
 - Keep your answers helpful, encouraging, and easy to understand for a student.
 - Format your answers using Markdown for better readability (e.g., use lists, bold text).`,
   },
-  async (question) => {
-    if (!auth.currentUser) {
-        throw new Error("User is not authenticated.");
-    }
-    const history = await getChatHistory(auth.currentUser.uid);
+  async (input) => {
+    const history = await getChatHistory(input.userId);
     const genkitHistory = history.map(msg => ({...msg})); // Convert to Genkit's history format
 
     return {
@@ -82,7 +82,7 @@ const prompt = ai.definePrompt(
         {{{question}}}`,
         context: {
             history: genkitHistory,
-            question,
+            question: input.question,
         }
     };
   }
@@ -92,22 +92,20 @@ const prompt = ai.definePrompt(
 const doubtSolverFlow = ai.defineFlow(
     {
         name: 'doubtSolverFlow',
-        inputSchema: z.string(),
+        inputSchema: DoubtSolverInputSchema,
         outputSchema: z.string(),
     },
-    async (question) => {
-        if (!auth.currentUser) {
-            throw new Error("User not authenticated");
-        }
+    async (input) => {
+        const { userId, question } = input;
         
         const userMessage: ChatMessage = { role: 'user', content: question, timestamp: Date.now() };
-        await saveChatMessage(auth.currentUser.uid, userMessage);
+        await saveChatMessage(userId, userMessage);
         
-        const { output } = await prompt(question);
+        const { output } = await prompt(input);
 
         if (output) {
             const modelMessage: ChatMessage = { role: 'model', content: output, timestamp: Date.now() };
-            await saveChatMessage(auth.currentUser.uid, modelMessage);
+            await saveChatMessage(userId, modelMessage);
             return output;
         }
 
@@ -115,6 +113,9 @@ const doubtSolverFlow = ai.defineFlow(
     }
 );
 
-export async function solveDoubt(question: string): Promise<string> {
-  return doubtSolverFlow(question);
+export async function solveDoubt(question: string, userId: string): Promise<string> {
+    if (!userId) {
+        throw new Error("User not authenticated");
+    }
+    return doubtSolverFlow({ question, userId });
 }

@@ -74,7 +74,7 @@ export default function SolveDoubtsPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!input.trim() || isLoading) return;
+        if (!input.trim() || isLoading || !user) return;
 
         const userMessage: ChatMessage = { role: 'user', content: input, timestamp: Date.now() };
         setMessages(prev => [...prev, userMessage]);
@@ -83,7 +83,7 @@ export default function SolveDoubtsPage() {
         setError(null);
 
         try {
-            const response = await solveDoubt(input);
+            const response = await solveDoubt(input, user.uid);
             const modelMessage: ChatMessage = { role: 'model', content: response, timestamp: Date.now() };
             setMessages(prev => [...prev, modelMessage]);
         } catch (err: any) {
