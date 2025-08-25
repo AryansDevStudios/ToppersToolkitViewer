@@ -65,25 +65,23 @@ const prompt = ai.definePrompt(
 - If the question is conversational (e.g., "hello", "how are you?"), respond naturally and friendly.
 - Keep your answers helpful, encouraging, and easy to understand for a student.
 - Format your answers using Markdown for better readability (e.g., use lists, bold text).`,
+    prompt: `{{#if history}}
+This is the chat history so far:
+{{#each history}}
+{{role}}: {{content}}
+{{/each}}
+{{/if}}
+
+The user's new question is:
+{{{question}}}`,
   },
   async (input) => {
     const history = await getChatHistory(input.userId);
-    const genkitHistory = history.map(msg => ({...msg})); // Convert to Genkit's history format
+    const genkitHistory = history.map(msg => ({ role: msg.role as 'user' | 'model', content: msg.content }));
 
     return {
-        prompt: `{{#if history}}
-        This is the chat history so far:
-        {{#each history}}
-        {{role}}: {{content}}
-        {{/each}}
-        {{/if}}
-
-        The user's new question is:
-        {{{question}}}`,
-        ...{
-            history: genkitHistory,
-            question: input.question,
-        }
+      history: genkitHistory,
+      question: input.question,
     };
   }
 );
