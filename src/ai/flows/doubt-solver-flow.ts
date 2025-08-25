@@ -68,12 +68,10 @@ const KnowledgeBaseTool = ai.defineTool(
 /* ---------------------------------
  * Prompt Definition (Gemini 2.5 Flash)
  * --------------------------------- */
-const prompt = ai.definePrompt(
+const doubtSolverPrompt = ai.definePrompt(
   {
     name: 'doubtSolverPrompt',
     model: 'googleai/gemini-2.5-flash',
-    input: { schema: DoubtSolverInputSchema },
-    output: { schema: z.string() },
     tools: [KnowledgeBaseTool],
     system: `You are "Topper's AI Tutor," a friendly and expert academic assistant for students.
 - Your primary function is to answer academic questions.
@@ -84,7 +82,7 @@ const prompt = ai.definePrompt(
 - Keep answers clear, encouraging, and easy for students to understand.
 - Use Markdown for formatting (lists, **bold text**, etc.) to improve readability.`,
   },
-  async (input) => {
+  async (input: z.infer<typeof DoubtSolverInputSchema>) => {
     const history = await getChatHistory(input.userId);
     return {
       prompt: `{{#if history}}
@@ -115,24 +113,15 @@ const doubtSolverFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (input) => {
-    const { userId, question } = input;
-    
-    await saveChatMessage(userId, { role: 'user', content: question, timestamp: Date.now() });
-
     try {
-      // Correctly assign the direct string output from the prompt
-      const output = await prompt(input);
-      
-      if (!output) {
-          throw new Error('Received an empty response from the AI model.');
-      }
-      
-      await saveChatMessage(userId, { role: 'model', content: output, timestamp: Date.now() });
-
-      return output;
+      const { response } = await ai.generate({
+        prompt: await doubtSolverPrompt.render(input),
+        model: 'googleai/gemini-2.5-flash',
+        tools: [KnowledgeBaseTool],
+      });
+      return response.text;
     } catch (error) {
       console.error('Error in doubtSolverFlow:', error);
-      // Re-throw the original error so the client can receive full details.
       throw error;
     }
   },
@@ -144,9 +133,33 @@ const doubtSolverFlow = ai.defineFlow(
 export async function solveDoubt(
   question: string,
   userId: string,
-): Promise<string> {
+): Promise<ChatMessage[]> {
   if (!userId) {
     throw new Error('User not authenticated');
   }
-  return doubtSolverFlow({ question, userId });
+  
+  // 1. Save the user's message
+  const userMessage: ChatMessage = { role: 'user', content: question, timestamp: Date.now() };
+  await saveChatMessage(userId, userMessage);
+  
+  try {
+    // 2. Run the AI flow to get the model's response
+    const modelResponse = await doubtSolverFlow({ question, userId });
+    
+    if (!modelResponse) {
+      throw new Error('Received an empty response from the AI model.');
+    }
+    
+    // 3. Save the model's message
+    const modelMessage: ChatMessage = { role: 'model', content: modelResponse, timestamp: Date.now() };
+    await saveChatMessage(userId, modelMessage);
+
+    // 4. Return the full, updated chat history
+    return getChatHistory(userId);
+
+  } catch (error) {
+    console.error("Error in solveDoubt server action:", error);
+    // Re-throw so the client can catch it and display the error
+    throw error;
+  }
 }

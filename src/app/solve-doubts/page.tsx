@@ -76,25 +76,28 @@ export default function SolveDoubtsPage() {
         e.preventDefault();
         if (!input.trim() || isLoading || !user) return;
 
-        const userMessage: ChatMessage = { role: 'user', content: input, timestamp: Date.now() };
-        setMessages(prev => [...prev, userMessage]);
+        const currentInput = input;
         setInput('');
         setIsLoading(true);
         setError(null);
+        
+        // Temporarily add user message for immediate feedback
+        setMessages(prev => [...prev, { role: 'user', content: currentInput, timestamp: Date.now() }]);
 
         try {
-            const response = await solveDoubt(input, user.uid);
-            // The flow now saves the model message, so we just need to refetch history
-             const updatedHistory = await getChatHistory(user.uid);
-             setMessages(updatedHistory);
+            // The server action now returns the full updated history
+            const updatedHistory = await solveDoubt(currentInput, user.uid);
+            setMessages(updatedHistory);
         } catch (err: any) {
-            const errorMessage = `An error occurred. Details:\n${JSON.stringify({
+             const errorMessage = `An error occurred. Details:\n${JSON.stringify({
                 name: err.name,
                 message: err.message,
                 stack: err.stack,
                 digest: err.digest,
             }, null, 2)}`;
             setError(errorMessage);
+            // On error, revert the optimistic user message
+            setMessages(prev => prev.slice(0, -1));
         } finally {
             setIsLoading(false);
         }
@@ -147,7 +150,7 @@ export default function SolveDoubtsPage() {
                                 )}
                             </div>
                         ))}
-                         {isLoading && messages.length > 0 && messages[messages.length-1].role === 'user' && (
+                         {isLoading && (
                             <div className="flex items-start gap-3 justify-start">
                                 <Avatar className="h-9 w-9 border-2 border-primary">
                                     <AvatarFallback><Bot className="h-5 w-5" /></AvatarFallback>
