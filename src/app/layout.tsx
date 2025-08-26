@@ -7,15 +7,49 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
 import { Footer } from "@/components/common/Footer";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MobileBottomNav } from "@/components/common/MobileBottomNav";
 import { Inter } from 'next/font/google';
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
 });
+
+const publicPaths = ['/login', '/register', '/terms', '/user-manual'];
+
+function AuthWrapper({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const isPublicPage = publicPaths.includes(pathname);
+
+  useEffect(() => {
+    if (!loading && !user && !isPublicPage) {
+      router.push('/login');
+    }
+  }, [loading, user, isPublicPage, router, pathname]);
+
+  if (loading && !isPublicPage) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user && !isPublicPage) {
+    return null; // Render nothing while redirecting
+  }
+
+  return <>{children}</>;
+}
+
 
 function RootLayoutContent({
   children,
@@ -33,13 +67,15 @@ function RootLayoutContent({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="relative flex min-h-screen flex-col">
-            {!isAuthPage && <AppHeader />}
-            <main className={cn("flex-1", "pb-16 md:pb-0")}>{children}</main>
-            {!isAuthPage && !isDoubtSolverPage && <Footer />}
-            {!isAuthPage && <MobileBottomNav />}
-          </div>
-          <Toaster />
+          <AuthWrapper>
+            <div className="relative flex min-h-screen flex-col">
+              {!isAuthPage && <AppHeader />}
+              <main className={cn("flex-1", { "pb-16 md:pb-0": !isDoubtSolverPage })}>{children}</main>
+              {!isAuthPage && !isDoubtSolverPage && <Footer />}
+              {!isAuthPage && <MobileBottomNav />}
+            </div>
+            <Toaster />
+          </AuthWrapper>
         </ThemeProvider>
   )
 }
