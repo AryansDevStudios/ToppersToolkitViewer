@@ -8,6 +8,8 @@ import { Loader2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getUserById } from "@/lib/data";
+import { useTheme } from "next-themes";
+import type { User } from "@/lib/types";
 
 const AccessDenied = () => (
     <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
@@ -33,10 +35,9 @@ const LoadingState = () => (
 export default function DoubtSolverPage() {
     const { user, role, loading: authLoading } = useAuth();
     const router = useRouter();
+    const { theme, resolvedTheme } = useTheme();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
-
-    // TODO: Replace this with the actual URL you want to display.
-    const iframeUrl = "https://example.com";
+    const [userData, setUserData] = useState<User | null>(null);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -49,6 +50,7 @@ export default function DoubtSolverPage() {
         }
 
         setHasAccess(null); 
+        setUserData(null);
 
         async function checkAccess() {
             if (!user) {
@@ -56,13 +58,10 @@ export default function DoubtSolverPage() {
                 return;
             }
 
-            if (role === 'Admin') {
-                setHasAccess(true);
-                return;
-            }
-
-            const userData = await getUserById(user.uid);
-            if (userData?.hasAiAccess) {
+            const dbUser = await getUserById(user.uid);
+            setUserData(dbUser);
+            
+            if (role === 'Admin' || dbUser?.hasAiAccess) {
                 setHasAccess(true);
             } else {
                 setHasAccess(false);
@@ -71,6 +70,15 @@ export default function DoubtSolverPage() {
 
         checkAccess();
     }, [authLoading, user, role, router]);
+
+    const studentName = encodeURIComponent(userData?.name || 'Student');
+    const classOfStudent = encodeURIComponent(userData?.classAndSection || 'N/A');
+    const siteTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
+    
+    // Use a key on the iframe that changes when the theme changes to force a re-render
+    const iframeKey = `${user?.uid}-${siteTheme}`;
+
+    const iframeUrl = `https://topperstoolkitai.netlify.app/?name=${studentName}&class=${classOfStudent}&theme=${siteTheme}`;
 
     if (hasAccess === null) {
         return (
@@ -95,6 +103,7 @@ export default function DoubtSolverPage() {
             </header>
             <div className="flex-1 w-full h-full">
                 <iframe
+                    key={iframeKey}
                     src={iframeUrl}
                     className="w-full h-full border-0"
                     title="Doubt Solver"
