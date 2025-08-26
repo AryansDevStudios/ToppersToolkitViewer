@@ -25,10 +25,10 @@ const KnowledgeBaseTool = ai.defineTool(
     // A simple text search implementation
     const relevantNotes = notes
       .filter(note => 
-        note.type.toLowerCase().includes(query) ||
-        note.chapter.toLowerCase().includes(query) ||
-        note.subSubjectName.toLowerCase().includes(query) ||
-        note.subjectName.toLowerCase().includes(query)
+        (note.type?.toLowerCase() || '').includes(query) ||
+        (note.chapter?.toLowerCase() || '').includes(query) ||
+        (note.subSubjectName?.toLowerCase() || '').includes(query) ||
+        (note.subjectName?.toLowerCase() || '').includes(query)
       )
       .map(note => `- ${note.type} in chapter "${note.chapter}" (Subject: ${note.subjectName} > ${note.subSubjectName})`)
       .slice(0, 10); // Limit context size
@@ -90,8 +90,7 @@ export async function solveDoubt(userId: string, question: string): Promise<Chat
     };
     
     // Call the prompt and get the response
-    const response = await doubtSolverPrompt(promptInput);
-    const output = response.output(); 
+    const { output } = await doubtSolverPrompt(promptInput);
 
     if (!output) {
       throw new Error("The model did not return a valid response.");
@@ -109,7 +108,7 @@ export async function solveDoubt(userId: string, question: string): Promise<Chat
       timestamp: Date.now(),
     };
     await saveChatMessage(userId, errorMessage);
-    throw error;
+    // Do not re-throw here so the user sees the error message in the chat.
   }
 
   // 5. Return the final, complete chat history
