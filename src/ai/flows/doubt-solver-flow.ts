@@ -24,13 +24,17 @@ const doubtSolverFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async ({ question, history }) => {
+    // The model expects a clean history with only `role` and `content`.
+    // We map over the history to remove extra properties like `timestamp`.
+    const cleanHistory = history.map(msg => ({ role: msg.role, content: msg.content }));
+
     const modelResponse = await ai.generate({
       model: 'googleai/gemini-1.5-flash-latest',
       prompt: {
         system: `You are a helpful academic assistant for students. Your name is Topper.
         Answer the user's question clearly and concisely. If the user greets you, greet them back warmly.`,
         messages: [
-            ...history,
+            ...cleanHistory,
             { role: 'user', content: question }
         ]
       },
