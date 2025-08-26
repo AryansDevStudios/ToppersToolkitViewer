@@ -9,7 +9,7 @@ import { ai } from '@/ai/genkit';
 import { getChatHistory, saveChatMessage } from '@/lib/data';
 import type { ChatMessage } from '@/lib/types';
 import { z } from 'zod';
-import { HumanMessage, AIMessage } from 'genkit/ai';
+import { HumanMessage, AIMessage } from 'genkit';
 
 // Define the schema for the flow's input
 const DoubtSolverInputSchema = z.object({
