@@ -36,8 +36,8 @@ function RootLayoutContent({
           <div className="relative flex min-h-screen flex-col">
             {!isAuthPage && <AppHeader />}
             <main className={cn("flex-1", !isDoubtSolverPage && "pb-16 md:pb-0")}>{children}</main>
-            {!isAuthPage && <Footer />}
-            {!isAuthPage && <MobileBottomNav />}
+            {!isAuthPage && !isDoubtSolverPage && <Footer />}
+            {!isAuthPage && !isDoubtSolverPage && <MobileBottomNav />}
           </div>
           <Toaster />
         </ThemeProvider>
