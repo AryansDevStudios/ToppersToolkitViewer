@@ -61,7 +61,7 @@ export function MobileBottomNav() {
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Search, label: "Browse" },
       { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-400" },
-      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
+      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: false },
     ];
 
     const renderAuthSlot = () => {
