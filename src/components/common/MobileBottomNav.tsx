@@ -3,14 +3,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, ShoppingBag, LogIn } from "lucide-react";
+import { Home, Search, ShoppingBag, LogIn, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UserProfileMenu } from "./UserProfileMenu";
 import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 
-const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className }: { href: string, icon: React.ElementType, label: string, isActive: boolean, isExternal?: boolean, className?: string }) => {
+const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className, iconClassName }: { href: string, icon: React.ElementType, label: string, isActive: boolean, isExternal?: boolean, className?: string, iconClassName?: string }) => {
     const LinkComponent = isExternal ? 'a' : Link;
     return (
         <LinkComponent
@@ -22,7 +22,7 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className }: {
                 className
             )}
         >
-            <Icon className="h-6 w-6" />
+            <Icon className={cn("h-6 w-6", iconClassName)} />
             <span>{label}</span>
         </LinkComponent>
     )
@@ -40,8 +40,15 @@ export function MobileBottomNav() {
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Search, label: "Browse" },
+      { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-400" },
       { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
     ];
+    
+    const middleIndex = 2; // For the AI Help button
+    const firstHalf = navItems.slice(0, middleIndex);
+    const middleItem = navItems[middleIndex];
+    const secondHalf = navItems.slice(middleIndex + 1);
+
 
     const renderAuthSlot = () => {
       // After mounting, show the correct UI based on auth state
@@ -68,12 +75,12 @@ export function MobileBottomNav() {
       }
     };
     
-    const gridColsClass = 'grid-cols-4';
+    const gridColsClass = 'grid-cols-5';
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
             <div className={cn("container grid h-16 max-w-lg items-center p-0", gridColsClass)}>
-                {navItems.map((item) => {
+                {firstHalf.map((item) => {
                     const isActive = (item.href === "/" && pathname === "/") || (item.href !== "/" && pathname.startsWith(item.href));
                     return (
                        <NavItem 
@@ -83,6 +90,32 @@ export function MobileBottomNav() {
                          label={item.label}
                          isActive={isActive}
                          isExternal={item.isExternal}
+                         iconClassName={item.iconClassName}
+                       />
+                    );
+                })}
+                
+                <NavItem 
+                    key={middleItem.label}
+                    href={middleItem.href}
+                    icon={middleItem.icon}
+                    label={middleItem.label}
+                    isActive={pathname.startsWith(middleItem.href)}
+                    isExternal={middleItem.isExternal}
+                    iconClassName={middleItem.iconClassName}
+                />
+                
+                {secondHalf.map((item) => {
+                    const isActive = pathname.startsWith(item.href);
+                    return (
+                       <NavItem 
+                         key={item.label}
+                         href={item.href}
+                         icon={item.icon}
+                         label={item.label}
+                         isActive={isActive}
+                         isExternal={item.isExternal}
+                         iconClassName={item.iconClassName}
                        />
                     );
                 })}
