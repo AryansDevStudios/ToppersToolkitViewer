@@ -43,7 +43,7 @@ const MobileNavSkeleton = () => (
 
 export function MobileBottomNav() {
     const pathname = usePathname();
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -56,7 +56,7 @@ export function MobileBottomNav() {
       { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-400" },
       { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
     ];
-    
+
     if (!mounted) {
          return (
             <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
@@ -64,8 +64,16 @@ export function MobileBottomNav() {
             </nav>
         );
     }
-
+    
     const renderAuthSlot = () => {
+      if (loading) {
+         return (
+            <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
+                <Skeleton className="h-7 w-7 rounded-full" />
+                <Skeleton className="h-2 w-10 rounded-sm" />
+            </div>
+        )
+      }
       if (user) {
         return <UserProfileMenu isMobile={true} />;
       } else {
