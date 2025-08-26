@@ -28,7 +28,6 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className, ico
     )
 };
 
-
 const MobileNavSkeleton = () => (
     <div className="container grid h-16 max-w-lg items-center p-0 grid-cols-5">
         {[...Array(5)].map((_, i) => (
@@ -50,6 +49,14 @@ export function MobileBottomNav() {
         setMounted(true);
     }, []);
 
+    if (!mounted) {
+        return (
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
+                <MobileNavSkeleton />
+            </nav>
+        );
+    }
+    
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Search, label: "Browse" },
@@ -57,14 +64,6 @@ export function MobileBottomNav() {
       { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
     ];
 
-    if (!mounted) {
-         return (
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
-                <MobileNavSkeleton />
-            </nav>
-        );
-    }
-    
     const renderAuthSlot = () => {
       if (loading) {
          return (

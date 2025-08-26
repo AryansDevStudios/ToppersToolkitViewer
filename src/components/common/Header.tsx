@@ -87,11 +87,7 @@ export function AppHeader() {
               </Button>
             )}
          
-          {!mounted ? (
-            <div className="h-10 w-10" />
-          ) : (
-            <ThemeToggle />
-          )}
+          <ThemeToggle />
 
           <div className="hidden md:block">
             {!mounted || loading ? (
