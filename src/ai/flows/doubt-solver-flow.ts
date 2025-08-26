@@ -9,7 +9,6 @@ import { ai } from '@/ai/genkit';
 import { getChatHistory, saveChatMessage } from '@/lib/data';
 import type { ChatMessage } from '@/lib/types';
 import { z } from 'zod';
-import { HumanMessage, AIMessage } from 'genkit';
 
 // Define the schema for the flow's input
 const DoubtSolverInputSchema = z.object({
@@ -25,18 +24,14 @@ const doubtSolverFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async ({ question, history }) => {
-
     const modelResponse = await ai.generate({
       model: 'googleai/gemini-1.5-flash-latest',
       prompt: {
         system: `You are a helpful academic assistant for students. Your name is Topper.
         Answer the user's question clearly and concisely. If the user greets you, greet them back warmly.`,
         messages: [
-            ...history.map(msg => {
-                if (msg.role === 'user') return new HumanMessage(msg.content);
-                return new AIMessage(msg.content);
-            }),
-            new HumanMessage(question)
+            ...history,
+            { role: 'user', content: question }
         ]
       },
     });
