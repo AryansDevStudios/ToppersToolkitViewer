@@ -28,9 +28,22 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className, ico
     )
 };
 
+
+const MobileNavSkeleton = () => (
+    <div className="container grid h-16 max-w-lg items-center p-0 grid-cols-5">
+        {[...Array(5)].map((_, i) => (
+             <div key={i} className="flex flex-col items-center justify-center gap-1 w-full h-full">
+                <Skeleton className="h-7 w-7 rounded-full" />
+                <Skeleton className="h-2 w-10 rounded-sm" />
+            </div>
+        ))}
+    </div>
+);
+
+
 export function MobileBottomNav() {
     const pathname = usePathname();
-    const { user, loading } = useAuth();
+    const { user } = useAuth();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -44,23 +57,15 @@ export function MobileBottomNav() {
       { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
     ];
     
-    const middleIndex = 2; // For the AI Help button
-    const firstHalf = navItems.slice(0, middleIndex);
-    const middleItem = navItems[middleIndex];
-    const secondHalf = navItems.slice(middleIndex + 1);
-
+    if (!mounted) {
+         return (
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
+                <MobileNavSkeleton />
+            </nav>
+        );
+    }
 
     const renderAuthSlot = () => {
-      // Before mounting, show a placeholder to prevent hydration mismatch
-      if (!mounted) {
-        return (
-          <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
-            <Skeleton className="h-7 w-7 rounded-full" />
-            <Skeleton className="h-2 w-10 rounded-sm" />
-          </div>
-        );
-      }
-      
       if (user) {
         return <UserProfileMenu isMobile={true} />;
       } else {
@@ -80,33 +85,8 @@ export function MobileBottomNav() {
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
             <div className={cn("container grid h-16 max-w-lg items-center p-0", gridColsClass)}>
-                {firstHalf.map((item) => {
+                {navItems.map((item) => {
                     const isActive = (item.href === "/" && pathname === "/") || (item.href !== "/" && pathname.startsWith(item.href));
-                    return (
-                       <NavItem 
-                         key={item.label}
-                         href={item.href}
-                         icon={item.icon}
-                         label={item.label}
-                         isActive={isActive}
-                         isExternal={item.isExternal}
-                         iconClassName={item.iconClassName}
-                       />
-                    );
-                })}
-                
-                <NavItem 
-                    key={middleItem.label}
-                    href={middleItem.href}
-                    icon={middleItem.icon}
-                    label={middleItem.label}
-                    isActive={pathname.startsWith(middleItem.href)}
-                    isExternal={middleItem.isExternal}
-                    iconClassName={middleItem.iconClassName}
-                />
-                
-                {secondHalf.map((item) => {
-                    const isActive = pathname.startsWith(item.href);
                     return (
                        <NavItem 
                          key={item.label}
