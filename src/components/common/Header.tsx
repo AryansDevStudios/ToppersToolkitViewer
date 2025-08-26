@@ -76,7 +76,7 @@ export function AppHeader() {
             </Link>
           </Button>
           <Button variant="ghost" asChild>
-            <a href="https://topperstoolkit.netlify.app" target="_blank" rel="noopener noreferrer">Shop</a>
+            <a href="https://topperstoolkit.netlify.app">Shop</a>
           </Button>
         </nav>
         
