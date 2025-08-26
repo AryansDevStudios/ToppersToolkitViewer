@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
 import { auth, onAuthStateChanged } from '@/lib/firebase';
 import { getUserById } from '@/lib/data';
@@ -24,7 +24,6 @@ const setSessionCookie = async (user: FirebaseUser | null) => {
 export function useAuth() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [role, setRole] = useState<User['role'] | null>(null);
-  const [hasAiAccess, setHasAiAccess] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,12 +33,10 @@ export function useAuth() {
         setUser(firebaseUser);
         const userData = await getUserById(firebaseUser.uid);
         setRole(userData?.role || 'User');
-        setHasAiAccess(userData?.hasAiAccess || false);
         await setSessionCookie(firebaseUser);
       } else {
         setUser(null);
         setRole(null);
-        setHasAiAccess(false);
         await setSessionCookie(null);
       }
       setLoading(false);
@@ -49,5 +46,5 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, role, hasAiAccess, loading };
+  return { user, role, loading };
 }

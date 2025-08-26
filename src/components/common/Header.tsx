@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, Sun, Moon, UserCog, Sparkles } from "lucide-react";
+import { LogIn, Sun, Moon, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -45,7 +45,7 @@ function ThemeToggle() {
 }
 
 export function AppHeader() {
-  const { user, role, loading, hasAiAccess } = useAuth();
+  const { user, role, loading } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -69,11 +69,6 @@ export function AppHeader() {
           <Button variant="ghost" asChild>
             <Link href="/browse">Browse Notes</Link>
           </Button>
-          {mounted && (role === 'Admin' || hasAiAccess) && (
-            <Button variant="ghost" asChild>
-              <Link href="/solve-doubts">Doubt Solver</Link>
-            </Button>
-          )}
           <Button variant="ghost" asChild>
             <a href="https://topperstoolkit.netlify.app" target="_blank" rel="noopener noreferrer">Shop</a>
           </Button>

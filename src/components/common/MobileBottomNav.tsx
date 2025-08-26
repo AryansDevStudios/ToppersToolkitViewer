@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, ShoppingBag, LogIn, Sparkles } from "lucide-react";
+import { Home, Search, ShoppingBag, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -30,7 +30,7 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className }: {
 
 export function MobileBottomNav() {
     const pathname = usePathname();
-    const { user, loading, role, hasAiAccess } = useAuth();
+    const { user, loading } = useAuth();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -40,13 +40,8 @@ export function MobileBottomNav() {
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Search, label: "Browse" },
+      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
     ];
-    
-    if (mounted && (role === 'Admin' || hasAiAccess)) {
-        navItems.push({ href: "/solve-doubts", icon: Sparkles, label: "AI Help" });
-    }
-
-    navItems.push({ href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true });
 
     const renderAuthSlot = () => {
       // After mounting, show the correct UI based on auth state
@@ -73,7 +68,7 @@ export function MobileBottomNav() {
       }
     };
     
-    const gridColsClass = navItems.length === 5 ? 'grid-cols-5' : 'grid-cols-4';
+    const gridColsClass = 'grid-cols-4';
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
