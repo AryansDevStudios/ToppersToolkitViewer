@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useTransition, useEffect, useMemo } from "react";
@@ -61,15 +60,18 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [notes, setNotes] = useState<NoteItem[]>([]);
     const [noteAccess, setNoteAccess] = useState<Set<string>>(new Set());
+    const [hasAiAccess, setHasAiAccess] = useState(false);
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
 
     const initialNoteAccess = useMemo(() => new Set(user.noteAccess || []), [user.noteAccess]);
+    const initialAiAccess = useMemo(() => user.hasAiAccess || false, [user.hasAiAccess]);
 
     useEffect(() => {
         if (isOpen) {
             setIsLoading(true);
             setNoteAccess(new Set(user.noteAccess || []));
+            setHasAiAccess(user.hasAiAccess || false);
             getAllNotes()
                 .then(fetchedNotes => {
                     const sortedNotes = fetchedNotes.sort((a, b) => {
@@ -89,7 +91,7 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                     setIsLoading(false);
                 });
         }
-    }, [isOpen, user.noteAccess, toast]);
+    }, [isOpen, user.noteAccess, user.hasAiAccess, toast]);
 
     const handleNoteAccessChange = (noteId: string, newAccess: boolean) => {
         setNoteAccess(prev => {
@@ -104,8 +106,9 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
         startTransition(async () => {
             const accessArray = Array.from(noteAccess);
             const accessResult = await updateUserAccessBatch(user.id, accessArray);
+            const aiAccessResult = await updateUserAiAccess(user.id, hasAiAccess);
 
-            if (accessResult.success) {
+            if (accessResult.success && aiAccessResult.success) {
                 toast({
                     title: "Access Updated",
                     description: "User permissions have been saved successfully.",
@@ -114,7 +117,7 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
             } else {
                 toast({
                     title: "Update Failed",
-                    description: accessResult.error || "Could not update permissions.",
+                    description: accessResult.error || aiAccessResult.error || "Could not update permissions.",
                     variant: "destructive",
                 });
             }
@@ -124,12 +127,13 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
     const groupedNotes = groupNotes(notes);
     
     const haveChanges = useMemo(() => {
+        if (initialAiAccess !== hasAiAccess) return true;
         if (initialNoteAccess.size !== noteAccess.size) return true;
         for (const id of initialNoteAccess) {
             if (!noteAccess.has(id)) return true;
         }
         return false;
-    }, [initialNoteAccess, noteAccess]);
+    }, [initialNoteAccess, noteAccess, initialAiAccess, hasAiAccess]);
 
     const isUserAdmin = user.role === 'Admin';
 
@@ -145,10 +149,32 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                 <DialogHeader>
                     <DialogTitle>Manage Access for {user.name}</DialogTitle>
                     <DialogDescription>
-                        Grant or revoke access to specific notes.
+                        Grant or revoke access to notes and AI features.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
+                     <div className="space-y-2">
+                        <h3 className="text-lg font-semibold">Special Permissions</h3>
+                        <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="ai-access" className="flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4 text-orange-400" />
+                                    AI Doubt Solver Access
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Allows the user to access the AI chat feature.
+                                </p>
+                            </div>
+                            <Switch
+                                id="ai-access"
+                                checked={isUserAdmin || hasAiAccess}
+                                onCheckedChange={setHasAiAccess}
+                                disabled={isPending || isUserAdmin}
+                            />
+                        </div>
+                    </div>
+
+                    <Separator />
                     
                     <h3 className="text-lg font-semibold">Note Access</h3>
                     {isUserAdmin ? (
@@ -157,7 +183,7 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                             <p className="font-semibold">Admins have access to all notes.</p>
                         </div>
                     ) : (
-                        <ScrollArea className="h-[50vh] pr-6 border rounded-md">
+                        <ScrollArea className="h-[40vh] pr-6 border rounded-md">
                            <div className="p-4">
                              {isLoading ? (
                                 <div className="flex justify-center items-center h-full">

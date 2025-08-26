@@ -59,4 +59,5 @@ export interface User {
   loginLogs?: LoginLog[];
   noteAccess?: string[];
   createdAt?: number;
+  hasAiAccess?: boolean;
 }
