@@ -51,7 +51,7 @@ export function MobileBottomNav() {
 
 
     const renderAuthSlot = () => {
-      // After mounting, show the correct UI based on auth state
+      // Before mounting, show a placeholder to prevent hydration mismatch
       if (!mounted) {
         return (
           <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
