@@ -71,7 +71,7 @@ function RootLayoutContent({
             <div className="relative flex min-h-screen flex-col">
               {!isAuthPage && <AppHeader />}
                <main className={cn(
-                  "flex flex-1 flex-col",
+                  "flex-1 flex flex-col",
                   { "pb-16 md:pb-0": !isDoubtSolverPage }
                 )}>
                   {children}

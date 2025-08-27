@@ -115,7 +115,7 @@ export default function DoubtSolverPage() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-[100vh]">
+        <div className="flex-1 flex flex-col min-h-screen">
             <iframe
                 key={iframeKey}
                 src={iframeUrl}
