@@ -98,9 +98,6 @@ export default function DoubtSolverPage() {
 
     return (
         <div className="w-full h-[calc(100vh-4rem)] flex flex-col bg-muted/20">
-             <header className="p-4 border-b bg-background">
-                <h1 className="text-xl font-bold">AI Doubt Solver</h1>
-            </header>
             <div className="flex-1 w-full h-full">
                 <iframe
                     key={iframeKey}
