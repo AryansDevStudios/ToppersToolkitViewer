@@ -51,7 +51,7 @@ export function MobileBottomNav() {
 
     if (!mounted) {
         return (
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
+            <nav className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
                 <MobileNavSkeleton />
             </nav>
         );
@@ -90,7 +90,7 @@ export function MobileBottomNav() {
     const gridColsClass = 'grid-cols-5';
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
+        <nav className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
             <div className={cn("container grid h-16 max-w-lg items-center p-0", gridColsClass)}>
                 {navItems.map((item) => {
                     const isActive = (item.href === "/" && pathname === "/") || (item.href !== "/" && pathname.startsWith(item.href));

@@ -75,6 +75,28 @@ export default function DoubtSolverPage() {
         checkAccess();
     }, [authLoading, user, role, router]);
 
+    useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            // Check for the origin of the iframe for security if possible
+            // if (event.origin !== "https://topperstoolkitai.netlify.app") return;
+
+            if (event.data === 'inputFocused') {
+                document.body.classList.add('hide-mobile-nav');
+            } else if (event.data === 'inputBlurred') {
+                document.body.classList.remove('hide-mobile-nav');
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        // Cleanup the event listener when the component unmounts
+        return () => {
+            window.removeEventListener('message', handleMessage);
+            document.body.classList.remove('hide-mobile-nav'); // Ensure class is removed on navigation
+        };
+    }, []);
+
+
     const studentName = encodeURIComponent(userData?.name || 'Student');
     const classOfStudent = encodeURIComponent(userData?.classAndSection || 'N/A');
     const siteTheme = resolvedTheme === 'dark' ? 'dark' : 'light';

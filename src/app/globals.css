@@ -67,3 +67,8 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Hide mobile nav when this class is on the body */
+.hide-mobile-nav .mobile-bottom-nav {
+  display: none;
+}
