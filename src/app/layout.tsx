@@ -86,8 +86,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isDoubtSolverPage = pathname === '/solve-doubts';
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -99,8 +97,7 @@ export default function RootLayout({
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          inter.variable,
-          { "body-lock": isDoubtSolverPage }
+          inter.variable
         )}
       >
         <RootLayoutContent>{children}</RootLayoutContent>
