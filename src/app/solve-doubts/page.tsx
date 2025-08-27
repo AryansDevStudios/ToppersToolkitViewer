@@ -12,24 +12,28 @@ import { useTheme } from "next-themes";
 import type { User } from "@/lib/types";
 
 const AccessDenied = () => (
-    <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
-        <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
-        <h2 className="text-2xl font-bold text-destructive">Access Denied</h2>
-        <p className="mt-2 text-muted-foreground max-w-md">
-            You do not have permission to view this page. Please contact an administrator to request access.
-        </p>
-        <Button asChild className="mt-6">
-            <Link href="/">Back to Home</Link>
-        </Button>
+    <div className="container mx-auto px-4 py-8">
+        <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
+            <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+            <h2 className="text-2xl font-bold text-destructive">Access Denied</h2>
+            <p className="mt-2 text-muted-foreground max-w-md">
+                You do not have permission to view this page. Please contact an administrator to request access.
+            </p>
+            <Button asChild className="mt-6">
+                <Link href="/">Back to Home</Link>
+            </Button>
+        </div>
     </div>
 );
 
 const LoadingState = () => (
-   <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
-        <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-        <h2 className="text-2xl font-bold">Verifying Access...</h2>
-        <p className="mt-2 text-muted-foreground">Please wait while we check your permissions.</p>
-    </div>
+   <div className="container mx-auto px-4 py-8">
+    <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
+            <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
+            <h2 className="text-2xl font-bold">Verifying Access...</h2>
+            <p className="mt-2 text-muted-foreground">Please wait while we check your permissions.</p>
+        </div>
+   </div>
 );
 
 export default function DoubtSolverPage() {
@@ -81,19 +85,11 @@ export default function DoubtSolverPage() {
     const iframeUrl = `https://topperstoolkitai.netlify.app/?name=${studentName}&class=${classOfStudent}&theme=${siteTheme}`;
 
     if (hasAccess === null) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <LoadingState />
-            </div>
-        );
+        return <LoadingState />;
     }
     
     if (!hasAccess) {
-         return (
-            <div className="container mx-auto px-4 py-8">
-                <AccessDenied />
-            </div>
-        );
+         return <AccessDenied />;
     }
 
     return (
