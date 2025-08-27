@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog } from "./types";
@@ -32,12 +33,13 @@ const convertToJsDelivr = (githubUrl: string): string => {
 
 const convertToProxyUrl = (url: string): string => {
     if (!url) return '';
+    const proxyBase = 'https://topperstoolkitviewer.netlify.app/.netlify/functions/proxy?url=';
     try {
         // Avoid double-encoding
-        if (url.startsWith('/.netlify/functions/proxy?url=')) {
+        if (url.startsWith(proxyBase)) {
             return url;
         }
-        return `/.netlify/functions/proxy?url=${encodeURIComponent(url)}`;
+        return `${proxyBase}${encodeURIComponent(url)}`;
     } catch (e) {
         return url;
     }
