@@ -30,6 +30,20 @@ const convertToJsDelivr = (githubUrl: string): string => {
     }
 };
 
+const convertToProxyUrl = (url: string): string => {
+    if (!url) return '';
+    try {
+        // Avoid double-encoding
+        if (url.startsWith('/.netlify/functions/proxy?url=')) {
+            return url;
+        }
+        return `/.netlify/functions/proxy?url=${encodeURIComponent(url)}`;
+    } catch (e) {
+        return url;
+    }
+};
+
+
 export const seedSubjects = async () => {
     const subjectsCollection = collection(db, 'subjects');
     const subjectsSnapshot = await getDocs(subjectsCollection);
@@ -190,8 +204,8 @@ export const getDashboardStats = async () => {
     };
 };
 
-export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; linkType: 'github' | 'other'; serveViaJsDelivr: boolean; icon?: string; isPublic?: boolean; }) => {
-    const { id, subjectId, subSubjectId, pdfUrl: originalUrl, icon, linkType, serveViaJsDelivr, isPublic } = data;
+export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; linkType: 'github' | 'other'; serveViaJsDelivr: boolean; useProxy: boolean; icon?: string; isPublic?: boolean; }) => {
+    const { id, subjectId, subSubjectId, pdfUrl: originalUrl, icon, linkType, serveViaJsDelivr, useProxy, isPublic } = data;
     const isNewNote = !id;
     const noteId = isNewNote ? uuidv4() : id!;
     const trimmedChapterName = data.chapterName.trim();
@@ -204,9 +218,6 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
 
             // --- Read/Find Phase ---
             let oldNoteData: Note | null = null;
-            let sourceSubjectId: string | null = null;
-            let sourceSubSubjectId: string | null = null;
-            let sourceChapterId: string | null = null;
             let oldNoteLocation: {subject: Subject, subSubject: SubSubject, chapter: Chapter} | null = null;
 
             if (!isNewNote) {
@@ -216,9 +227,6 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                             const note = chap.notes.find(n => n.id === noteId);
                             if (note) {
                                 oldNoteData = note;
-                                sourceSubjectId = subj.id;
-                                sourceSubSubjectId = ss.id;
-                                sourceChapterId = chap.id;
                                 oldNoteLocation = {subject: subj, subSubject: ss, chapter: chap};
                                 break;
                             }
@@ -260,15 +268,21 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 throw new Error(`A note of type "${trimmedType}" already exists in chapter "${trimmedChapterName}".`);
             }
             
-            const jsDelivrUrl = linkType === 'github' ? convertToJsDelivr(originalUrl) : originalUrl;
+            let finalUrl = originalUrl;
+            if (linkType === 'github' && serveViaJsDelivr) {
+                finalUrl = convertToJsDelivr(originalUrl);
+            } else if (linkType === 'other' && useProxy) {
+                finalUrl = convertToProxyUrl(originalUrl);
+            }
             
             const newNote: Note = { 
                 id: noteId,
                 type: trimmedType, 
-                pdfUrl: serveViaJsDelivr ? jsDelivrUrl : originalUrl,
+                pdfUrl: finalUrl,
                 originalPdfUrl: originalUrl,
                 linkType,
                 serveViaJsDelivr,
+                useProxy,
                 icon: icon || 'FileText',
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
                 isPublic: isPublic || false,

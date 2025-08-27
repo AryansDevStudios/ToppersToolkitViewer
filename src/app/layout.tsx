@@ -70,11 +70,11 @@ function RootLayoutContent({
           <AuthWrapper>
             <div className="relative flex min-h-screen flex-col">
               {!isAuthPage && <AppHeader />}
-               <main className={cn("flex-1 flex flex-col", { "pb-16 md:pb-0": !isDoubtSolverPage && !isAuthPage })}>
+               <main className="flex-1 flex flex-col">
                   {children}
                 </main>
               {!isAuthPage && !isDoubtSolverPage && <Footer />}
-              {!isAuthPage && !isDoubtSolverPage && <MobileBottomNav />}
+              {!isAuthPage && <MobileBottomNav />}
             </div>
             <Toaster />
           </AuthWrapper>

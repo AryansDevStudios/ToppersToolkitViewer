@@ -41,6 +41,7 @@ const formSchema = z.object({
   pdfUrl: z.string().url({ message: "Please enter a valid URL." }),
   linkType: z.enum(["github", "other"]),
   serveViaJsDelivr: z.boolean(),
+  useProxy: z.boolean(),
   icon: z.string().optional(),
   isPublic: z.boolean(),
 });
@@ -68,6 +69,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       pdfUrl: note?.originalPdfUrl || note?.pdfUrl || "",
       linkType: note?.linkType || "github",
       serveViaJsDelivr: note?.serveViaJsDelivr === undefined ? true : note.serveViaJsDelivr,
+      useProxy: note?.useProxy === undefined ? true : note.useProxy,
       icon: note?.icon || "",
       isPublic: note?.isPublic || false,
     },
@@ -114,6 +116,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
             pdfUrl: "", // clear URL
             linkType: "github",
             serveViaJsDelivr: true,
+            useProxy: true,
             icon: "",
             isPublic: false,
           });
@@ -300,6 +303,29 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                                 <FormLabel>Serve via jsDelivr</FormLabel>
                                 <FormDescription>
                                     Convert GitHub link to a faster jsDelivr CDN link.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    disabled={isPending}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+            )}
+             {linkType === 'other' && (
+                <FormField
+                    control={form.control}
+                    name="useProxy"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                            <div className="space-y-0.5">
+                                <FormLabel>Use Proxy API</FormLabel>
+                                <FormDescription>
+                                    Route URL through the Netlify proxy to avoid CORS issues.
                                 </FormDescription>
                             </div>
                             <FormControl>

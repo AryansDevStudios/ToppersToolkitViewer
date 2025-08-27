@@ -115,12 +115,11 @@ export default function DoubtSolverPage() {
     }
 
     return (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-[calc(100vh_-_4rem)]">
             <iframe
                 key={iframeKey}
                 src={iframeUrl}
-                className="w-full border-0 flex-1"
-                style={{ height: 'calc(100% + 10px)' }}
+                className="w-full border-0 flex-1 h-full"
                 title="Doubt Solver"
                 allowFullScreen
                 allow="clipboard-write"

@@ -21,6 +21,7 @@ export interface Note {
   originalPdfUrl?: string;
   linkType?: 'github' | 'other';
   serveViaJsDelivr?: boolean;
+  useProxy?: boolean;
   icon?: string;
   createdAt?: number;
   isPublic?: boolean;
