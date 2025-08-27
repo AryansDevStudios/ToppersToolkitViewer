@@ -55,6 +55,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  .body-lock {
+    @apply overflow-hidden;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {

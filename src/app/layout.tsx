@@ -27,7 +27,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const isPublicPage = publicPaths.includes(pathname);
+  const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
 
   useEffect(() => {
     if (!loading && !user && !isPublicPage) {
@@ -70,7 +70,10 @@ function RootLayoutContent({
           <AuthWrapper>
             <div className="relative flex min-h-screen flex-col">
               {!isAuthPage && <AppHeader />}
-              <main className="flex-1 pb-16 md:pb-0">{children}</main>
+               <main className={cn(
+                "flex-1",
+                {"pb-16 md:pb-0": !isDoubtSolverPage}
+              )}>{children}</main>
               {!isAuthPage && !isDoubtSolverPage && <Footer />}
               {!isAuthPage && <MobileBottomNav />}
             </div>
@@ -86,6 +89,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isDoubtSolverPage = pathname === '/solve-doubts';
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -96,7 +102,8 @@ export default function RootLayout({
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          inter.variable
+          inter.variable,
+          { "body-lock": isDoubtSolverPage }
         )}
       >
         <RootLayoutContent>{children}</RootLayoutContent>
