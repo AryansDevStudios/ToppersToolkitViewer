@@ -93,18 +93,16 @@ export default function DoubtSolverPage() {
     }
 
     return (
-        <div className="w-full h-[calc(100vh-4rem)] flex flex-col bg-muted/20">
-            <div className="flex-1 w-full h-full">
-                <iframe
-                    key={iframeKey}
-                    src={iframeUrl}
-                    className="w-full h-full border-0"
-                    title="Doubt Solver"
-                    allowFullScreen
-                    allow="clipboard-write"
-                >
-                </iframe>
-            </div>
+        <div className="flex-1 flex flex-col">
+            <iframe
+                key={iframeKey}
+                src={iframeUrl}
+                className="w-full h-full border-0 flex-1"
+                title="Doubt Solver"
+                allowFullScreen
+                allow="clipboard-write"
+            >
+            </iframe>
         </div>
     );
 }
