@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, KeyRound, Edit } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getUsers } from "@/lib/data";
 import {
@@ -22,11 +22,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChangeRoleMenuItem } from "@/components/admin/ChangeRoleMenuItem";
 import { DeleteUserDialog } from "@/components/admin/DeleteUserDialog";
-import { UserForm } from "@/components/admin/users/UserForm";
 import { LoginHistoryDialog } from "@/components/admin/users/LoginHistoryDialog";
-import { ManageAccessDialog } from "@/components/admin/users/ManageAccessDialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { User } from "@/lib/types";
+import Link from "next/link";
 
 export const revalidate = 0;
 
@@ -49,8 +48,18 @@ const UserActions = ({ user }: { user: User }) => (
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <UserForm user={user} />
-            <ManageAccessDialog user={user} />
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/users/info/${user.id}`}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Info
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+               <Link href={`/admin/users/access/${user.id}`}>
+                <KeyRound className="mr-2 h-4 w-4" />
+                Manage Access
+               </Link>
+            </DropdownMenuItem>
             {user.loginLogs && user.loginLogs.length > 0 && <LoginHistoryDialog user={user} />}
             <DropdownMenuSeparator />
             <ChangeRoleMenuItem userId={user.id} currentRole={user.role} />
