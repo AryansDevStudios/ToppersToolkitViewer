@@ -71,11 +71,11 @@ const formSchema = z.object({
     path: ['gender'],
 }).refine(data => {
     if (data.role === 'Student') {
-        return !!data.srNo && data.srNo.length === 4 && /^\d{4}$/.test(data.srNo);
+        return !!data.srNo && /^\d{4}$/.test(data.srNo);
     }
     return true;
 }, {
-    message: "SR. No. must be a 4-digit number.",
+    message: "SR. No. must be exactly 4 digits.",
     path: ['srNo']
 });
 
@@ -164,7 +164,10 @@ export function RegisterForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const { email, password, name, whatsappNumber, role } = values;
+      const { email, password, role } = values;
+      const name = values.name.trim();
+      const whatsappNumber = values.whatsappNumber.trim();
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
@@ -183,7 +186,7 @@ export function RegisterForm() {
         password, 
         classAndSection,
         gender: role === 'Teacher' ? values.gender : undefined,
-        srNo: role === 'Student' ? values.srNo : undefined,
+        srNo: role === 'Student' ? values.srNo?.trim() : undefined,
         whatsappNumber,
         role: role,
         createdAt: Date.now(),

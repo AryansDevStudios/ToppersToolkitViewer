@@ -101,8 +101,8 @@ export function UserForm({ user }: UserFormProps) {
                 toast({ title: "Validation Error", description: "Class and Section are required for students.", variant: "destructive" });
                 return;
             }
-             if (!values.srNo || values.srNo.length !== 4 || !/^\d{4}$/.test(values.srNo)) {
-                toast({ title: "Validation Error", description: "SR. No. must be a 4-digit number for students.", variant: "destructive" });
+             if (!values.srNo || !/^\d{4}$/.test(values.srNo)) {
+                toast({ title: "Validation Error", description: "SR. No. must be exactly 4 digits for students.", variant: "destructive" });
                 return;
             }
             const classNum = parseInt(values.class);
