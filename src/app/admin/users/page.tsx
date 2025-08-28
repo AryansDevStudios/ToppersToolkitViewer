@@ -102,59 +102,27 @@ export default async function AdminUsersPage() {
            <CardDescription>A list of all registered users on the platform.</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Mobile and Tablet View: List of Cards */}
-          <div className="space-y-4 md:hidden">
-            {users.length > 0 ? users.map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <UserAvatar user={user} />
-                  <div className="space-y-1">
-                      <p className="font-medium">{user.name || 'N/A'}</p>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
+          {users.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {users.map((user) => (
+                <Card key={user.id} className="flex flex-col">
+                  <CardContent className="pt-6 flex-1 flex flex-col items-center text-center">
+                     <UserAvatar user={user} />
+                     <h3 className="mt-4 font-semibold text-lg">{user.name || 'N/A'}</h3>
+                     <p className="text-sm text-muted-foreground break-all">{user.email}</p>
+                  </CardContent>
+                  <div className="flex items-center justify-center p-4 border-t bg-muted/50">
+                    <UserActions user={user} />
                   </div>
-                </div>
-                <UserActions user={user} />
-              </div>
-            )) : (
-              <p className="text-center text-muted-foreground py-12">No users found.</p>
-            )}
-          </div>
-          
-          {/* Desktop View: Table */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.length > 0 ? users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-4">
-                         <UserAvatar user={user} />
-                         <div>
-                           <div className="font-medium">{user.name || 'N/A'}</div>
-                           <div className="text-sm text-muted-foreground">{user.email}</div>
-                         </div>
-                       </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <UserActions user={user} />
-                    </TableCell>
-                  </TableRow>
-                )) : (
-                   <TableRow>
-                    <TableCell colSpan={2} className="h-24 text-center">
-                      No users found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+                <h2 className="text-2xl font-bold mb-2">No Users Found</h2>
+                <p>There are no registered users on the platform yet.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
