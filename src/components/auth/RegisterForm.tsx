@@ -44,12 +44,12 @@ const formSchema = z.object({
   class: z.string().optional(),
   section: z.string().optional(),
   gender: z.string().optional(),
-  srNo: z.string().length(4, { message: "SR. No. must be 4 digits."}).regex(/^\d{4}$/, { message: "SR. No. must be a 4-digit number."}),
+  srNo: z.string().optional(),
   email: z.string().email({ message: "Please enter a valid email."}),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
-  whatsappNumber: z.string().optional(),
+  whatsappNumber: z.string().min(1, { message: "WhatsApp Number is required." }),
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
@@ -69,7 +69,29 @@ const formSchema = z.object({
 }, {
     message: "Gender is required for teachers.",
     path: ['gender'],
+}).refine(data => {
+    if (data.role === 'Student') {
+        return !!data.srNo && data.srNo.length === 4 && /^\d{4}$/.test(data.srNo);
+    }
+    return true;
+}, {
+    message: "SR. No. must be a 4-digit number.",
+    path: ['srNo']
 });
+
+// Helper to get ordinal suffix
+const getOrdinalSuffix = (n: number) => {
+  if (n % 100 >= 11 && n % 100 <= 13) {
+    return 'th';
+  }
+  switch (n % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+};
+
 
 // Helper function to get OS and Browser from User Agent
 const getOSAndBrowser = (userAgent: string) => {
@@ -142,7 +164,7 @@ export function RegisterForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const { email, password, name, srNo, whatsappNumber, role } = values;
+      const { email, password, name, whatsappNumber, role } = values;
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
@@ -150,7 +172,8 @@ export function RegisterForm() {
       
       let classAndSection = undefined;
       if (role === 'Student' && values.class && values.section) {
-          classAndSection = `${values.class}th ${values.section}`;
+          const classNum = parseInt(values.class);
+          classAndSection = `${classNum}${getOrdinalSuffix(classNum)} ${values.section}`;
       }
 
       await setDoc(doc(db, "users", user.uid), {
@@ -159,8 +182,8 @@ export function RegisterForm() {
         email,
         password, 
         classAndSection,
-        gender: values.gender,
-        srNo,
+        gender: role === 'Teacher' ? values.gender : undefined,
+        srNo: role === 'Student' ? values.srNo : undefined,
         whatsappNumber,
         role: role,
         createdAt: Date.now(),
@@ -265,48 +288,63 @@ export function RegisterForm() {
             />
             
             {role === 'Student' && (
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField
+                <>
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="class"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Class</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="Class" /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                                                <SelectItem key={num} value={String(num)}>{num}{getOrdinalSuffix(num)}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="section"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Section</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!studentClass}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="Section" /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {getSectionOptions().map(sec => (
+                                                <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                     <FormField
                         control={form.control}
-                        name="class"
+                        name="srNo"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Class</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger><SelectValue placeholder="Class" /></SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
-                                            <SelectItem key={num} value={String(num)}>{num}th</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
+                            <FormLabel>SR. No.</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g., 1234" {...field} />
+                            </FormControl>
+                            <FormMessage />
                             </FormItem>
                         )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="section"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Section</FormLabel>
-                                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!studentClass}>
-                                    <FormControl>
-                                        <SelectTrigger><SelectValue placeholder="Section" /></SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {getSectionOptions().map(sec => (
-                                            <SelectItem key={sec} value={sec}>{sec}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
+                        />
+                </>
             )}
             
             {role === 'Teacher' && (
@@ -323,7 +361,6 @@ export function RegisterForm() {
                                 <SelectContent>
                                     <SelectItem value="Male">Male</SelectItem>
                                     <SelectItem value="Female">Female</SelectItem>
-                                    <SelectItem value="Other">Other</SelectItem>
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -332,19 +369,6 @@ export function RegisterForm() {
                 />
             )}
 
-            <FormField
-              control={form.control}
-              name="srNo"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>SR. No.</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 1234" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
              <FormField
               control={form.control}
               name="email"
@@ -363,7 +387,7 @@ export function RegisterForm() {
               name="whatsappNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>WhatsApp Number (Optional)</FormLabel>
+                  <FormLabel>WhatsApp Number</FormLabel>
                   <FormControl>
                     <Input placeholder="+91 12345 67890" {...field} />
                   </FormControl>
@@ -433,5 +457,3 @@ export function RegisterForm() {
     </Card>
   );
 }
-
-    
