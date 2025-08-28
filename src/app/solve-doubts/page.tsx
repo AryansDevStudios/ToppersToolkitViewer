@@ -65,7 +65,9 @@ export default function DoubtSolverPage() {
             const dbUser = await getUserById(user.uid);
             setUserData(dbUser);
             
-            if (role === 'Admin' || dbUser?.hasAiAccess) {
+            // Grant access if user is Admin or hasAiAccess is not explicitly false.
+            // This gives access to new users and existing users by default.
+            if (role === 'Admin' || dbUser?.hasAiAccess !== false) {
                 setHasAccess(true);
             } else {
                 setHasAccess(false);
@@ -115,7 +117,7 @@ export default function DoubtSolverPage() {
     }
 
     return (
-        <div className="flex-1 flex flex-col min-h-[calc(100vh_-_4rem)]">
+        <div className="flex-1 flex flex-col min-h-[calc(100vh_-_4rem_+_10px)]">
             <iframe
                 key={iframeKey}
                 src={iframeUrl}

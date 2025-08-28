@@ -122,6 +122,7 @@ export function RegisterForm() {
         whatsappNumber,
         role: "User",
         createdAt: Date.now(),
+        hasAiAccess: true, // Grant AI access to new users by default
       });
       
       // Auto-login user

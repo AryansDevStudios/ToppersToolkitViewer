@@ -65,13 +65,15 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
     const { toast } = useToast();
 
     const initialNoteAccess = useMemo(() => new Set(user.noteAccess || []), [user.noteAccess]);
-    const initialAiAccess = useMemo(() => user.hasAiAccess || false, [user.hasAiAccess]);
+    // If hasAiAccess is undefined (for old users), default it to true.
+    const initialAiAccess = useMemo(() => user.hasAiAccess !== false, [user.hasAiAccess]);
 
     useEffect(() => {
         if (isOpen) {
             setIsLoading(true);
             setNoteAccess(new Set(user.noteAccess || []));
-            setHasAiAccess(user.hasAiAccess || false);
+            // Set initial state based on "default-on" logic
+            setHasAiAccess(user.hasAiAccess !== false);
             getAllNotes()
                 .then(fetchedNotes => {
                     const sortedNotes = fetchedNotes.sort((a, b) => {
@@ -131,6 +133,9 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
         if (initialNoteAccess.size !== noteAccess.size) return true;
         for (const id of initialNoteAccess) {
             if (!noteAccess.has(id)) return true;
+        }
+        for (const id of noteAccess) {
+            if (!initialNoteAccess.has(id)) return true;
         }
         return false;
     }, [initialNoteAccess, noteAccess, initialAiAccess, hasAiAccess]);
