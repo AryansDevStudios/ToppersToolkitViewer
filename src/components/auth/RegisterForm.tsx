@@ -16,10 +16,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { auth, db, createUserWithEmailAndPassword, updateProfile, doc, setDoc, signInWithEmailAndPassword } from "@/lib/firebase";
@@ -32,8 +40,10 @@ import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
-  classAndSection: z.string().min(1, { message: "Class & Section is required."}),
-  username: z.string().min(1, { message: "Username is required."}),
+  role: z.enum(["Student", "Teacher"], { required_error: "You must select a role."}),
+  class: z.string().optional(),
+  section: z.string().optional(),
+  gender: z.string().optional(),
   srNo: z.string().length(4, { message: "SR. No. must be 4 digits."}).regex(/^\d{4}$/, { message: "SR. No. must be a 4-digit number."}),
   email: z.string().email({ message: "Please enter a valid email."}),
   password: z.string().min(8, {
@@ -43,6 +53,22 @@ const formSchema = z.object({
   agreeToTerms: z.boolean().refine(val => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
+}).refine(data => {
+    if (data.role === 'Student') {
+        return !!data.class && !!data.section;
+    }
+    return true;
+}, {
+    message: "Class and Section are required for students.",
+    path: ['section'], // show error on section field
+}).refine(data => {
+    if (data.role === 'Teacher') {
+        return !!data.gender;
+    }
+    return true;
+}, {
+    message: "Gender is required for teachers.",
+    path: ['gender'],
 });
 
 // Helper function to get OS and Browser from User Agent
@@ -92,8 +118,7 @@ export function RegisterForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      classAndSection: "",
-      username: "",
+      role: "Student",
       srNo: "",
       email: "",
       password: "",
@@ -101,15 +126,32 @@ export function RegisterForm() {
       agreeToTerms: false,
     },
   });
+  
+  const role = form.watch("role");
+  const studentClass = form.watch("class");
+
+  const getSectionOptions = () => {
+      if (!studentClass) return [];
+      const classNum = parseInt(studentClass);
+      if (classNum === 11 || classNum === 12) {
+          return ["Biology", "Maths", "Commerce"];
+      }
+      return ["A", "B", "C"];
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      const { email, password, name, classAndSection, srNo, username, whatsappNumber } = values;
+      const { email, password, name, srNo, whatsappNumber, role } = values;
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       await updateProfile(user, { displayName: name });
+      
+      let classAndSection = undefined;
+      if (role === 'Student' && values.class && values.section) {
+          classAndSection = `${values.class}th ${values.section}`;
+      }
 
       await setDoc(doc(db, "users", user.uid), {
         id: user.uid,
@@ -117,10 +159,10 @@ export function RegisterForm() {
         email,
         password, 
         classAndSection,
+        gender: values.gender,
         srNo,
-        username,
         whatsappNumber,
-        role: "User",
+        role: role,
         createdAt: Date.now(),
         hasAiAccess: true, // Grant AI access to new users by default
       });
@@ -193,30 +235,103 @@ export function RegisterForm() {
             />
             <FormField
               control={form.control}
-              name="classAndSection"
+              name="role"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Class & Section</FormLabel>
+                <FormItem className="space-y-3">
+                  <FormLabel>Register as</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 9th C" {...field} />
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex gap-4"
+                    >
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="Student" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Student</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="Teacher" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Teacher</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="your_username" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            {role === 'Student' && (
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="class"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Class</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger><SelectValue placeholder="Class" /></SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                                            <SelectItem key={num} value={String(num)}>{num}th</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="section"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Section</FormLabel>
+                                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!studentClass}>
+                                    <FormControl>
+                                        <SelectTrigger><SelectValue placeholder="Section" /></SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {getSectionOptions().map(sec => (
+                                            <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+            )}
+            
+            {role === 'Teacher' && (
+                <FormField
+                    control={form.control}
+                    name="gender"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Gender</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Male">Male</SelectItem>
+                                    <SelectItem value="Female">Female</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            )}
+
             <FormField
               control={form.control}
               name="srNo"
@@ -318,3 +433,5 @@ export function RegisterForm() {
     </Card>
   );
 }
+
+    

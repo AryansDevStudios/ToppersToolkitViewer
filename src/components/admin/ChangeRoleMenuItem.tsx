@@ -3,11 +3,11 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { updateUserRole } from '@/lib/data';
 import type { User } from '@/lib/types';
-import { ShieldCheck, UserCheck } from 'lucide-react';
+import { ShieldCheck, UserCheck, GraduationCap } from 'lucide-react';
 
 interface ChangeRoleMenuItemProps {
     userId: string;
@@ -19,9 +19,7 @@ export function ChangeRoleMenuItem({ userId, currentRole }: ChangeRoleMenuItemPr
     const router = useRouter();
     const { toast } = useToast();
 
-    const newRole = currentRole === 'Admin' ? 'User' : 'Admin';
-
-    const handleChangeRole = () => {
+    const handleChangeRole = (newRole: User['role']) => {
         startTransition(async () => {
             const result = await updateUserRole(userId, newRole);
 
@@ -42,9 +40,26 @@ export function ChangeRoleMenuItem({ userId, currentRole }: ChangeRoleMenuItemPr
     };
 
     return (
-        <DropdownMenuItem onClick={handleChangeRole} disabled={isPending}>
-            {newRole === 'Admin' ? <ShieldCheck className="mr-2 h-4 w-4" /> : <UserCheck className="mr-2 h-4 w-4" />}
-            {`Make ${newRole}`}
-        </DropdownMenuItem>
+        <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+                <span>Change Role</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={() => handleChangeRole('Student')} disabled={isPending || currentRole === 'Student'}>
+                    <GraduationCap className="mr-2 h-4 w-4" />
+                    Make Student
+                </DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => handleChangeRole('Teacher')} disabled={isPending || currentRole === 'Teacher'}>
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    Make Teacher
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleChangeRole('Admin')} disabled={isPending || currentRole === 'Admin'}>
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Make Admin
+                </DropdownMenuItem>
+            </DropdownMenuSubContent>
+        </DropdownMenuSub>
     )
 }
+
+    

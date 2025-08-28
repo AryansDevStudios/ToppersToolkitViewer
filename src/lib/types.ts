@@ -51,9 +51,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "User";
+  role: "Admin" | "User" | "Student" | "Teacher";
   classAndSection?: string;
-  username?: string;
+  gender?: "Male" | "Female" | "Other";
   srNo?: string;
   whatsappNumber?: string;
   password?: string;
@@ -63,3 +63,5 @@ export interface User {
   hasAiAccess?: boolean;
   hasFullNotesAccess?: boolean;
 }
+
+    

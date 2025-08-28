@@ -14,6 +14,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -22,13 +29,19 @@ import { User } from "@/lib/types";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
-  classAndSection: z.string().min(1, { message: "Class & Section is required."}),
-  username: z.string().min(1, { message: "Username is required."}),
+  class: z.string().optional(),
+  section: z.string().optional(),
+  gender: z.string().optional(),
   srNo: z.string().length(4, { message: "SR. No. must be 4 digits."}).regex(/^\d{4}$/, { message: "SR. No. must be a 4-digit number."}),
   email: z.string().email(),
   password: z.string().optional(),
   whatsappNumber: z.string().optional(),
+}).refine(data => {
+    // This validation is more for the form state, not strictly needed for update
+    // as the fields might be empty if the role changes. We handle logic in onSubmit.
+    return true;
 });
+
 
 interface UserFormProps {
   user: User;
@@ -39,12 +52,15 @@ export function UserForm({ user }: UserFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  const [initialClass, initialSection] = (user.classAndSection || '').split(' ');
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: user.name || "",
-      classAndSection: user.classAndSection || "",
-      username: user.username || "",
+      class: initialClass ? initialClass.replace('th', '') : '',
+      section: initialSection || '',
+      gender: user.gender || '',
       srNo: user.srNo || "",
       email: user.email || "",
       password: user.password || "",
@@ -52,13 +68,29 @@ export function UserForm({ user }: UserFormProps) {
     },
   });
 
+  const studentClass = form.watch("class");
+
+  const getSectionOptions = () => {
+      if (!studentClass) return [];
+      const classNum = parseInt(studentClass);
+      if (classNum === 11 || classNum === 12) {
+          return ["Biology", "Maths", "Commerce"];
+      }
+      return ["A", "B", "C"];
+  };
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
       try {
-        const dataToUpdate: Omit<Partial<User>, 'id' | 'email' | 'password'> = {
+        let classAndSection: string | undefined = undefined;
+        if (user.role === 'Student' && values.class && values.section) {
+            classAndSection = `${values.class}th ${values.section}`;
+        }
+        
+        const dataToUpdate: Partial<User> = {
           name: values.name.trim(),
-          classAndSection: values.classAndSection.trim(),
-          username: values.username.trim(),
+          classAndSection: classAndSection,
+          gender: user.role === 'Teacher' ? values.gender : undefined,
           srNo: values.srNo.trim(),
           whatsappNumber: values.whatsappNumber?.trim(),
         };
@@ -130,32 +162,75 @@ export function UserForm({ user }: UserFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="classAndSection"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Class & Section</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., 10th A" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="your_username" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
+        {user.role === 'Student' && (
+            <div className="grid grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="class"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Class</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Class" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                                        <SelectItem key={num} value={String(num)}>{num}th</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="section"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Section</FormLabel>
+                             <Select onValueChange={field.onChange} value={field.value} disabled={!studentClass}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Section" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {getSectionOptions().map(sec => (
+                                        <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+        )}
+
+        {user.role === 'Teacher' && (
+            <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Gender</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="Male">Male</SelectItem>
+                                <SelectItem value="Female">Female</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        )}
+        
         <FormField
           control={form.control}
           name="srNo"
@@ -194,3 +269,5 @@ export function UserForm({ user }: UserFormProps) {
     </Form>
   );
 }
+
+    
