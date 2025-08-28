@@ -37,9 +37,9 @@ const LoadingState = () => (
 );
 
 export default function DoubtSolverPage() {
-    const { user, role, loading: authLoading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const { theme, resolvedTheme } = useTheme();
+    const { resolvedTheme } = useTheme();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
     const [userData, setUserData] = useState<User | null>(null);
 
@@ -65,9 +65,7 @@ export default function DoubtSolverPage() {
             const dbUser = await getUserById(user.uid);
             setUserData(dbUser);
             
-            // Grant access if user is Admin or hasAiAccess is not explicitly false.
-            // This gives access to new users and existing users by default.
-            if (role === 'Admin' || dbUser?.hasAiAccess !== false) {
+            if (dbUser?.role === 'Admin' || dbUser?.hasAiAccess !== false) {
                 setHasAccess(true);
             } else {
                 setHasAccess(false);
@@ -75,13 +73,10 @@ export default function DoubtSolverPage() {
         }
 
         checkAccess();
-    }, [authLoading, user, role, router]);
+    }, [authLoading, user, router]);
 
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
-            // Check for the origin of the iframe for security if possible
-            // if (event.origin !== "https://topperstoolkitai.netlify.app") return;
-
             if (event.data === 'inputFocused') {
                 document.body.classList.add('hide-mobile-nav');
             } else if (event.data === 'inputBlurred') {
@@ -91,24 +86,32 @@ export default function DoubtSolverPage() {
 
         window.addEventListener('message', handleMessage);
 
-        // Cleanup the event listener when the component unmounts
         return () => {
             window.removeEventListener('message', handleMessage);
-            document.body.classList.remove('hide-mobile-nav'); // Ensure class is removed on navigation
+            document.body.classList.remove('hide-mobile-nav');
         };
     }, []);
 
+    const getIframeUrl = () => {
+        if (!userData) return "";
 
-    const studentName = encodeURIComponent(userData?.name || 'Student');
-    const classOfStudent = encodeURIComponent(userData?.classAndSection || 'N/A');
-    const siteTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
+        const name = encodeURIComponent(userData.name || (userData.role === 'Teacher' ? 'Teacher' : 'Student'));
+        const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
+        const base = "https://topperstoolkitai.netlify.app/";
+
+        if (userData.role === 'Teacher') {
+            const gender = encodeURIComponent(userData.gender || 'N/A');
+            return `${base}?name=${name}&class=Teacher&theme=${theme}&gender=${gender}`;
+        } else {
+            const studentClass = encodeURIComponent(userData.classAndSection || 'N/A');
+            return `${base}?name=${name}&class=${studentClass}&theme=${theme}`;
+        }
+    };
     
-    // Use a key on the iframe that changes when the theme changes to force a re-render
-    const iframeKey = `${user?.uid}-${siteTheme}`;
+    const iframeUrl = getIframeUrl();
+    const iframeKey = `${user?.uid}-${resolvedTheme}`;
 
-    const iframeUrl = `https://topperstoolkitai.netlify.app/?name=${studentName}&class=${classOfStudent}&theme=${siteTheme}`;
-
-    if (hasAccess === null) {
+    if (hasAccess === null || !userData) {
         return <LoadingState />;
     }
     
