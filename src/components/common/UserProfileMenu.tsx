@@ -24,7 +24,7 @@ interface UserProfileMenuProps {
 }
 
 export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
-  const { user, role } = useAuth();
+  const { user, dbUser, role } = useAuth();
   const router = useRouter();
 
   if (!user) return null;
@@ -49,7 +49,13 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
     : "relative h-9 w-9 rounded-full";
 
   const avatarClasses = isMobile ? "h-7 w-7" : "h-9 w-9";
-  const ringClasses = role === 'Admin' ? "ring-2 ring-orange-500" : "ring-2 ring-sky-500";
+  
+  const ringClasses = cn("ring-2", {
+    "ring-orange-500": role === 'Admin',
+    "ring-green-500": role !== 'Admin' && dbUser?.hasFullNotesAccess,
+    "ring-sky-500": role !== 'Admin' && !dbUser?.hasFullNotesAccess,
+  });
+  
   const mobileRingClasses = isMobile ? ringClasses : `${ringClasses} ring-offset-2 ring-offset-background`;
 
 

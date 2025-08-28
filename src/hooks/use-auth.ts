@@ -23,6 +23,7 @@ const setSessionCookie = async (user: FirebaseUser | null) => {
 
 export function useAuth() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [dbUser, setDbUser] = useState<User | null>(null);
   const [role, setRole] = useState<User['role'] | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,10 +33,12 @@ export function useAuth() {
       if (firebaseUser) {
         setUser(firebaseUser);
         const userData = await getUserById(firebaseUser.uid);
+        setDbUser(userData);
         setRole(userData?.role || 'User');
         await setSessionCookie(firebaseUser);
       } else {
         setUser(null);
+        setDbUser(null);
         setRole(null);
         await setSessionCookie(null);
       }
@@ -46,5 +49,5 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, role, loading };
+  return { user, dbUser, role, loading };
 }
