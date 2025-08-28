@@ -26,6 +26,7 @@ import { LoginHistoryDialog } from "@/components/admin/users/LoginHistoryDialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { User } from "@/lib/types";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export const revalidate = 0;
 
@@ -36,6 +37,20 @@ const getInitials = (name: string | null | undefined): string => {
       return `${names[0][0]}${names[1][0]}`.toUpperCase();
     }
     return names[0][0].toUpperCase();
+};
+
+const UserAvatar = ({ user }: { user: User }) => {
+  const ringClasses = cn("ring-2 ring-offset-2 ring-offset-background", {
+    "ring-orange-500": user.role === 'Admin',
+    "ring-green-500": user.role !== 'Admin' && user.hasFullNotesAccess,
+    "ring-sky-500": user.role !== 'Admin' && !user.hasFullNotesAccess,
+  });
+
+  return (
+    <Avatar className={ringClasses}>
+      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+    </Avatar>
+  );
 };
 
 const UserActions = ({ user }: { user: User }) => (
@@ -93,9 +108,7 @@ export default async function AdminUsersPage() {
             {users.length > 0 ? users.map((user) => (
               <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-4">
-                  <Avatar>
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar user={user} />
                   <div className="space-y-1">
                       <p className="font-medium">{user.name || 'N/A'}</p>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -123,8 +136,13 @@ export default async function AdminUsersPage() {
                 {users.length > 0 ? users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
-                       <div className="font-medium">{user.name || 'N/A'}</div>
-                       <div className="text-sm text-muted-foreground">{user.email}</div>
+                      <div className="flex items-center gap-4">
+                         <UserAvatar user={user} />
+                         <div>
+                           <div className="font-medium">{user.name || 'N/A'}</div>
+                           <div className="text-sm text-muted-foreground">{user.email}</div>
+                         </div>
+                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
