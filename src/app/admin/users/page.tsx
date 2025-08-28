@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, KeyRound, Edit } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getUsers } from "@/lib/data";
@@ -112,7 +111,6 @@ export default async function AdminUsersPage() {
                   <div className="space-y-1">
                       <p className="font-medium">{user.name || 'N/A'}</p>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
-                      <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
                   </div>
                 </div>
                 <UserActions user={user} />
@@ -128,7 +126,6 @@ export default async function AdminUsersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -144,16 +141,13 @@ export default async function AdminUsersPage() {
                          </div>
                        </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>{user.role}</Badge>
-                    </TableCell>
                     <TableCell className="text-right">
                        <UserActions user={user} />
                     </TableCell>
                   </TableRow>
                 )) : (
                    <TableRow>
-                    <TableCell colSpan={3} className="h-24 text-center">
+                    <TableCell colSpan={2} className="h-24 text-center">
                       No users found.
                     </TableCell>
                   </TableRow>
