@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useTransition, useEffect, useMemo } from "react";
@@ -13,13 +14,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { KeyRound, Loader2, Library, Folder, FileText, Sparkles, UserCheck, ShieldCheck } from "lucide-react";
+import { KeyRound, Loader2, Library, Folder, FileText, Sparkles, UserCheck, ShieldCheck, BadgeCheck } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getAllNotes, updateUserAccessBatch, updateUserAiAccess } from "@/lib/data";
+import { getAllNotes, updateUserPermissions } from "@/lib/data";
 import type { User, Note } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -61,19 +62,23 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
     const [notes, setNotes] = useState<NoteItem[]>([]);
     const [noteAccess, setNoteAccess] = useState<Set<string>>(new Set());
     const [hasAiAccess, setHasAiAccess] = useState(false);
+    const [hasFullNotesAccess, setHasFullNotesAccess] = useState(false);
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
 
-    const initialNoteAccess = useMemo(() => new Set(user.noteAccess || []), [user.noteAccess]);
-    // If hasAiAccess is undefined (for old users), default it to true.
-    const initialAiAccess = useMemo(() => user.hasAiAccess !== false, [user.hasAiAccess]);
+    const initialPermissions = useMemo(() => ({
+        noteAccess: new Set(user.noteAccess || []),
+        hasAiAccess: user.hasAiAccess !== false,
+        hasFullNotesAccess: user.hasFullNotesAccess || false,
+    }), [user.noteAccess, user.hasAiAccess, user.hasFullNotesAccess]);
+
 
     useEffect(() => {
         if (isOpen) {
             setIsLoading(true);
             setNoteAccess(new Set(user.noteAccess || []));
-            // Set initial state based on "default-on" logic
             setHasAiAccess(user.hasAiAccess !== false);
+            setHasFullNotesAccess(user.hasFullNotesAccess || false);
             getAllNotes()
                 .then(fetchedNotes => {
                     const sortedNotes = fetchedNotes.sort((a, b) => {
@@ -93,7 +98,7 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                     setIsLoading(false);
                 });
         }
-    }, [isOpen, user.noteAccess, user.hasAiAccess, toast]);
+    }, [isOpen, user.noteAccess, user.hasAiAccess, user.hasFullNotesAccess, toast]);
 
     const handleNoteAccessChange = (noteId: string, newAccess: boolean) => {
         setNoteAccess(prev => {
@@ -106,11 +111,14 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
     
     const handleSave = () => {
         startTransition(async () => {
-            const accessArray = Array.from(noteAccess);
-            const accessResult = await updateUserAccessBatch(user.id, accessArray);
-            const aiAccessResult = await updateUserAiAccess(user.id, hasAiAccess);
+            const permissions = {
+                noteAccess: Array.from(noteAccess),
+                hasAiAccess,
+                hasFullNotesAccess,
+            };
+            const result = await updateUserPermissions(user.id, permissions);
 
-            if (accessResult.success && aiAccessResult.success) {
+            if (result.success) {
                 toast({
                     title: "Access Updated",
                     description: "User permissions have been saved successfully.",
@@ -119,7 +127,7 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
             } else {
                 toast({
                     title: "Update Failed",
-                    description: accessResult.error || aiAccessResult.error || "Could not update permissions.",
+                    description: result.error || "Could not update permissions.",
                     variant: "destructive",
                 });
             }
@@ -129,18 +137,20 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
     const groupedNotes = groupNotes(notes);
     
     const haveChanges = useMemo(() => {
-        if (initialAiAccess !== hasAiAccess) return true;
-        if (initialNoteAccess.size !== noteAccess.size) return true;
-        for (const id of initialNoteAccess) {
+        if (initialPermissions.hasAiAccess !== hasAiAccess) return true;
+        if (initialPermissions.hasFullNotesAccess !== hasFullNotesAccess) return true;
+        if (initialPermissions.noteAccess.size !== noteAccess.size) return true;
+        for (const id of initialPermissions.noteAccess) {
             if (!noteAccess.has(id)) return true;
         }
         for (const id of noteAccess) {
-            if (!initialNoteAccess.has(id)) return true;
+            if (!initialPermissions.noteAccess.has(id)) return true;
         }
         return false;
-    }, [initialNoteAccess, noteAccess, initialAiAccess, hasAiAccess]);
+    }, [initialPermissions, noteAccess, hasAiAccess, hasFullNotesAccess]);
 
     const isUserAdmin = user.role === 'Admin';
+    const isFullNotesAccessActive = isUserAdmin || hasFullNotesAccess;
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -154,7 +164,7 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                 <DialogHeader>
                     <DialogTitle>Manage Access for {user.name}</DialogTitle>
                     <DialogDescription>
-                        Grant or revoke access to notes and AI features.
+                        Grant or revoke access to notes and features.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -177,15 +187,33 @@ export function ManageAccessDialog({ user }: ManageAccessDialogProps) {
                                 disabled={isPending || isUserAdmin}
                             />
                         </div>
+                        <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="full-notes-access" className="flex items-center gap-2">
+                                    <BadgeCheck className="h-4 w-4 text-green-500" />
+                                    Grant Access to All Notes
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Allows the user to view all current and future notes.
+                                </p>
+                            </div>
+                            <Switch
+                                id="full-notes-access"
+                                checked={isUserAdmin || hasFullNotesAccess}
+                                onCheckedChange={setHasFullNotesAccess}
+                                disabled={isPending || isUserAdmin}
+                            />
+                        </div>
                     </div>
 
                     <Separator />
                     
-                    <h3 className="text-lg font-semibold">Note Access</h3>
-                    {isUserAdmin ? (
+                    <h3 className="text-lg font-semibold">Individual Note Access</h3>
+                    {isFullNotesAccessActive ? (
                         <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-40 rounded-lg border border-dashed">
                              <ShieldCheck className="h-10 w-10 mb-2 text-green-500" />
-                            <p className="font-semibold">Admins have access to all notes.</p>
+                            <p className="font-semibold">{isUserAdmin ? "Admins have" : "This user has"} access to all notes.</p>
+                            { !isUserAdmin && <p className="text-sm">Disable "Grant Access to All Notes" to manage individually.</p>}
                         </div>
                     ) : (
                         <ScrollArea className="h-[40vh] pr-6 border rounded-md">

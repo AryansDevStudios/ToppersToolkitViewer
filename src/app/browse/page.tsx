@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import type { Note } from '@/lib/types';
+import type { Note, User } from '@/lib/types';
 import { iconMap } from '@/lib/iconMap';
 import { useRouter } from 'next/navigation';
 
@@ -22,6 +22,7 @@ export default function BrowseAllNotesPage() {
   const [filteredNotes, setFilteredNotes] = useState<NoteItem[]>([]);
   const [showAllNotes, setShowAllNotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const { user, role, loading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -32,43 +33,41 @@ export default function BrowseAllNotesPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    async function fetchNotes() {
-      setIsLoading(true);
-      const notes = await getAllNotes();
-      const sortedNotes = notes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-      setAllNotes(sortedNotes);
-      setIsLoading(false);
+    async function fetchInitialData() {
+      if (user) {
+        setIsLoading(true);
+        const [notes, dbUser] = await Promise.all([
+          getAllNotes(),
+          getUserById(user.uid)
+        ]);
+        const sortedNotes = notes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        setAllNotes(sortedNotes);
+        setCurrentUser(dbUser);
+        setIsLoading(false);
+      }
     }
-    if (user) {
-      fetchNotes();
-    }
+    fetchInitialData();
   }, [user]);
 
   useEffect(() => {
-    async function filterAndSetNotes() {
-      if (authLoading || isLoading) return;
-      
-      if (!user) {
-        setFilteredNotes([]);
-        return;
-      }
-
-      if (role === 'Admin') {
-        setFilteredNotes(allNotes);
-        return;
-      }
-      
-      if (!showAllNotes) {
-          const userData = await getUserById(user.uid);
-          const grantedNoteIds = new Set(userData?.noteAccess || []);
-          const granted = allNotes.filter(note => grantedNoteIds.has(note.id));
-          setFilteredNotes(granted);
-      } else {
-          setFilteredNotes(allNotes);
-      }
+    if (authLoading || isLoading || !currentUser) {
+      setFilteredNotes([]);
+      return;
     }
-    filterAndSetNotes();
-  }, [showAllNotes, user, role, allNotes, authLoading, isLoading]);
+
+    if (role === 'Admin' || currentUser.hasFullNotesAccess) {
+      setFilteredNotes(allNotes);
+      return;
+    }
+    
+    if (!showAllNotes) {
+        const grantedNoteIds = new Set(currentUser?.noteAccess || []);
+        const granted = allNotes.filter(note => grantedNoteIds.has(note.id));
+        setFilteredNotes(granted);
+    } else {
+        setFilteredNotes(allNotes);
+    }
+  }, [showAllNotes, user, role, currentUser, allNotes, authLoading, isLoading]);
 
   if (authLoading || !user) {
     return (
@@ -79,6 +78,7 @@ export default function BrowseAllNotesPage() {
   }
 
   const displayLoading = isLoading;
+  const isFullAccessUser = role === 'Admin' || currentUser?.hasFullNotesAccess;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -91,7 +91,7 @@ export default function BrowseAllNotesPage() {
         </p>
       </header>
 
-      {role !== 'Admin' && (
+      {!isFullAccessUser && (
         <div className="flex items-center justify-end space-x-3 mb-8 p-4 border rounded-lg bg-card">
           <Label htmlFor="all-notes-toggle" className="font-semibold">Show All Notes</Label>
           <Switch
@@ -137,10 +137,10 @@ export default function BrowseAllNotesPage() {
       ) : (
         <div className="text-center py-16">
           <h2 className="text-2xl font-semibold mb-2">
-            {showAllNotes ? "No Notes Yet" : "No Notes Found"}
+            {showAllNotes || isFullAccessUser ? "No Notes Yet" : "No Notes Found"}
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            {showAllNotes
+            {showAllNotes || isFullAccessUser
               ? "Looks like no notes have been uploaded. Check back soon!"
               : "You have not been granted access to any notes yet. Turn on 'Show All Notes' to browse everything."}
           </p>

@@ -61,4 +61,5 @@ export interface User {
   noteAccess?: string[];
   createdAt?: number;
   hasAiAccess?: boolean;
+  hasFullNotesAccess?: boolean;
 }

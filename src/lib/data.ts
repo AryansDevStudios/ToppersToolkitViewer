@@ -579,36 +579,44 @@ export const updateUserRole = async (userId: string, newRole: User['role']) => {
     }
 };
 
-export const updateUserAiAccess = async (userId: string, hasAiAccess: boolean) => {
+export const updateUserPermissions = async (
+    userId: string, 
+    permissions: {
+        noteAccess?: string[];
+        hasAiAccess?: boolean;
+        hasFullNotesAccess?: boolean;
+    }
+) => {
     if (!userId) {
         return { success: false, error: "User ID is required." };
     }
     const userDocRef = doc(db, "users", userId);
     try {
-        await updateDoc(userDocRef, { hasAiAccess });
-        revalidatePath('/admin/users');
-        return { success: true, message: "AI chat access updated successfully." };
-    } catch (e: any) {
-        return { success: false, error: e.message };
-    }
-};
+        // Construct an update object with only the provided fields
+        const dataToUpdate: { [key: string]: any } = {};
+        if (permissions.noteAccess !== undefined) {
+            dataToUpdate.noteAccess = permissions.noteAccess;
+        }
+        if (permissions.hasAiAccess !== undefined) {
+            dataToUpdate.hasAiAccess = permissions.hasAiAccess;
+        }
+        if (permissions.hasFullNotesAccess !== undefined) {
+            dataToUpdate.hasFullNotesAccess = permissions.hasFullNotesAccess;
+        }
+        
+        if (Object.keys(dataToUpdate).length === 0) {
+            return { success: true, message: "No permissions were changed." };
+        }
 
-
-export const updateUserAccessBatch = async (userId: string, noteAccess: string[]) => {
-    if (!userId) {
-        return { success: false, error: "User ID is required." };
-    }
-    const userDocRef = doc(db, "users", userId);
-    try {
-        await updateDoc(userDocRef, { noteAccess });
+        await updateDoc(userDocRef, dataToUpdate);
+        
         revalidatePath('/admin/users');
         revalidatePath('/browse', "layout");
-        return { success: true, message: "User access updated successfully." };
+        return { success: true, message: "User permissions updated successfully." };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
 };
-
 
 export const deleteUser = async (userId: string) => {
     // This action is sensitive and has been disabled in the code

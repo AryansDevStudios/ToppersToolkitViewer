@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -71,19 +72,31 @@ const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
                 return;
             }
             
-            // First, check if the note itself is public
-            const noteData = await fetchNoteById(noteId);
-            if (noteData?.isPublic) {
-                setHasAccess(true);
-                return;
-            }
-
+            // Check for admin role first
             if (role === 'Admin') {
                 setHasAccess(true);
                 return;
             }
 
-            const userData = await getUserById(user.uid);
+            // Fetch user data and note data in parallel for efficiency
+            const [userData, noteData] = await Promise.all([
+                getUserById(user.uid),
+                fetchNoteById(noteId)
+            ]);
+
+            // Check if note is public
+            if (noteData?.isPublic) {
+                setHasAccess(true);
+                return;
+            }
+            
+            // Check if user has full access permission
+            if (userData?.hasFullNotesAccess) {
+                setHasAccess(true);
+                return;
+            }
+
+            // Check if user has access to this specific note
             if (userData?.noteAccess?.includes(noteId)) {
                 setHasAccess(true);
             } else {
