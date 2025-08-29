@@ -34,7 +34,7 @@ import { auth, db, createUserWithEmailAndPassword, updateProfile, doc, setDoc, s
 import { Checkbox } from "../ui/checkbox";
 import Link from "next/link";
 import { logUserLogin } from "@/lib/data";
-import type { LoginLog } from "@/lib/types";
+import type { LoginLog, User } from "@/lib/types";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -173,24 +173,30 @@ export function RegisterForm() {
 
       await updateProfile(user, { displayName: name });
       
-      let classAndSection = undefined;
-      if (role === 'Student' && values.class && values.section) {
-          const classNum = parseInt(values.class);
-          classAndSection = `${classNum}${getOrdinalSuffix(classNum)} ${values.section}`;
+      const userData: Omit<User, 'id'> = {
+        name,
+        email,
+        password,
+        whatsappNumber,
+        role,
+        createdAt: Date.now(),
+        hasAiAccess: true, // Grant AI access to new users by default
+      };
+
+      if (role === 'Student') {
+          if (values.class && values.section) {
+            const classNum = parseInt(values.class);
+            userData.classAndSection = `${classNum}${getOrdinalSuffix(classNum)} ${values.section}`;
+          }
+          userData.srNo = values.srNo?.trim();
+      } else if (role === 'Teacher') {
+          userData.gender = values.gender as User['gender'];
       }
+
 
       await setDoc(doc(db, "users", user.uid), {
         id: user.uid,
-        name,
-        email,
-        password, 
-        classAndSection,
-        gender: role === 'Teacher' ? values.gender : undefined,
-        srNo: role === 'Student' ? values.srNo?.trim() : undefined,
-        whatsappNumber,
-        role: role,
-        createdAt: Date.now(),
-        hasAiAccess: true, // Grant AI access to new users by default
+        ...userData,
       });
       
       // Auto-login user
