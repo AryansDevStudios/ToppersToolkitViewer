@@ -90,7 +90,7 @@ export function AppHeader() {
           <ThemeToggle />
 
           <div className="hidden md:block">
-            {!mounted || loading ? (
+            {loading ? (
               <Skeleton className="h-10 w-24 rounded-md" />
             ) : user ? (
               <UserProfileMenu />

@@ -54,6 +54,7 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
     "ring-orange-500": role === 'Admin',
     "ring-green-500": role !== 'Admin' && dbUser?.hasFullNotesAccess,
     "ring-sky-500": role !== 'Admin' && !dbUser?.hasFullNotesAccess,
+    "ring-border": !dbUser // Default ring while dbUser is loading
   });
   
   const mobileRingClasses = isMobile ? ringClasses : `${ringClasses} ring-offset-2 ring-offset-background`;

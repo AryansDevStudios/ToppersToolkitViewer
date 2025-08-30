@@ -32,10 +32,12 @@ export function useAuth() {
       setLoading(true);
       if (firebaseUser) {
         setUser(firebaseUser);
-        const userData = await getUserById(firebaseUser.uid);
-        setDbUser(userData);
-        setRole(userData?.role || 'User');
         await setSessionCookie(firebaseUser);
+        // Fetch DB user data in the background
+        getUserById(firebaseUser.uid).then(userData => {
+          setDbUser(userData);
+          setRole(userData?.role || 'User');
+        });
       } else {
         setUser(null);
         setDbUser(null);
