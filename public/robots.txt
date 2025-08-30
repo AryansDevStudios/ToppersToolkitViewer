@@ -1,0 +1,11 @@
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow sensitive folders (adjust as needed)
+Disallow: /api/
+Disallow: /admin/
+Disallow: /secret/
+
+# Sitemap location (important for SEO)
+Sitemap: https://topperstoolkit.netlify.app/sitemap.xml
