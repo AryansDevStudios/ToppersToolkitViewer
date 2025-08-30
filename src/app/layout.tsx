@@ -95,7 +95,7 @@ export default function RootLayout({
         <title>Topper's Toolkit Library</title>
         <meta name="description" content="Your one-stop destination for academic resources." />
         <meta name="google-site-verification" content="HhYE_EaRl3a-lakYfgYJNTwiSP22eQX_QUafQRqd0nw" />
-        <link rel="icon" href="https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png" />
+        <link rel="icon" href="https://topperstoolkit.netlify.app/icon/icon_app.ico" />
       </head>
       <body
         className={cn(
