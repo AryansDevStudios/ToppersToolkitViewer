@@ -56,7 +56,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          <Image src="https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkit/main/icon/icon_app_128x128.png" alt="Topper's Toolkit Library Logo" width={32} height={32} className="rounded-md" />
+          <Image src="https://topperstoolkit.netlify.app/icon/icon_main.png" alt="Topper's Toolkit Library Logo" width={32} height={32} className="rounded-md" />
           <span className="font-bold inline-block text-base sm:text-lg">
             Topper's Toolkit Library
           </span>
