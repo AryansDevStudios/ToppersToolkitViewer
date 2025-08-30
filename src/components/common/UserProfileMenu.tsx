@@ -24,10 +24,10 @@ interface UserProfileMenuProps {
 }
 
 export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
-  const { user, dbUser, role } = useAuth();
+  const { user, dbUser, role, loading } = useAuth();
   const router = useRouter();
 
-  if (!user) return null;
+  if (loading || !user) return null;
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -37,11 +37,11 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
 
   const getInitials = (name: string | null | undefined): string => {
     if (!name) return 'U';
-    const names = name.split(' ');
+    const names = name.trim().split(' ').filter(Boolean); // Handle extra spaces
     if (names.length > 1) {
-      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
-    return names[0][0].toUpperCase();
+    return names[0].substring(0, 2).toUpperCase();
   };
   
   const triggerClasses = isMobile

@@ -31,11 +31,11 @@ export const revalidate = 0;
 
 const getInitials = (name: string | null | undefined): string => {
     if (!name) return 'U';
-    const names = name.split(' ');
+    const names = name.trim().split(' ').filter(Boolean); // Handle extra spaces
     if (names.length > 1) {
-      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
-    return names[0][0].toUpperCase();
+    return names[0].substring(0, 2).toUpperCase();
 };
 
 const UserAvatar = ({ user }: { user: User }) => {
