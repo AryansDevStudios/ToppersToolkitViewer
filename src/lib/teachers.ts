@@ -55,8 +55,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "/teachers_photo/divyam.jpg",
     quote: "Technology in education opens up a new world of possibilities.",
     about: [
-      "Divyam Sir skillfully manages the hybrid classes as the coordinator and teaches Information Technology.",
-      "He is at the forefront of integrating modern technology into our school's learning environment."
+      "As the school's tech-savvy IT teacher, Divyam Sir makes learning about technology fun and engaging, and his classes are a favorite among students.",
+      "He skillfully manages the hybrid class program as its coordinator, ensuring a smooth learning experience for everyone. Always ready to help other teachers with their technology needs, he is an invaluable part of the school's modern educational environment."
     ],
   },
   {
@@ -195,7 +195,7 @@ export const teachers: TeacherProfile[] = [
     id: "nirupma-maam",
     name: "Nirupma Ma'am",
     subject: "Former Hindi Teacher",
-    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/478.png",
     quote: "The beauty of language is in its expression.",
     about: [
       "We thank Nirupma Ma'am for her dedication to teaching Hindi and its rich cultural heritage.",
