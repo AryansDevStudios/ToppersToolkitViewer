@@ -2,7 +2,6 @@
 import { teachers } from "@/lib/teachers";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookUser } from "lucide-react";
 import { Metadata } from "next";
@@ -32,11 +31,10 @@ export default function OurTeachersPage() {
                 {teachers.map((teacher) => (
                     <Card key={teacher.id} className="overflow-hidden group flex flex-col">
                          <div className="relative aspect-square overflow-hidden">
-                            <Image
+                            <img
                                 src={teacher.photoUrl}
                                 alt={`Photo of ${teacher.name}`}
-                                fill
-                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                                 data-ai-hint="teacher portrait"
                             />
                         </div>
