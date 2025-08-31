@@ -31,8 +31,9 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "/teachers_photo/smita.jpg",
     quote: "Understanding our society and history shapes who we become.",
     about: [
-      "Smitha Roy plays a dual role as an Incharge and a passionate Social Studies teacher.",
-      "Her guidance is instrumental in both administrative matters and in helping students understand the world around them."
+      "Smitha Roy masterfully balances her dual responsibilities as the school's Incharge and the dedicated Social Studies (SST) teacher for Class 9. Her passion for the subject shines through as she teaches History, Geography, Civics, and Economics, connecting students with the world around them.",
+      "In the classroom, she maintains a well-managed and disciplined environment where students can focus deeply on their studies. Her unique teaching style commands respect and ensures that every student is diligent and completes their work on time.",
+      "Despite her strict classroom presence, Mrs. Roy is known for being exceptionally polite, helpful, and sincere. She patiently clarifies doubts and serves as a true role model for both students and fellow educators."
     ],
   },
   {
