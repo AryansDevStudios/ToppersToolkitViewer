@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, BookUser } from "lucide-react";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "Our Teachers - Topper's Toolkit Library",
@@ -30,14 +30,16 @@ export default function OurTeachersPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {teachers.map((teacher) => (
                     <Card key={teacher.id} className="overflow-hidden group flex flex-col">
-                         <div className="relative aspect-square overflow-hidden">
-                            <img
-                                src={teacher.photoUrl}
-                                alt={`Photo of ${teacher.name}`}
-                                className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                                data-ai-hint="teacher portrait"
-                            />
-                        </div>
+                        <Link href={`/our-teachers/${teacher.id}`} className="block">
+                             <div className="relative aspect-square overflow-hidden">
+                                <img
+                                    src={teacher.photoUrl}
+                                    alt={`Photo of ${teacher.name}`}
+                                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                                    data-ai-hint="teacher portrait"
+                                />
+                            </div>
+                        </Link>
                         <CardContent className="p-6 flex-1 flex flex-col">
                             <h2 className="text-2xl font-bold mb-1">{teacher.name}</h2>
                             <p className="text-primary font-semibold mb-4">{teacher.subject}</p>
@@ -47,8 +49,7 @@ export default function OurTeachersPage() {
                         </CardContent>
                         <CardFooter className="p-4 bg-muted/50">
                             <Button asChild className="w-full" variant="outline">
-                                {/* This will eventually link to /our-teachers/[id] */}
-                                <Link href="#">
+                                <Link href={`/our-teachers/${teacher.id}`}>
                                     View Full Profile <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
                             </Button>
