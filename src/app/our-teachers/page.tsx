@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, BookUser } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
     title: "Our Teachers - Topper's Toolkit Library",
