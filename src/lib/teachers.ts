@@ -60,7 +60,7 @@ export const teachers: TeacherProfile[] = [
     id: "shivkant-sir",
     name: "Shivkant Sir",
     subject: "History & Politics Teacher",
-    photoUrl: "https://picsum.photos/seed/shivkant-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "To understand the present, we must learn from the past.",
     about: [
       "Shivkant Sir brings the stories of the past and the structures of the present to life for students in sections A and B.",
@@ -71,7 +71,7 @@ export const teachers: TeacherProfile[] = [
     id: "chandra-prakash-shukla",
     name: "Chandra Prakash Shukla",
     subject: "Teacher (Section A)",
-    photoUrl: "https://picsum.photos/seed/chandra-prakash-shukla/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Every student has the potential to shine.",
     about: [
       "Chandra Prakash Shukla is a dedicated teacher for Section A, committed to fostering a positive learning environment.",
@@ -81,7 +81,7 @@ export const teachers: TeacherProfile[] = [
     id: "rajesh-sir",
     name: "Rajesh Sir",
     subject: "Teacher (Section B)",
-    photoUrl: "https://picsum.photos/seed/rajesh-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Learning is a journey we take together.",
     about: [
       "Rajesh Sir is a core member of the teaching staff for Section B, helping students achieve their best.",
@@ -91,7 +91,7 @@ export const teachers: TeacherProfile[] = [
     id: "sunil-sir",
     name: "Sunil Sir",
     subject: "Teacher (H/C Section)",
-    photoUrl: "https://picsum.photos/seed/sunil-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Curiosity is the wick in the candle of learning.",
     about: [
       "Sunil Sir guides the students of the Hybrid/Commerce section with dedication and expertise.",
@@ -101,7 +101,7 @@ export const teachers: TeacherProfile[] = [
     id: "adalat-sir",
     name: "Adalat Sir",
     subject: "Hindi Teacher",
-    photoUrl: "https://picsum.photos/seed/adalat-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Language is the roadmap of a culture.",
     about: [
       "Adalat Sir fosters a deep appreciation for the Hindi language and its rich literary traditions.",
@@ -121,7 +121,7 @@ export const teachers: TeacherProfile[] = [
     id: "divakar-pandey",
     name: "Divakar Pandey",
     subject: "Physics Teacher",
-    photoUrl: "https://picsum.photos/seed/divakar-pandey/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Physics is the universe's poetry.",
     about: [
       "Divakar Pandey makes the principles of physics engaging and understandable for all students.",
@@ -141,7 +141,7 @@ export const teachers: TeacherProfile[] = [
     id: "ajay-sir",
     name: "Ajay Sir",
     subject: "Biology Teacher",
-    photoUrl: "https://picsum.photos/seed/ajay-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Biology gives you a brain, but life turns it into a mind.",
     about: [
       "Ajay Sir has a talent for making complex biological concepts from Class 11 incredibly smooth and understandable for his Class 9 students.",
@@ -152,7 +152,7 @@ export const teachers: TeacherProfile[] = [
     id: "pramod-sir",
     name: "Pramod Sir",
     subject: "Former Maths Teacher",
-    photoUrl: "https://picsum.photos/seed/pramod-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "The only way to learn mathematics is to do mathematics.",
     about: [
       "We remember Pramod Sir for his dedicated teaching and guidance in Mathematics as our previous class teacher.",
@@ -162,7 +162,7 @@ export const teachers: TeacherProfile[] = [
     id: "mantasha-maam",
     name: "Mantasha Ma'am",
     subject: "Former English Teacher",
-    photoUrl: "https://picsum.photos/seed/mantasha-maam/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Words have the power to change the world.",
     about: [
       "Mantasha Ma'am inspired a love for literature and language as our former English teacher.",
@@ -172,7 +172,7 @@ export const teachers: TeacherProfile[] = [
     id: "shailendra-sir",
     name: "Shailendra Sir",
     subject: "Former English Teacher",
-    photoUrl: "https://picsum.photos/seed/shailendra-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "To read is to fly; it is to soar to a point of vantage.",
     about: [
       "We appreciate Shailendra Sir for his contributions to our English education and for fostering strong communication skills.",
@@ -182,7 +182,7 @@ export const teachers: TeacherProfile[] = [
     id: "rahul-sir",
     name: "Rahul Sir",
     subject: "Former Maths Teacher",
-    photoUrl: "https://picsum.photos/seed/rahul-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Numbers have a way of taking a man by the hand and leading him down the path of reason.",
     about: [
       "Rahul Sir is remembered for his clear and effective teaching methods in Mathematics.",
@@ -192,7 +192,7 @@ export const teachers: TeacherProfile[] = [
     id: "nirupma-maam",
     name: "Nirupma Ma'am",
     subject: "Former Hindi Teacher",
-    photoUrl: "https://picsum.photos/seed/nirupma-maam/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "The beauty of language is in its expression.",
     about: [
       "We thank Nirupma Ma'am for her dedication to teaching Hindi and its rich cultural heritage.",
@@ -202,7 +202,7 @@ export const teachers: TeacherProfile[] = [
     id: "avdesh-sir",
     name: "Avdesh Sir",
     subject: "Former IT Teacher",
-    photoUrl: "https://picsum.photos/seed/avdesh-sir/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Technology is a tool. In terms of getting the kids working together and motivating them, the teacher is the most important.",
     about: [
       "Avdesh Sir helped build our foundational knowledge in Information Technology with great patience and skill.",
@@ -212,7 +212,7 @@ export const teachers: TeacherProfile[] = [
     id: "kuldeep-singh",
     name: "Kuldeep Singh",
     subject: "Content Creator",
-    photoUrl: "https://picsum.photos/seed/kuldeep-singh/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "The beautiful thing about learning is that no one can take it away from you.",
     about: [
       "With over a decade of experience, Kuldeep Singh is passionate about creating high-quality educational content that is accessible and exciting for all students.",
@@ -223,7 +223,7 @@ export const teachers: TeacherProfile[] = [
     id: "aryan-gupta",
     name: "Aryan Gupta",
     subject: "Technology & Development",
-    photoUrl: "https://picsum.photos/seed/aryan-gupta/400/400",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Technology is best when it brings people together.",
     about: [
       "As the developer behind Topper's Toolkit, Aryan Gupta focuses on creating digital tools that enhance the learning experience.",
