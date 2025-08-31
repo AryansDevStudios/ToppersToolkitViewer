@@ -67,7 +67,7 @@ export const teachers: TeacherProfile[] = [
     quote: "To understand the present, we must learn from the past.",
     about: [
       "Shivkant Sir brings the stories of the past and the structures of the present to life for students in sections A and B.",
-      "He teaches History and Politics with a passion that inspires curiosity and critical thinking."
+      "He teaches History and Politics with a passion that inspires curiosity and critical thinking, encouraging students to analyze events and understand their impact on today's world. His classes are both informative and thought-provoking."
     ],
   },
     {
@@ -77,7 +77,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Every student has the potential to shine.",
     about: [
-      "Chandra Prakash Shukla is a dedicated teacher for Section A, committed to fostering a positive learning environment.",
+      "Chandra Prakash Shukla is a dedicated teacher for Section A, committed to fostering a positive and encouraging learning environment.",
+      "He works closely with his students to help them achieve their academic goals and build confidence. His supportive approach makes him a valued mentor and guide."
     ],
   },
   {
@@ -87,7 +88,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Learning is a journey we take together.",
     about: [
-      "Rajesh Sir is a core member of the teaching staff for Section B, helping students achieve their best.",
+      "Rajesh Sir is a core member of the teaching staff for Section B, helping students navigate their studies with patience and expertise.",
+      "He is known for his approachable nature and his ability to make every student feel seen and supported, ensuring a collaborative and effective classroom."
     ],
   },
   {
@@ -97,7 +99,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Curiosity is the wick in the candle of learning.",
     about: [
-      "Sunil Sir guides the students of the Hybrid/Commerce section with dedication and expertise.",
+      "Sunil Sir guides the students of the Hybrid/Commerce section with dedication and specialized expertise in his subjects.",
+      "He is committed to preparing his students for future challenges, equipping them with both knowledge and practical skills in a dynamic learning environment."
     ],
   },
   {
@@ -107,7 +110,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Language is the roadmap of a culture.",
     about: [
-      "Adalat Sir fosters a deep appreciation for the Hindi language and its rich literary traditions.",
+      "Adalat Sir fosters a deep appreciation for the Hindi language and its rich literary traditions. His teaching goes beyond the curriculum, instilling in students a love for poetic expression and powerful storytelling.",
+      "He encourages students to embrace their cultural heritage through language, making his classes both educational and inspiring."
     ],
   },
   {
@@ -117,7 +121,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "/teachers_photo/ashish.jpg",
     quote: "Mathematics is not about numbers, but about understanding.",
     about: [
-      "A very hardworking mathematics teacher and assistant class teacher, Ashish Srivastava is dedicated to helping students build strong problem-solving skills.",
+      "As a very hardworking mathematics teacher and assistant class teacher, Ashish Srivastava is dedicated to helping students build strong problem-solving skills and a genuine appreciation for the subject.",
+      "He is known for his tireless effort and his commitment to ensuring every student can succeed, offering extra help and encouragement wherever needed."
     ],
   },
   {
@@ -127,7 +132,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Physics is the universe's poetry.",
     about: [
-      "Divakar Pandey makes the principles of physics engaging and understandable for all students.",
+      "Divakar Pandey makes the principles of physics engaging and understandable for all students. He has a knack for breaking down complex theories into simple, relatable examples.",
+      "His passion for the subject is contagious, inspiring students to look at the world around them with a new sense of wonder and curiosity."
     ],
   },
   {
@@ -137,7 +143,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "/teachers_photo/amresh.jpg",
     quote: "Chemistry is the science of change, and learning is the catalyst.",
     about: [
-      "As both a chemistry teacher and a class teacher, Amersh Sir provides both academic and pastoral care to his students.",
+      "As both a chemistry teacher and a dedicated class teacher, Amersh Sir provides exceptional academic and pastoral care to his students.",
+      "He makes the world of molecules and reactions fascinating, while his guidance as a class teacher ensures his students feel supported and motivated in all aspects of school life."
     ],
   },
   {
@@ -147,8 +154,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Biology gives you a brain, but life turns it into a mind.",
     about: [
-      "Ajay Sir has a talent for making complex biological concepts from Class 11 incredibly smooth and understandable for his Class 9 students.",
-      "He was also the first to register for our AI initiative, showing his forward-thinking approach to education."
+      "Ajay Sir has a remarkable talent for making complex biological concepts from Class 11 incredibly smooth and understandable for his Class 9 students.",
+      "He was also the first to register for our AI initiative, showcasing his forward-thinking approach to education and his commitment to using modern tools to enhance learning."
     ],
   },
   {
@@ -158,17 +165,19 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "The only way to learn mathematics is to do mathematics.",
     about: [
-      "We remember Pramod Sir for his dedicated teaching and guidance in Mathematics as our previous class teacher.",
+      "We remember Pramod Sir for his dedicated teaching and guidance in Mathematics. His commitment to his students' success left a lasting impact on all who learned from him.",
+      "His clear explanations and patient approach helped many students build a strong foundation in a challenging subject."
     ],
   },
   {
     id: "mantasha-maam",
     name: "Mantasha Ma'am",
     subject: "Former English Teacher",
-    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
+    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/478.png",
     quote: "Words have the power to change the world.",
     about: [
-      "Mantasha Ma'am inspired a love for literature and language as our former English teacher.",
+      "Mantasha Ma'am inspired a love for literature and language as our former English teacher. She taught us the power of storytelling and effective communication.",
+      "Her engaging lessons and passion for the subject encouraged students to explore new worlds through books and express themselves with clarity and confidence."
     ],
   },
   {
@@ -178,7 +187,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "To read is to fly; it is to soar to a point of vantage.",
     about: [
-      "We appreciate Shailendra Sir for his contributions to our English education and for fostering strong communication skills.",
+      "We appreciate Shailendra Sir for his valuable contributions to our English education. He was dedicated to fostering strong communication and analytical skills in his students.",
+      "His guidance helped prepare students not just for exams, but for clear and confident expression in all areas of life."
     ],
   },
   {
@@ -188,7 +198,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Numbers have a way of taking a man by the hand and leading him down the path of reason.",
     about: [
-      "Rahul Sir is remembered for his clear and effective teaching methods in Mathematics.",
+      "Rahul Sir is remembered for his clear and effective teaching methods in Mathematics. He had a gift for making difficult problems seem manageable.",
+      "His logical approach and dedication to student understanding helped build a strong sense of confidence and capability in his classes."
     ],
   },
   {
@@ -198,7 +209,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/478.png",
     quote: "The beauty of language is in its expression.",
     about: [
-      "We thank Nirupma Ma'am for her dedication to teaching Hindi and its rich cultural heritage.",
+      "We thank Nirupma Ma'am for her dedication to teaching Hindi and its rich cultural heritage. She brought the language to life with her passion for poetry and prose.",
+      "Her classes were a celebration of literature, inspiring students to appreciate the nuances and beauty of the Hindi language."
     ],
   },
   {
@@ -208,7 +220,8 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "Technology is a tool. In terms of getting the kids working together and motivating them, the teacher is the most important.",
     about: [
-      "Avdesh Sir helped build our foundational knowledge in Information Technology with great patience and skill.",
+      "Avdesh Sir helped build our foundational knowledge in Information Technology with great patience and skill. He introduced us to the digital world with clarity and purpose.",
+      "His guidance was essential in developing the technical literacy that is crucial for students today."
     ],
   },
   {
@@ -234,3 +247,5 @@ export const teachers: TeacherProfile[] = [
     ],
   },
 ];
+
+    
