@@ -29,29 +29,13 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+        port: '',
+        pathname: '/**',
+      },
     ],
-  },
-  async headers() {
-    return [
-      {
-        source: '/PDFviewer/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=432000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-    ]
   },
 };
 

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     description: "A simple guide to using the Topper's Toolkit Library.",
 };
 
-export const revalidate = 432000; // 5 days
+export const revalidate = 0;
 
 const ManualStep = ({ icon: Icon, title, children }: { icon: React.ElementType, title: string, children: React.ReactNode }) => (
     <div className="flex items-start gap-4">

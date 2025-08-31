@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     description: 'Please read our terms and conditions carefully before using our service.',
 };
 
-export const revalidate = 432000; // 5 days
+export const revalidate = 0;
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     <h2 className="text-2xl font-bold mt-8 mb-4 border-b pb-2">{children}</h2>
