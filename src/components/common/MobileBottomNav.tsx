@@ -29,8 +29,8 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className, ico
 };
 
 const MobileNavSkeleton = () => (
-    <div className="container grid h-16 max-w-lg items-center p-0 grid-cols-5">
-        {[...Array(5)].map((_, i) => (
+    <div className="container grid h-16 max-w-lg items-center p-0 grid-cols-4">
+        {[...Array(4)].map((_, i) => (
              <div key={i} className="flex flex-col items-center justify-center gap-1 w-full h-full">
                 <Skeleton className="h-7 w-7 rounded-full" />
                 <Skeleton className="h-2 w-10 rounded-sm" />
@@ -66,8 +66,7 @@ export function MobileBottomNav() {
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Search, label: "Browse" },
-      { href: "/our-teachers", icon: BookUser, label: "Teachers" },
-      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: false },
+      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
     ];
 
     const renderAuthSlot = () => {
@@ -93,7 +92,7 @@ export function MobileBottomNav() {
       }
     };
     
-    const gridColsClass = 'grid-cols-5';
+    const gridColsClass = 'grid-cols-4';
 
     return (
         <nav className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">

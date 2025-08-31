@@ -75,9 +75,6 @@ export function AppHeader() {
               AI Help
             </Link>
           </Button>
-           <Button variant="ghost" asChild>
-            <Link href="/our-teachers">Our Teachers</Link>
-          </Button>
           <Button variant="ghost" asChild>
             <a href="https://topperstoolkit.netlify.app">Shop</a>
           </Button>
