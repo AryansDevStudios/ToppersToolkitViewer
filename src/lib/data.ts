@@ -8,7 +8,7 @@ import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
-import { cache } from 'react';
+import { unstable_noStore as noStore } from 'next/cache';
 
 const convertToJsDelivr = (githubUrl: string): string => {
     try {
@@ -70,7 +70,8 @@ export const seedSubjects = async () => {
     }
 };
 
-export const getSubjects = cache(async (): Promise<Subject[]> => {
+export const getSubjects = async (): Promise<Subject[]> => {
+    noStore();
     try {
         const subjectsCollection = collection(db, 'subjects');
         const subjectsSnapshot = await getDocs(subjectsCollection);
@@ -89,9 +90,10 @@ export const getSubjects = cache(async (): Promise<Subject[]> => {
     } catch (error) {
         return [];
     }
-});
+};
 
 export const findItemBySlug = async (slug: string[]) => {
+  noStore();
   if (!slug || slug.length === 0) {
     const allSubjects = await getSubjects();
     return { current: { name: 'Browse', children: allSubjects, isRoot: true }, parents: [] };
@@ -136,7 +138,8 @@ export const findItemBySlug = async (slug: string[]) => {
   return { current: currentItem, parents };
 };
 
-export const getAllNotes = cache(async (): Promise<(Note & { subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[]> => {
+export const getAllNotes = async (): Promise<(Note & { subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[]> => {
+    noStore();
     const allSubjects = await getSubjects();
     const allNotes: (Note & { subjectName: string; subSubjectName: string; chapter: string; chapterId: string; slug: string })[] = [];
     for (const subject of allSubjects) {
@@ -163,9 +166,10 @@ export const getAllNotes = cache(async (): Promise<(Note & { subjectName: string
         }
     }
     return allNotes;
-});
+};
 
 export const getNoteById = async (id: string): Promise<(Note & { subjectId: string; subSubjectId: string; chapterId: string; chapterName: string; }) | null> => {
+    noStore();
     if (!id) return null;
     const allSubjects = await getSubjects();
     for (const subject of allSubjects) {
@@ -194,6 +198,7 @@ export const getNoteById = async (id: string): Promise<(Note & { subjectId: stri
 };
 
 export const getDashboardStats = async () => {
+    noStore();
     const notes = await getAllNotes();
     const subjects = await getSubjects();
     const users = await getUsers();
@@ -519,7 +524,8 @@ export const deleteChapter = async (subjectId: string, subSubjectId: string, cha
 
 // --- User Management ---
 
-export const getUserById = cache(async (userId: string): Promise<User | null> => {
+export const getUserById = async (userId: string): Promise<User | null> => {
+  noStore();
   try {
     const userDocRef = doc(db, 'users', userId);
     const userDoc = await getDoc(userDocRef);
@@ -530,10 +536,11 @@ export const getUserById = cache(async (userId: string): Promise<User | null> =>
   } catch (error) {
     return null;
   }
-});
+};
 
 
-export const getUsers = cache(async (): Promise<User[]> => {
+export const getUsers = async (): Promise<User[]> => {
+  noStore();
   try {
     const usersCollection = collection(db, 'users');
     const usersSnapshot = await getDocs(usersCollection);
@@ -544,7 +551,7 @@ export const getUsers = cache(async (): Promise<User[]> => {
   } catch (error) {
     return [];
   }
-});
+};
 
 export const upsertUser = async (userData: Partial<User> & { id: string }) => {
     const { id, ...dataToUpdate } = userData;
