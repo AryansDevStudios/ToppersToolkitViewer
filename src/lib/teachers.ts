@@ -16,7 +16,7 @@ export const teachers: TeacherProfile[] = [
     id: "roy-chan-antony",
     name: "Roy Chan Antony",
     subject: "Principal",
-    photoUrl: "https://picsum.photos/seed/roy-chan-antony/400/400",
+    photoUrl: "/teachers_photo/principal.jpg",
     quote: "Ethical values are the foundation of a meaningful life and education.",
     about: [
       "As the Principal, Roy Chan Antony is dedicated to instilling strong ethical values in every student.",
@@ -27,7 +27,7 @@ export const teachers: TeacherProfile[] = [
     id: "smitha-roy",
     name: "Smitha Roy",
     subject: "Incharge & SST Teacher",
-    photoUrl: "https://picsum.photos/seed/smitha-roy/400/400",
+    photoUrl: "/teachers_photo/smita.jpg",
     quote: "Understanding our society and history shapes who we become.",
     about: [
       "Smitha Roy plays a dual role as an Incharge and a passionate Social Studies teacher.",
@@ -38,7 +38,7 @@ export const teachers: TeacherProfile[] = [
     id: "amit-singh",
     name: "Amit Singh",
     subject: "Class Incharge (9-12)",
-    photoUrl: "https://picsum.photos/seed/amit-singh/400/400",
+    photoUrl: "/teachers_photo/amit.jpg",
     quote: "Guidance and support are key to navigating the senior school years.",
     about: [
       "Amit Singh teaches sections A and B and serves as the dedicated incharge for the entire 9-12 class group.",
@@ -49,7 +49,7 @@ export const teachers: TeacherProfile[] = [
     id: "divyam-sir",
     name: "Divyam Sir",
     subject: "Hybrid Class Coordinator & IT Teacher",
-    photoUrl: "https://picsum.photos/seed/divyam-sir/400/400",
+    photoUrl: "/teachers_photo/divyam.jpg",
     quote: "Technology in education opens up a new world of possibilities.",
     about: [
       "Divyam Sir skillfully manages the hybrid classes as the coordinator and teaches Information Technology.",
@@ -111,7 +111,7 @@ export const teachers: TeacherProfile[] = [
     id: "ashish-srivastava",
     name: "Ashish Srivastava",
     subject: "Mathematics Teacher",
-    photoUrl: "https://picsum.photos/seed/ashish-srivastava/400/400",
+    photoUrl: "/teachers_photo/ashish.jpg",
     quote: "Mathematics is not about numbers, but about understanding.",
     about: [
       "A very hardworking mathematics teacher and assistant class teacher, Ashish Srivastava is dedicated to helping students build strong problem-solving skills.",
@@ -131,7 +131,7 @@ export const teachers: TeacherProfile[] = [
     id: "amersh-sir",
     name: "Amersh Sir",
     subject: "Chemistry Teacher & Class Teacher",
-    photoUrl: "https://picsum.photos/seed/amersh-sir/400/400",
+    photoUrl: "/teachers_photo/amresh.jpg",
     quote: "Chemistry is the science of change, and learning is the catalyst.",
     about: [
       "As both a chemistry teacher and a class teacher, Amersh Sir provides both academic and pastoral care to his students.",
