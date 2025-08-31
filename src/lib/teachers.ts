@@ -17,10 +17,11 @@ export const teachers: TeacherProfile[] = [
     name: "Roy Chan Antony",
     subject: "Principal",
     photoUrl: "/teachers_photo/principal.jpg",
-    quote: "Ethical values are the foundation of a meaningful life and education.",
+    quote: "Focus on your studies to build a better future. This school is your temple, and your teachers are your guides.",
     about: [
-      "As the Principal, Roy Chan Antony is dedicated to instilling strong ethical values in every student.",
-      "He leads the school with a focus on integrity, responsibility, and academic excellence."
+      "As the Principal, Roy Chan Antony stands as a role model for the entire school community. He masterfully manages all school activities and programs, inspiring both students and staff with his dedication and vision.",
+      "In his interactions, he is known for his motivating presence in morning assemblies and his friendly demeanor with everyone. While approachable and supportive, he maintains firm discipline, ensuring the school environment remains respectful and conducive to learning.",
+      "He consistently encourages students to focus on their academic journey, reminding them that their hard work today is the cornerstone of a successful future."
     ],
   },
   {
