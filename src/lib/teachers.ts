@@ -39,12 +39,13 @@ export const teachers: TeacherProfile[] = [
   {
     id: "amit-singh",
     name: "Amit Singh",
-    subject: "Class Incharge (9-12)",
+    subject: "SST Teacher & Class Incharge (9-12)",
     photoUrl: "/teachers_photo/amit.jpg",
-    quote: "Guidance and support are key to navigating the senior school years.",
+    quote: "Every map and balance sheet tells a story about who we are and where we're going.",
     about: [
-      "Amit Singh teaches sections A and B and serves as the dedicated incharge for the entire 9-12 class group.",
-      "He is a cornerstone of support for senior students, guiding them through their academic journey."
+      "As the SST teacher for sections A and B, Amit Singh brings Geography and Economics to life with his distinctive storytelling style. He has a remarkable ability to diverge from the textbook, weaving engaging narratives that make complex topics instantly understandable and relatable.",
+      "His classes are known for their clarity, and students often find they can grasp concepts in a single session with few doubts remaining. His politeness and approachable nature create a welcoming learning environment.",
+      "In addition to his teaching role, he serves as the dedicated incharge for the entire 9-12 class group, providing guidance and support to senior students as they navigate their academic journey."
     ],
   },
   {
