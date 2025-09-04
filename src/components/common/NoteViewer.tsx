@@ -50,39 +50,36 @@ interface NoteViewerProps {
 }
 
 const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
-    const { user, role, loading: authLoading } = useAuth();
+    const { user, dbUser, loading: authLoading } = useAuth();
     const router = useRouter();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
 
     useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/login');
-            return;
-        }
-
         if (authLoading) {
             return;
         }
 
-        setHasAccess(null); // Set to loading state
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+        
+        // If dbUser is still loading, wait
+        if (!dbUser) {
+            return;
+        }
+
+        setHasAccess(null); // Set to loading state while we run async checks
 
         async function checkAccess() {
-            if (!user) {
-                setHasAccess(false);
-                return;
-            }
-            
             // Check for admin role first
-            if (role === 'Admin') {
+            if (dbUser.role === 'Admin') {
                 setHasAccess(true);
                 return;
             }
 
-            // Fetch user data and note data in parallel for efficiency
-            const [userData, noteData] = await Promise.all([
-                getUserById(user.uid),
-                fetchNoteById(noteId)
-            ]);
+            // Fetch note data
+            const noteData = await fetchNoteById(noteId);
 
             // Check if note is public
             if (noteData?.isPublic) {
@@ -91,13 +88,13 @@ const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
             }
             
             // Check if user has full access permission
-            if (userData?.hasFullNotesAccess) {
+            if (dbUser?.hasFullNotesAccess) {
                 setHasAccess(true);
                 return;
             }
 
             // Check if user has access to this specific note
-            if (userData?.noteAccess?.includes(noteId)) {
+            if (dbUser?.noteAccess?.includes(noteId)) {
                 setHasAccess(true);
             } else {
                 setHasAccess(false);
@@ -105,7 +102,7 @@ const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
         }
 
         checkAccess();
-    }, [authLoading, user, role, noteId, router]);
+    }, [authLoading, user, dbUser, noteId, router]);
 
 
     if (hasAccess === null) {
