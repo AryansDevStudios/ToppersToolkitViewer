@@ -40,7 +40,7 @@ import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
-  role: z.enum(["Student", "Teacher"], { required_error: "You must select a role."}),
+  role: z.enum(["Student", "Teacher", "Ethic Learner"], { required_error: "You must select a role."}),
   class: z.string().optional(),
   section: z.string().optional(),
   gender: z.string().optional(),
@@ -54,7 +54,7 @@ const formSchema = z.object({
     message: "You must agree to the terms and conditions.",
   }),
 }).refine(data => {
-    if (data.role === 'Student') {
+    if (data.role === 'Student' || data.role === 'Ethic Learner') {
         return !!data.class && !!data.section;
     }
     return true;
@@ -70,7 +70,7 @@ const formSchema = z.object({
     message: "Gender is required for teachers.",
     path: ['gender'],
 }).refine(data => {
-    if (data.role === 'Student') {
+    if (data.role === 'Student' || data.role === 'Ethic Learner') {
         return !!data.srNo && /^\d{4}$/.test(data.srNo);
     }
     return true;
@@ -183,7 +183,7 @@ export function RegisterForm() {
         hasAiAccess: true, // Grant AI access to new users by default
       };
 
-      if (role === 'Student') {
+      if (role === 'Student' || role === 'Ethic Learner') {
           if (values.class && values.section) {
             const classNum = parseInt(values.class);
             userData.classAndSection = `${classNum}${getOrdinalSuffix(classNum)} ${values.section}`;
@@ -275,13 +275,19 @@ export function RegisterForm() {
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="flex gap-4"
+                      className="flex flex-wrap gap-4"
                     >
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
                           <RadioGroupItem value="Student" />
                         </FormControl>
                         <FormLabel className="font-normal">Student</FormLabel>
+                      </FormItem>
+                       <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="Ethic Learner" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Ethic Learner</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
@@ -296,7 +302,7 @@ export function RegisterForm() {
               )}
             />
             
-            {role === 'Student' && (
+            {(role === 'Student' || role === 'Ethic Learner') && (
                 <>
                     <div className="grid grid-cols-2 gap-4">
                         <FormField

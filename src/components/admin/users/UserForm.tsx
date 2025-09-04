@@ -82,6 +82,7 @@ export function UserForm({ user }: UserFormProps) {
   });
 
   const studentClass = form.watch("class");
+  const isStudentLike = user.role === 'Student' || user.role === 'Ethic Learner';
 
   const getSectionOptions = () => {
       if (!studentClass) return [];
@@ -96,7 +97,7 @@ export function UserForm({ user }: UserFormProps) {
     startTransition(async () => {
       try {
         let classAndSection: string | undefined = undefined;
-        if (user.role === 'Student') {
+        if (isStudentLike) {
             if (!values.class || !values.section) {
                 toast({ title: "Validation Error", description: "Class and Section are required for students.", variant: "destructive" });
                 return;
@@ -118,7 +119,7 @@ export function UserForm({ user }: UserFormProps) {
           name: values.name.trim(),
           classAndSection: classAndSection,
           gender: user.role === 'Teacher' ? values.gender as User['gender'] : undefined,
-          srNo: user.role === 'Student' ? values.srNo?.trim() : undefined,
+          srNo: isStudentLike ? values.srNo?.trim() : undefined,
           whatsappNumber: values.whatsappNumber?.trim(),
         };
 
@@ -190,7 +191,7 @@ export function UserForm({ user }: UserFormProps) {
           )}
         />
 
-        {user.role === 'Student' && (
+        {isStudentLike && (
             <>
                 <div className="grid grid-cols-2 gap-4">
                     <FormField

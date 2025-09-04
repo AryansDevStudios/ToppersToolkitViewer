@@ -41,8 +41,9 @@ const getInitials = (name: string | null | undefined): string => {
 const UserAvatar = ({ user }: { user: User }) => {
   const ringClasses = cn("ring-2 ring-offset-2 ring-offset-background", {
     "ring-orange-500": user.role === 'Admin',
-    "ring-green-500": user.role !== 'Admin' && user.hasFullNotesAccess,
-    "ring-sky-500": user.role !== 'Admin' && !user.hasFullNotesAccess,
+    "ring-yellow-400": user.role === 'Ethic Learner',
+    "ring-green-500": user.role !== 'Admin' && user.role !== 'Ethic Learner' && user.hasFullNotesAccess,
+    "ring-sky-500": user.role !== 'Admin' && user.role !== 'Ethic Learner' && !user.hasFullNotesAccess,
   });
 
   return (
