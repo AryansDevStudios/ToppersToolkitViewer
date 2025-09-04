@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getUserById } from "@/lib/data";
 import { useTheme } from "next-themes";
 import type { User } from "@/lib/types";
 
@@ -37,11 +36,10 @@ const LoadingState = () => (
 );
 
 export default function DoubtSolverPage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, dbUser, loading: authLoading } = useAuth();
     const router = useRouter();
     const { resolvedTheme } = useTheme();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
-    const [userData, setUserData] = useState<User | null>(null);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -49,31 +47,17 @@ export default function DoubtSolverPage() {
             return;
         }
 
-        if (authLoading) {
+        if (authLoading || !dbUser) {
             return;
         }
 
-        setHasAccess(null); 
-        setUserData(null);
-
-        async function checkAccess() {
-            if (!user) {
-                setHasAccess(false);
-                return;
-            }
-
-            const dbUser = await getUserById(user.uid);
-            setUserData(dbUser);
-            
-            if (dbUser?.role === 'Admin' || dbUser?.hasAiAccess !== false) {
-                setHasAccess(true);
-            } else {
-                setHasAccess(false);
-            }
+        if (dbUser.role === 'Admin' || dbUser.hasAiAccess !== false) {
+            setHasAccess(true);
+        } else {
+            setHasAccess(false);
         }
 
-        checkAccess();
-    }, [authLoading, user, router]);
+    }, [authLoading, user, dbUser, router]);
 
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
@@ -93,19 +77,19 @@ export default function DoubtSolverPage() {
     }, []);
 
     const getIframeUrl = () => {
-        if (!userData) return "";
+        if (!dbUser) return "";
 
-        const name = encodeURIComponent(userData.name || (userData.role === 'Teacher' ? 'Teacher' : 'Student'));
+        const name = encodeURIComponent(dbUser.name || (dbUser.role === 'Teacher' ? 'Teacher' : 'Student'));
         const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
         const base = "https://topperstoolkitai.netlify.app/";
 
-        if (userData.role === 'Teacher') {
-            const gender = encodeURIComponent(userData.gender || 'N/A');
+        if (dbUser.role === 'Teacher') {
+            const gender = encodeURIComponent(dbUser.gender || 'N/A');
             return `${base}?name=${name}&class=Teacher&theme=${theme}&gender=${gender}`;
-        } else if (userData.role === 'Ethic Learner') {
+        } else if (dbUser.role === 'Ethic Learner') {
              return `${base}?name=${name}&class=ethic-learner&theme=${theme}`;
         } else {
-            const studentClass = encodeURIComponent(userData.classAndSection || 'N/A');
+            const studentClass = encodeURIComponent(dbUser.classAndSection || 'N/A');
             return `${base}?name=${name}&class=${studentClass}&theme=${theme}`;
         }
     };
@@ -113,7 +97,7 @@ export default function DoubtSolverPage() {
     const iframeUrl = getIframeUrl();
     const iframeKey = `${user?.uid}-${resolvedTheme}`;
 
-    if (hasAccess === null || !userData) {
+    if (authLoading || hasAccess === null) {
         return <LoadingState />;
     }
     
