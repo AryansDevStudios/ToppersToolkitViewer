@@ -33,11 +33,10 @@ export function useAuth() {
       if (firebaseUser) {
         setUser(firebaseUser);
         await setSessionCookie(firebaseUser);
-        // Fetch DB user data in the background
-        getUserById(firebaseUser.uid).then(userData => {
-          setDbUser(userData);
-          setRole(userData?.role || 'User');
-        });
+        // Fetch DB user data only if we have a user
+        const userData = await getUserById(firebaseUser.uid);
+        setDbUser(userData);
+        setRole(userData?.role || 'User');
       } else {
         setUser(null);
         setDbUser(null);
