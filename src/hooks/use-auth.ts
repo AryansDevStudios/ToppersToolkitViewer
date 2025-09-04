@@ -4,7 +4,6 @@
 import { useEffect, useState } from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
 import { auth, onAuthStateChanged } from '@/lib/firebase';
-import { getUserById } from '@/lib/data';
 import type { User } from '@/lib/types';
 
 const setSessionCookie = async (user: FirebaseUser | null) => {
@@ -33,10 +32,24 @@ export function useAuth() {
       if (firebaseUser) {
         setUser(firebaseUser);
         await setSessionCookie(firebaseUser);
-        // Fetch DB user data only if we have a user
-        const userData = await getUserById(firebaseUser.uid);
-        setDbUser(userData);
-        setRole(userData?.role || 'User');
+        
+        // Fetch user data from our new API route
+        try {
+            const res = await fetch(`/api/users/${firebaseUser.uid}`);
+            if (res.ok) {
+                const userData: User | null = await res.json();
+                setDbUser(userData);
+                setRole(userData?.role || 'User');
+            } else {
+                setDbUser(null);
+                setRole(null);
+            }
+        } catch (error) {
+            console.error("Failed to fetch user data:", error);
+            setDbUser(null);
+            setRole(null);
+        }
+
       } else {
         setUser(null);
         setDbUser(null);
