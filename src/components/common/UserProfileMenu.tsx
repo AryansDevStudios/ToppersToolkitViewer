@@ -52,9 +52,8 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
   
   const ringClasses = cn("ring-2", {
     "ring-orange-500": role === 'Admin',
-    "ring-yellow-400": role === 'Ethic Learner',
-    "ring-green-500": role !== 'Admin' && role !== 'Ethic Learner' && dbUser?.hasFullNotesAccess,
-    "ring-sky-500": role !== 'Admin' && role !== 'Ethic Learner' && !dbUser?.hasFullNotesAccess,
+    "ring-green-500": role !== 'Admin' && dbUser?.hasFullNotesAccess,
+    "ring-sky-500": role !== 'Admin' && !dbUser?.hasFullNotesAccess,
     "ring-border": !dbUser // Default ring while dbUser is loading
   });
   

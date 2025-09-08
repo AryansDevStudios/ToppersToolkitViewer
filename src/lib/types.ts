@@ -51,7 +51,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "Admin" | "User" | "Student" | "Teacher" | "Ethic Learner";
+  role: "Admin" | "User" | "Student" | "Teacher";
   classAndSection?: string;
   gender?: "Male" | "Female";
   srNo?: string;

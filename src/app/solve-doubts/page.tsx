@@ -86,8 +86,6 @@ export default function DoubtSolverPage() {
         if (dbUser.role === 'Teacher') {
             const gender = encodeURIComponent(dbUser.gender || 'N/A');
             return `${base}?name=${name}&class=Teacher&theme=${theme}&gender=${gender}`;
-        } else if (dbUser.role === 'Ethic Learner') {
-             return `${base}?name=${name}&class=ethic-learner&theme=${theme}`;
         } else {
             const studentClass = encodeURIComponent(dbUser.classAndSection || 'N/A');
             return `${base}?name=${name}&class=${studentClass}&theme=${theme}`;

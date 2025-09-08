@@ -82,7 +82,7 @@ export function UserForm({ user }: UserFormProps) {
   });
 
   const studentClass = form.watch("class");
-  const isStudentLike = user.role === 'Student' || user.role === 'Ethic Learner';
+  const isStudentLike = user.role === 'Student';
 
   const getSectionOptions = () => {
       if (!studentClass) return [];

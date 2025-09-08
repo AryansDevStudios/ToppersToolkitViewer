@@ -49,10 +49,6 @@ export function ChangeRoleMenuItem({ userId, currentRole }: ChangeRoleMenuItemPr
                     <GraduationCap className="mr-2 h-4 w-4" />
                     Make Student
                 </DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => handleChangeRole('Ethic Learner')} disabled={isPending || currentRole === 'Ethic Learner'}>
-                    <Star className="mr-2 h-4 w-4" />
-                    Make Ethic Learner
-                </DropdownMenuItem>
                  <DropdownMenuItem onClick={() => handleChangeRole('Teacher')} disabled={isPending || currentRole === 'Teacher'}>
                     <UserCheck className="mr-2 h-4 w-4" />
                     Make Teacher
