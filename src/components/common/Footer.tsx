@@ -46,7 +46,7 @@ export function Footer() {
         </div>
         <div className="mt-8 border-t pt-4 text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} Topper's Toolkit Library. Products by Kuldeep Singh.</p>
-          <p>Website built under AryansDevStudios.</p>
+          <p className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent inline-block font-semibold">Website built under AryansDevStudios.</p>
         </div>
       </div>
     </footer>
