@@ -20,6 +20,7 @@ import { getAllQotdAnswers, getUsers } from "@/lib/data";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface QotdAnswersDialogProps {
   question: QuestionOfTheDay;
@@ -30,6 +31,8 @@ interface AnswerDetails {
     userId: string;
     userName: string;
     userEmail: string;
+    userRole: User['role'];
+    hasFullNotesAccess?: boolean;
     selectedOption: string;
     isCorrect: boolean;
 }
@@ -42,6 +45,21 @@ const getInitials = (name: string | null | undefined): string => {
     }
     return names[0].substring(0, 2).toUpperCase();
 };
+
+const UserAvatar = ({ user }: { user: AnswerDetails }) => {
+  const ringClasses = cn("ring-2", {
+    "ring-orange-500": user.userRole === 'Admin',
+    "ring-green-500": user.userRole !== 'Admin' && user.hasFullNotesAccess,
+    "ring-sky-500": user.userRole !== 'Admin' && !user.hasFullNotesAccess,
+  });
+
+  return (
+    <Avatar className={ringClasses}>
+      <AvatarFallback>{getInitials(user.userName)}</AvatarFallback>
+    </Avatar>
+  );
+};
+
 
 export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswersDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -76,6 +94,8 @@ export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswers
                       userId: user.id,
                       userName: user.name,
                       userEmail: user.email,
+                      userRole: user.role,
+                      hasFullNotesAccess: user.hasFullNotesAccess,
                       selectedOption: question.options[answerForThisQuestion.selectedOptionIndex]?.text || 'Invalid Option',
                       isCorrect: answerForThisQuestion.isCorrect,
                     });
@@ -103,7 +123,7 @@ export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswers
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="sm">
+        <Button variant="secondary" size="icon" className="h-9 w-9">
             <Users className="h-4 w-4" />
             <span className="sr-only">View Answers</span>
         </Button>
@@ -124,9 +144,7 @@ export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswers
                 <ul className="space-y-3">
                     {answers.map((answer) => (
                         <li key={answer.userId} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
-                            <Avatar>
-                                <AvatarFallback>{getInitials(answer.userName)}</AvatarFallback>
-                            </Avatar>
+                            <UserAvatar user={answer} />
                             <div className="flex-1">
                                 <p className="font-semibold text-sm">{answer.userName}</p>
                                 <p className="text-xs text-muted-foreground">{answer.selectedOption}</p>
