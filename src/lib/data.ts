@@ -544,28 +544,65 @@ export const getUsers = async (): Promise<User[]> => {
   noStore();
   try {
     const usersCollection = collection(db, 'users');
-    const usersSnapshot = await getDocs(usersCollection);
-    return usersSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as User[];
+    const leaderboardCollection = collection(db, 'leaderboard');
+    
+    const [usersSnapshot, leaderboardSnapshot] = await Promise.all([
+        getDocs(usersCollection),
+        getDocs(leaderboardCollection)
+    ]);
+    
+    const leaderboardData = new Map(
+      leaderboardSnapshot.docs.map(doc => [doc.id, doc.data() as { score: number; showOnLeaderboard: boolean }])
+    );
+
+    return usersSnapshot.docs.map(doc => {
+      const userData = doc.data() as Omit<User, 'id'>;
+      const userLeaderboard = leaderboardData.get(doc.id);
+      return {
+        id: doc.id,
+        ...userData,
+        score: userLeaderboard?.score || 0,
+        showOnLeaderboard: userLeaderboard?.showOnLeaderboard,
+      };
+    }) as User[];
   } catch (error) {
+    console.error("Error fetching users and leaderboard data:", error);
     return [];
   }
 };
 
 export const upsertUser = async (userData: Partial<User> & { id: string }) => {
-    const { id, ...dataToUpdate } = userData;
+    const { id, score, showOnLeaderboard, ...profileData } = userData;
     if (!id) {
         return { success: false, error: "User ID is required for updates." };
     }
 
     const userDocRef = doc(db, 'users', id);
+    const leaderboardDocRef = doc(db, 'leaderboard', id);
+
     try {
-        // Ensure password is not part of the update from this function
-        const { password, ...restOfData } = dataToUpdate;
-        await setDoc(userDocRef, restOfData, { merge: true });
+        const batch = writeBatch(db);
+
+        // Update profile data in 'users' collection if there is any
+        if (Object.keys(profileData).length > 0) {
+           batch.set(userDocRef, profileData, { merge: true });
+        }
+
+        // Update score and visibility in 'leaderboard' collection
+        const leaderboardUpdate: { score?: number; showOnLeaderboard?: boolean } = {};
+        if (score !== undefined) leaderboardUpdate.score = score;
+        if (showOnLeaderboard !== undefined) leaderboardUpdate.showOnLeaderboard = showOnLeaderboard;
+
+        if (Object.keys(leaderboardUpdate).length > 0) {
+            batch.set(leaderboardDocRef, leaderboardUpdate, { merge: true });
+        }
+        
+        await batch.commit();
+
         revalidatePath('/admin/users');
+        revalidatePath('/admin/leaderboard');
+        revalidatePath('/leaderboard');
+
         return { success: true, message: "User updated successfully." };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -771,22 +808,20 @@ export async function getAllQotdAnswers(): Promise<{ userId: string, answers: Us
 
 export async function submitUserAnswer(userId: string, questionId: string, selectedOptionIndex: number) {
   noStore();
-  const userDocRef = doc(db, 'users', userId);
   const qotdDocRef = doc(db, 'qotd', questionId);
   const answerDocRef = doc(db, 'qotd_answers', userId);
+  const leaderboardDocRef = doc(db, 'leaderboard', userId);
 
   try {
     return await runTransaction(db, async (transaction) => {
-      const [userDoc, qotdDoc, answerDoc] = await Promise.all([
-        transaction.get(userDocRef),
+      const [qotdDoc, answerDoc, leaderboardDoc] = await Promise.all([
         transaction.get(qotdDocRef),
-        transaction.get(answerDocRef)
+        transaction.get(answerDocRef),
+        transaction.get(leaderboardDocRef)
       ]);
 
-      if (!userDoc.exists()) throw new Error("User not found.");
       if (!qotdDoc.exists()) throw new Error("Question not found.");
       
-      const userData = userDoc.data() as User;
       const qotdData = qotdDoc.data() as QuestionOfTheDay;
 
       // Check if this question has already been answered by the user
@@ -816,8 +851,9 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
       
       // Update the user's score if correct
       if (isCorrect) {
-          const newScore = (userData.score || 0) + 10;
-          transaction.update(userDocRef, { score: newScore });
+          const currentScore = leaderboardDoc.exists() ? (leaderboardDoc.data().score || 0) : 0;
+          const newScore = currentScore + 10;
+          transaction.set(leaderboardDocRef, { score: newScore }, { merge: true });
       }
 
       return { success: true, isCorrect, correctOptionIndex: qotdData.correctOptionIndex };
@@ -826,4 +862,3 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return { success: false, error: e.message };
   }
 }
-
