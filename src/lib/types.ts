@@ -29,7 +29,7 @@ export interface Note {
 }
 
 export interface Chapter {
-  id: string;
+  id:string;
   name: string;
   notes: Note[];
 }
@@ -64,4 +64,5 @@ export interface User {
   hasAiAccess?: boolean;
   hasFullNotesAccess?: boolean;
   score?: number;
+  showOnLeaderboard?: boolean;
 }

@@ -65,7 +65,7 @@ const TopPlayerCard = ({ user, rank }: { user: User; rank: number }) => {
 
 export default async function LeaderboardPage() {
   const allUsers = await getUsers();
-  const users = allUsers.filter(user => user.role !== 'Teacher');
+  const users = allUsers.filter(user => user.role !== 'Teacher' && user.showOnLeaderboard !== false);
   const sortedUsers = users.sort((a, b) => (b.score || 0) - (a.score || 0));
   const topThree = sortedUsers.slice(0, 3);
   const restOfUsers = sortedUsers.slice(3);
