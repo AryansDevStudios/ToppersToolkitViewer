@@ -691,9 +691,14 @@ export async function getQuestionOfTheDay(date: string): Promise<QuestionOfTheDa
   const qotdSnapshot = await getDocs(q);
 
   if (qotdSnapshot.empty) {
-    // If no question for today, get the most recent one
-    const recentQuery = query(qotdCollection, orderBy('date', 'desc'), limit(1));
-    const recentSnapshot = await getDocs(recentQuery);
+    // If no question for today, get the most recent past or present one
+    const pastOrPresentQuery = query(
+        qotdCollection,
+        where('date', '<=', date),
+        orderBy('date', 'desc'),
+        limit(1)
+    );
+    const recentSnapshot = await getDocs(pastOrPresentQuery);
     if (recentSnapshot.empty) return null;
     return { id: recentSnapshot.docs[0].id, ...recentSnapshot.docs[0].data() } as QuestionOfTheDay;
   }
@@ -785,3 +790,4 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return { success: false, error: e.message };
   }
 }
+
