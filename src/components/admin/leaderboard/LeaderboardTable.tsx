@@ -14,11 +14,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, EyeOff } from "lucide-react";
+import { Loader2, EyeOff, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/lib/types";
 import { upsertUser } from "@/lib/data";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 
 interface LeaderboardTableProps {
@@ -112,23 +111,29 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
           </TableHeader>
           <TableBody>
             {userList.length > 0 ? (
-              userList.map((user, index) => (
-                <TableRow key={user.id} className={user.showOnLeaderboard === false ? "bg-muted/30" : ""}>
+              userList.map((user, index) => {
+                const isVisible = user.showOnLeaderboard !== false;
+                return (
+                <TableRow key={user.id} className={!isVisible ? "bg-muted/30" : ""}>
                  {isVisibleList && <TableCell className="font-bold text-lg text-center">{index + 1}</TableCell>}
                   <TableCell>
                     <div className="font-medium">{user.name || 'N/A'}</div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Switch
-                        checked={user.showOnLeaderboard !== false}
-                        onCheckedChange={(checked) => handleVisibilityChange(user.id, checked)}
-                        disabled={isPending}
-                        aria-label="Toggle user visibility on leaderboard"
-                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleVisibilityChange(user.id, !isVisible)}
+                      disabled={isPending}
+                      aria-label={isVisible ? "Hide user from leaderboard" : "Show user on leaderboard"}
+                      className="h-8 w-8"
+                    >
+                      {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+                    </Button>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end items-center gap-2">
-                        {user.showOnLeaderboard === false && (
+                        {!isVisible && (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />
                         )}
                         <Input
@@ -141,7 +146,7 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
+              )})
             ) : (
               <TableRow>
                 <TableCell colSpan={4} className="h-24 text-center">
