@@ -34,9 +34,8 @@ export function useAuth() {
         setUser(firebaseUser);
         await setSessionCookie(firebaseUser);
         
-        // Fetch user data from our new API route
+        // No longer using API route, directly use server action
         try {
-            // No longer using API route, directly use server action
             const userData = await getUserById(firebaseUser.uid);
             if (userData) {
                 setDbUser(userData);
