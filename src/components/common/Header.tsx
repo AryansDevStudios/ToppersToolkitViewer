@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, Sun, Moon, UserCog, Sparkles } from "lucide-react";
+import { LogIn, Sun, Moon, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -56,8 +56,8 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="flex-none">
-          <Link href="/" className="mr-4 flex items-center space-x-2">
+        <div className="mr-4 flex items-center">
+          <Link href="/" className="flex items-center space-x-2">
             <Image src="https://topperstoolkit.netlify.app/icon/icon_main.png" alt="Topper's Toolkit Library Logo" width={32} height={32} />
             <span className="font-bold hidden sm:inline-block text-base sm:text-lg">
               Topper's Toolkit Library
@@ -78,11 +78,13 @@ export function AppHeader() {
               </Button>
             )}
          
-          <ThemeToggle />
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
 
-          <div className="hidden md:block">
+          <div>
             {loading ? (
-              <Skeleton className="h-10 w-24 rounded-md" />
+              <Skeleton className="h-10 w-10 rounded-full" />
             ) : user ? (
               <UserProfileMenu />
             ) : (
@@ -94,15 +96,6 @@ export function AppHeader() {
               </Button>
             )}
           </div>
-          
-           {mounted && user && role === 'Admin' && (
-             <Button variant="ghost" size="icon" asChild className="md:hidden">
-               <Link href="/admin">
-                 <UserCog className="h-5 w-5" />
-                 <span className="sr-only">Admin</span>
-               </Link>
-             </Button>
-           )}
         </div>
       </div>
     </header>
