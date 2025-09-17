@@ -16,6 +16,7 @@ import { useState, useEffect } from "react";
 import { Skeleton } from "../ui/skeleton";
 import Image from "next/image";
 import { UserProfileMenu } from "./UserProfileMenu";
+import { GlobalSearch } from "./GlobalSearch";
 
 function ThemeToggle() {
   const { setTheme } = useTheme();
@@ -62,23 +63,11 @@ export function AppHeader() {
           </span>
         </Link>
         
-        <nav className="hidden md:flex items-center space-x-1">
-          <Button variant="ghost" asChild>
-            <Link href="/">Home</Link>
-          </Button>
-          <Button variant="ghost" asChild>
-            <Link href="/browse">Browse Notes</Link>
-          </Button>
-           <Button variant="ghost" asChild>
-            <Link href="/solve-doubts" className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-orange-400" />
-              AI Help
-            </Link>
-          </Button>
-          <Button variant="ghost" asChild>
-            <a href="https://topperstoolkit.netlify.app">Shop</a>
-          </Button>
-        </nav>
+        <div className="flex-1 justify-start items-center hidden md:flex">
+          <div className="w-full max-w-sm">
+             <GlobalSearch />
+          </div>
+        </div>
         
         <div className="flex flex-1 items-center justify-end space-x-2">
            {mounted && user && role === 'Admin' && (
@@ -114,6 +103,9 @@ export function AppHeader() {
            )}
         </div>
       </div>
+       <div className="md:hidden p-2 border-t">
+          <GlobalSearch />
+        </div>
     </header>
   );
 }
