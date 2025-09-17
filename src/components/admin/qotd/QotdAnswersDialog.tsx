@@ -24,7 +24,8 @@ import { cn } from "@/lib/utils";
 
 interface QotdAnswersDialogProps {
   question: QuestionOfTheDay;
-  users: User[]; // This can be a pre-filtered list, but we'll fetch all for safety
+  users: User[];
+  answerCount: number;
 }
 
 interface AnswerDetails {
@@ -61,7 +62,7 @@ const UserAvatar = ({ user }: { user: AnswerDetails }) => {
 };
 
 
-export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswersDialogProps) {
+export function QotdAnswersDialog({ question, users: initialUsers, answerCount }: QotdAnswersDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [answers, setAnswers] = useState<AnswerDetails[]>([]);
@@ -72,7 +73,6 @@ export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswers
       const fetchAnswers = async () => {
         setIsLoading(true);
         try {
-          // Fetch both all answers and all users to ensure we have complete data
           const [allUserAnswers, allUsers] = await Promise.all([
              getAllQotdAnswers(),
              getUsers()
@@ -84,7 +84,6 @@ export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswers
           const userMap = new Map(allUsers.map(u => [u.id, u]));
 
           allUserAnswers.forEach(userAnswerDoc => {
-            // Defensive check to ensure .answers exists and is an array
             if (userAnswerDoc && Array.isArray(userAnswerDoc.answers)) {
                 const answerForThisQuestion = userAnswerDoc.answers.find(a => a.questionId === question.id);
                 if (answerForThisQuestion) {
@@ -123,9 +122,14 @@ export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswers
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="icon" className="h-9 w-9">
+        <Button variant="secondary" size="icon" className="h-9 w-9 relative">
             <Users className="h-4 w-4" />
             <span className="sr-only">View Answers</span>
+            {answerCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                    {answerCount}
+                </span>
+            )}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">

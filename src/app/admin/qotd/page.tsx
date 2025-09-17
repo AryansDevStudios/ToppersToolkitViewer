@@ -1,6 +1,6 @@
 
 
-import { getQuestionsOfTheDay, getUsers } from "@/lib/data";
+import { getQuestionsOfTheDay, getUsers, getAllQotdAnswers } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, HelpCircle, Edit } from "lucide-react";
@@ -9,13 +9,26 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { DeleteQotdDialog } from "@/components/admin/qotd/DeleteQotdDialog";
 import { QotdAnswersDialog } from "@/components/admin/qotd/QotdAnswersDialog";
-import type { User } from "@/lib/types";
+import type { User, UserQotdAnswer } from "@/lib/types";
 
 export const revalidate = 0;
 
 export default async function AdminQotdPage() {
-  const questions = await getQuestionsOfTheDay();
-  const users: User[] = await getUsers();
+  const [questions, users, allAnswers] = await Promise.all([
+    getQuestionsOfTheDay(),
+    getUsers(),
+    getAllQotdAnswers()
+  ]);
+
+  const answerCounts = allAnswers.reduce((acc, userAnswerDoc) => {
+    if (userAnswerDoc && Array.isArray(userAnswerDoc.answers)) {
+      userAnswerDoc.answers.forEach(answer => {
+        acc[answer.questionId] = (acc[answer.questionId] || 0) + 1;
+      });
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
 
   return (
     <div className="space-y-8">
@@ -69,7 +82,7 @@ export default async function AdminQotdPage() {
                       </ul>
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2 bg-muted/30 p-3">
-                      <QotdAnswersDialog question={q} users={users} />
+                      <QotdAnswersDialog question={q} users={users} answerCount={answerCounts[q.id] || 0} />
                       <QotdForm question={q}>
                         <Button variant="outline" size="sm">
                             <Edit className="mr-2 h-4 w-4" /> Edit
@@ -85,4 +98,3 @@ export default async function AdminQotdPage() {
     </div>
   );
 }
-
