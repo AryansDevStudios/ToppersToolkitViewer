@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { getApp } from "firebase-admin/app";
 import { getAuth as getAdminAuth } from "firebase-admin/auth";
 import { format, parseISO } from "date-fns";
-import { utcToZonedTime } from 'date-fns-tz';
+import { toZonedTime } from 'date-fns-tz';
 import type { QuestionOfTheDay } from "@/lib/types";
 
 async function getCurrentUser() {
@@ -45,7 +45,7 @@ export default async function PuzzleAndQuizPage() {
 
   const timeZone = 'Asia/Kolkata';
   const now = new Date();
-  const zonedNow = utcToZonedTime(now, timeZone);
+  const zonedNow = toZonedTime(now, timeZone);
   
   // By converting the question's UTC date string to a Date object,
   // it correctly represents the start of that day in UTC.
