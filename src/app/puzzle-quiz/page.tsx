@@ -4,10 +4,11 @@ import { Puzzle } from 'lucide-react';
 import { QuestionOfTheDaySection } from "@/components/home/QuestionOfTheDaySection";
 import { getQuestionsOfTheDay } from "@/lib/data";
 import { getUserById } from "@/lib/data";
-import { auth } from "@/lib/firebase";
 import { cookies } from "next/headers";
 import { getApp } from "firebase-admin/app";
 import { getAuth as getAdminAuth } from "firebase-admin/auth";
+import { format, parseISO } from "date-fns";
+import type { QuestionOfTheDay } from "@/lib/types";
 
 async function getCurrentUser() {
   const sessionCookie = cookies().get('session')?.value;
@@ -24,6 +25,18 @@ async function getCurrentUser() {
 
 export const revalidate = 0;
 
+const groupQuestionsByDate = (questions: QuestionOfTheDay[]) => {
+    return questions.reduce((acc, question) => {
+        const dateStr = format(parseISO(question.date), 'PPP');
+        if (!acc[dateStr]) {
+            acc[dateStr] = [];
+        }
+        acc[dateStr].push(question);
+        return acc;
+    }, {} as Record<string, QuestionOfTheDay[]>);
+};
+
+
 export default async function PuzzleAndQuizPage() {
   const allQuestions = await getQuestionsOfTheDay();
   const currentUser = await getCurrentUser();
@@ -32,6 +45,8 @@ export default async function PuzzleAndQuizPage() {
   today.setHours(23, 59, 59, 999); // Set to end of today
 
   const pastAndPresentQuestions = allQuestions.filter(q => new Date(q.date) <= today);
+  const groupedQuestions = groupQuestionsByDate(pastAndPresentQuestions);
+  const sortedDates = Object.keys(groupedQuestions).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -46,17 +61,22 @@ export default async function PuzzleAndQuizPage() {
           Challenge yourself with our daily questions!
         </p>
       </header>
-      <main className="max-w-4xl mx-auto space-y-8">
+      <main className="max-w-4xl mx-auto space-y-12">
         <Suspense fallback={
             <div className="h-64 w-full bg-muted rounded-lg animate-pulse" />
         }>
             {pastAndPresentQuestions.length > 0 ? (
-                pastAndPresentQuestions.map(question => (
-                    <QuestionOfTheDaySection 
-                        key={question.id}
-                        initialQuestion={question}
-                        initialUser={currentUser}
-                    />
+                sortedDates.map(date => (
+                    <section key={date} className="space-y-6">
+                        <h2 className="text-2xl font-bold border-b pb-2">{date}</h2>
+                        {groupedQuestions[date].map(question => (
+                           <QuestionOfTheDaySection 
+                                key={question.id}
+                                initialQuestion={question}
+                                initialUser={currentUser}
+                            />
+                        ))}
+                    </section>
                 ))
             ) : (
                  <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">

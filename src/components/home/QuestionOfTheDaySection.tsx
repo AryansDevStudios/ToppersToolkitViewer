@@ -88,12 +88,9 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
     return (
       <>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="flex items-center gap-2">
-              <HelpCircle className="text-primary" /> Question for {format(parseISO(initialQuestion.date), 'PPP')}
-            </CardTitle>
-          </div>
-          <CardDescription>{initialQuestion.question}</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-xl">
+             {initialQuestion.question}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {initialQuestion.options.map((option) => {
