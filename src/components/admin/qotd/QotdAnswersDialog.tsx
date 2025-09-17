@@ -89,7 +89,8 @@ export function QotdAnswersDialog({ question, users }: QotdAnswersDialogProps) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary" size="sm">
-            <Users className="mr-2 h-4 w-4" /> View Answers
+            <Users className="h-4 w-4" />
+            <span className="sr-only">View Answers</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
