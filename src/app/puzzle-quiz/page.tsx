@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { getApp } from "firebase-admin/app";
 import { getAuth as getAdminAuth } from "firebase-admin/auth";
 import { format, parseISO } from "date-fns";
+import { utcToZonedTime } from 'date-fns-tz';
 import type { QuestionOfTheDay } from "@/lib/types";
 
 async function getCurrentUser() {
@@ -27,6 +28,7 @@ export const revalidate = 0;
 
 const groupQuestionsByDate = (questions: QuestionOfTheDay[]) => {
     return questions.reduce((acc, question) => {
+        // We need to parse the date as if it's UTC and then format it.
         const dateStr = format(parseISO(question.date), 'PPP');
         if (!acc[dateStr]) {
             acc[dateStr] = [];
@@ -41,10 +43,19 @@ export default async function PuzzleAndQuizPage() {
   const allQuestions = await getQuestionsOfTheDay();
   const currentUser = await getCurrentUser();
 
-  const today = new Date();
-  today.setHours(23, 59, 59, 999); // Set to end of today
+  const timeZone = 'Asia/Kolkata';
+  const now = new Date();
+  const zonedNow = utcToZonedTime(now, timeZone);
+  
+  // By converting the question's UTC date string to a Date object,
+  // it correctly represents the start of that day in UTC.
+  // We can then compare it to the current zoned time.
+  const pastAndPresentQuestions = allQuestions.filter(q => {
+      // parseISO treats 'YYYY-MM-DD' as UTC midnight
+      const questionDate = parseISO(q.date);
+      return questionDate <= zonedNow;
+  });
 
-  const pastAndPresentQuestions = allQuestions.filter(q => new Date(q.date) <= today);
   const groupedQuestions = groupQuestionsByDate(pastAndPresentQuestions);
   const sortedDates = Object.keys(groupedQuestions).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
