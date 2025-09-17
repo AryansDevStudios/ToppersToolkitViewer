@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getAllNotes } from '@/lib/data';
@@ -46,6 +46,7 @@ export function GlobalSearch() {
       if (!isOpen) setIsOpen(true);
     } else {
       setResults([]);
+      if (isOpen) setIsOpen(false);
     }
   }, [query, allNotes, isOpen]);
   
@@ -55,17 +56,28 @@ export function GlobalSearch() {
     inputRef.current?.blur();
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      inputRef.current?.blur();
+    }
+  }
+
+  const handleInputFocus = () => {
+    if(query.length > 1) {
+      setIsOpen(true);
+    }
+  }
+
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild className="w-full">
          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               ref={inputRef}
               value={query}
-              onFocus={() => {
-                if (query.length > 1) setIsOpen(true);
-              }}
+              onFocus={handleInputFocus}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search notes by title, chapter, subject..."
               className="w-full pl-10"
@@ -74,7 +86,11 @@ export function GlobalSearch() {
             {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent 
+        className="w-[var(--radix-popover-trigger-width)] p-0" 
+        align="start"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         {results.length > 0 ? (
           <div className="py-2">
              <p className="text-xs font-semibold px-3 py-1 text-muted-foreground">Top Results</p>
@@ -98,4 +114,3 @@ export function GlobalSearch() {
     </Popover>
   );
 }
-
