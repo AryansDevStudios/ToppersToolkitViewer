@@ -66,20 +66,23 @@ export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswers
           const userMap = new Map(allUsers.map(u => [u.id, u]));
 
           allUserAnswers.forEach(userAnswerDoc => {
-            const answerForThisQuestion = userAnswerDoc.answers.find(a => a.questionId === question.id);
-            if (answerForThisQuestion) {
-              const user = userMap.get(userAnswerDoc.userId);
-              if (user) {
-                relevantAnswers.push({
-                  userId: user.id,
-                  userName: user.name,
-                  userEmail: user.email,
-                  selectedOption: question.options[answerForThisQuestion.selectedOptionIndex]?.text || 'Invalid Option',
-                  isCorrect: answerForThisQuestion.isCorrect,
-                });
-              } else {
-                 console.warn("QOTD Dialog: Could not find user with ID:", userAnswerDoc.userId);
-              }
+            // Defensive check to ensure .answers exists and is an array
+            if (userAnswerDoc && Array.isArray(userAnswerDoc.answers)) {
+                const answerForThisQuestion = userAnswerDoc.answers.find(a => a.questionId === question.id);
+                if (answerForThisQuestion) {
+                  const user = userMap.get(userAnswerDoc.userId);
+                  if (user) {
+                    relevantAnswers.push({
+                      userId: user.id,
+                      userName: user.name,
+                      userEmail: user.email,
+                      selectedOption: question.options[answerForThisQuestion.selectedOptionIndex]?.text || 'Invalid Option',
+                      isCorrect: answerForThisQuestion.isCorrect,
+                    });
+                  } else {
+                     console.warn("QOTD Dialog: Could not find user with ID:", userAnswerDoc.userId);
+                  }
+                }
             }
           });
           
