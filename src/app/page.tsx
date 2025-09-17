@@ -78,7 +78,7 @@ export default function Home() {
         <section className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-card to-background">
           <div className="container px-4 text-center">
             <h1 className="text-4xl md:text-6xl font-black font-headline tracking-tighter bg-gradient-to-r from-fuchsia-500 to-cyan-500 bg-clip-text text-transparent inline-block">
-              Welcome to Topper's Toolkit Library
+              Topper's Toolkit
             </h1>
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-4">
               High-quality, chapter-wise notes designed for academic excellence. Dive into any subject and start your journey to becoming a topper.
