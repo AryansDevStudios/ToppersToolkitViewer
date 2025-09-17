@@ -2,7 +2,7 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit } from "firebase/firestore";
@@ -915,4 +915,49 @@ export async function deleteNotice(id: string) {
   } catch (e: any) {
     return { success: false, error: e.message };
   }
+}
+
+// --- Doubt Box Management ---
+
+export async function createDoubt(userId: string, userName: string, userClassAndSection: string | undefined, question: string): Promise<{ success: boolean, error?: string }> {
+    if (!userId || !question) {
+        return { success: false, error: "User ID and question are required." };
+    }
+    const doubtId = uuidv4();
+    const doubtDocRef = doc(db, "doubts", doubtId);
+
+    const newDoubt: Doubt = {
+        id: doubtId,
+        userId,
+        userName,
+        userClassAndSection,
+        question,
+        status: 'pending',
+        createdAt: Date.now(),
+    };
+
+    try {
+        await setDoc(doubtDocRef, newDoubt);
+        revalidatePath('/doubt-box');
+        // We will also need to revalidate the admin page for doubts later
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function getUserDoubts(userId: string): Promise<Doubt[]> {
+    noStore();
+    if (!userId) return [];
+    
+    const doubtsCollection = collection(db, 'doubts');
+    const q = query(doubtsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => doc.data() as Doubt);
+    } catch (error) {
+        console.error("Error fetching user doubts:", error);
+        return [];
+    }
 }

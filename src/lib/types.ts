@@ -94,4 +94,17 @@ export interface Notice {
   content: string;
   createdAt: number;
 }
+
+export interface Doubt {
+    id: string;
+    userId: string;
+    userName: string;
+    userClassAndSection?: string;
+    question: string;
+    answer?: string;
+    status: 'pending' | 'answered';
+    createdAt: number;
+    answeredAt?: number;
+    answeredBy?: string; // Admin's name
+}
     
