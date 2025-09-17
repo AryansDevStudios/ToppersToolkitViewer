@@ -83,18 +83,6 @@ export default function Home() {
             <p className="max-w-2xl mx-auto text-xl text-muted-foreground mt-4 italic">
              "Study Smarter, Score Higher" <br /> -Kuldeep
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild size="lg">
-                <Link href="#subjects">
-                  Browse Subjects <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/browse">
-                  See Latest Notes
-                </Link>
-              </Button>
-            </div>
              <div className="mt-8 max-w-3xl mx-auto text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg flex items-start gap-3">
               <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <span>This website is for viewing purchased digital study materials. All notes (PDFs) are accessible exclusively through your Library account after purchase from our <a href="https://topperstoolkit.netlify.app" className="text-primary font-semibold hover:underline">Shop</a> website.</span>
