@@ -88,4 +88,10 @@ export interface User {
   showOnLeaderboard?: boolean;
 }
 
+export interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: number;
+}
     

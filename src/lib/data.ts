@@ -2,7 +2,7 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit } from "firebase/firestore";
@@ -870,5 +870,49 @@ export async function deleteUserQotdAnswer(userId: string, questionId: string) {
   } catch (e: any) {
     console.error("Error deleting user QOTD answer:", e);
     return { success: false, error: e.message || "An unknown error occurred while deleting the answer." };
+  }
+}
+
+
+// --- Notices Management ---
+
+export async function getNotices(): Promise<Notice[]> {
+  noStore();
+  const noticesCollection = collection(db, 'notices');
+  const noticesSnapshot = await getDocs(query(noticesCollection, orderBy('createdAt', 'desc')));
+  return noticesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notice));
+}
+
+export async function upsertNotice(noticeData: Omit<Notice, 'id' | 'createdAt'> & { id?: string }) {
+  const { id, ...data } = noticeData;
+  const isNew = !id;
+  const docId = isNew ? uuidv4() : id;
+  const noticeDocRef = doc(db, 'notices', docId);
+
+  try {
+    if (isNew) {
+      const docWithMeta = { ...data, id: docId, createdAt: Date.now() };
+      await setDoc(noticeDocRef, docWithMeta);
+    } else {
+      await updateDoc(noticeDocRef, data);
+    }
+    revalidatePath('/admin/notices');
+    revalidatePath('/notices');
+    return { success: true, message: `Notice successfully ${isNew ? 'created' : 'updated'}.` };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function deleteNotice(id: string) {
+  if (!id) return { success: false, error: "Notice ID is required." };
+  const noticeDocRef = doc(db, 'notices', id);
+  try {
+    await deleteDoc(noticeDocRef);
+    revalidatePath('/admin/notices');
+    revalidatePath('/notices');
+    return { success: true, message: "Notice deleted successfully." };
+  } catch (e: any) {
+    return { success: false, error: e.message };
   }
 }

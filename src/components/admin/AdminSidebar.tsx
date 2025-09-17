@@ -10,6 +10,7 @@ import {
   Library,
   Trophy,
   HelpCircle,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/admin/users", icon: Users, label: "Users" },
   { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
   { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
+  { href: "/admin/notices", icon: ClipboardList, label: "Notices" },
 ];
 
 export function AdminSidebar() {

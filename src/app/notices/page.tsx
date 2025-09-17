@@ -1,8 +1,14 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ClipboardList } from 'lucide-react';
+import { getNotices } from '@/lib/data';
+import { format } from 'date-fns';
 
-export default function NoticesPage() {
+export const revalidate = 0;
+
+export default async function NoticesPage() {
+  const notices = await getNotices();
+
   return (
     <div className="container mx-auto px-4 py-12">
       <header className="text-center mb-12">
@@ -16,17 +22,35 @@ export default function NoticesPage() {
           Stay updated with the latest announcements.
         </p>
       </header>
-      <main>
-        <Card>
-          <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              The notice board is under development. Important updates will be posted here soon.
-            </p>
-          </CardContent>
-        </Card>
+      <main className="max-w-3xl mx-auto">
+        {notices.length > 0 ? (
+          <div className="space-y-8">
+            {notices.map((notice) => (
+              <Card key={notice.id} className="shadow-md">
+                <CardHeader>
+                  <CardTitle className="text-2xl">{notice.title}</CardTitle>
+                  <CardDescription>
+                    Posted on: {format(new Date(notice.createdAt), 'PPP')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-card-foreground whitespace-pre-wrap">{notice.content}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>No Notices Yet</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-center py-8">
+                There are no announcements right now. Please check back later.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );
