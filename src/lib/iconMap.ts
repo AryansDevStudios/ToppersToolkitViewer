@@ -1,5 +1,4 @@
-
-import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book, Library, Folder, FileText, Calculator, PenSquare, Code, Palette, Music, BrainCircuit, Swords, Puzzle, ClipboardList, MessageSquare, Users, Bot, Send, FileQuestion, BookCheck } from "lucide-react";
+import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book, Library, Folder, FileText, Calculator, PenSquare, Code, Palette, Music, BrainCircuit, Swords, Puzzle, ClipboardList, MessageSquare, Users, Bot, Send, FileQuestion, BookCheck, Menu, Gavel, Gift, HelpCircle, History, LogOut } from "lucide-react";
 
 export const iconMap: { [key: string]: React.FC<any> } = {
   FlaskConical,
@@ -29,6 +28,12 @@ export const iconMap: { [key: string]: React.FC<any> } = {
   Send,
   FileQuestion,
   BookCheck,
+  Menu,
+  Gavel,
+  Gift,
+  HelpCircle,
+  History,
+  LogOut,
 };
 
 export const iconNames = Object.keys(iconMap).sort();
