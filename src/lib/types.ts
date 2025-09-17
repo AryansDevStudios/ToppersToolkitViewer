@@ -1,4 +1,5 @@
 
+
 export interface LoginLog {
   timestamp: number;
   ipAddress?: string; // Note: Capturing IP on server is more reliable
@@ -62,4 +63,5 @@ export interface User {
   createdAt?: number;
   hasAiAccess?: boolean;
   hasFullNotesAccess?: boolean;
+  score?: number;
 }
