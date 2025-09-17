@@ -105,8 +105,7 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
             <TableRow>
               {isVisibleList && <TableHead className="w-[80px]">Rank</TableHead>}
               <TableHead>User</TableHead>
-              <TableHead className="w-[100px] text-center">Visible</TableHead>
-              <TableHead className="w-[150px] text-right">Score</TableHead>
+              <TableHead className="w-[200px] text-right">Score</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -119,32 +118,32 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
                   <TableCell>
                     <div className="font-medium">{user.name || 'N/A'}</div>
                   </TableCell>
-                  <TableCell className="text-center">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleVisibilityChange(user.id, !isVisible)}
-                      disabled={isPending}
-                      aria-label={isVisible ? "Hide user from leaderboard" : "Show user on leaderboard"}
-                      className="h-8 w-8"
-                    >
-                      {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-                    </Button>
-                  </TableCell>
                   <TableCell className="text-right">
-                    <Input
-                        type="number"
-                        value={user.score || 0}
-                        onChange={(e) => handleScoreChange(user.id, e.target.value)}
-                        className="w-24 text-right inline-flex"
-                        disabled={isPending}
-                    />
+                    <div className="flex items-center justify-end gap-2">
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handleVisibilityChange(user.id, !isVisible)}
+                            disabled={isPending}
+                            aria-label={isVisible ? "Hide user from leaderboard" : "Show user on leaderboard"}
+                            className="h-8 w-8"
+                            >
+                            {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+                        </Button>
+                        <Input
+                            type="number"
+                            value={user.score || 0}
+                            onChange={(e) => handleScoreChange(user.id, e.target.value)}
+                            className="w-24 text-right"
+                            disabled={isPending}
+                        />
+                    </div>
                   </TableCell>
                 </TableRow>
               )})
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
+                <TableCell colSpan={3} className="h-24 text-center">
                   No users in this list.
                 </TableCell>
               </TableRow>
