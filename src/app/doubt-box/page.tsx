@@ -35,7 +35,7 @@ export default function DoubtBoxPage() {
 
         async function fetchDoubts() {
             setIsLoadingDoubts(true);
-            const userDoubts = await getUserDoubts(user.uid);
+            const userDoubts = await getUserDoubts(user!.uid);
             setDoubts(userDoubts);
             setIsLoadingDoubts(false);
         }
@@ -61,7 +61,7 @@ export default function DoubtBoxPage() {
         });
     };
 
-    if (authLoading || isLoadingDoubts) {
+    if (authLoading || (!user && !authLoading)) {
         return (
             <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -125,39 +125,50 @@ export default function DoubtBoxPage() {
                             <CardTitle>Your Past Questions</CardTitle>
                         </CardHeader>
                         <CardContent className="h-[50vh]">
-                            <ScrollArea className="h-full pr-4">
-                                {doubts.length > 0 ? (
-                                    <div className="space-y-6">
-                                        {doubts.map(doubt => {
-                                             const zonedDate = toZonedTime(new Date(doubt.createdAt), timeZone);
-                                             return (
-                                                <div key={doubt.id} className="border-l-4 pl-4 py-2" style={{borderColor: doubt.status === 'answered' ? 'hsl(var(--primary))' : 'hsl(var(--border))'}}>
-                                                    <div className="flex justify-between items-center mb-2">
-                                                        <p className="text-sm text-muted-foreground">{format(zonedDate, "PPP p")}</p>
-                                                        <Badge variant={doubt.status === 'answered' ? 'default' : 'secondary'}>
-                                                            {doubt.status}
-                                                        </Badge>
-                                                    </div>
-                                                    <p className="font-semibold text-card-foreground mb-3">{doubt.question}</p>
-                                                    
-                                                    {doubt.status === 'answered' && (
-                                                        <div className="bg-muted p-3 rounded-md mt-2">
-                                                            <p className="text-sm font-semibold text-primary">Admin's Reply:</p>
-                                                            <p className="text-sm text-foreground whitespace-pre-wrap">{doubt.answer}</p>
+                             {isLoadingDoubts ? (
+                                <div className="flex items-center justify-center h-full">
+                                    <Loader2 className="h-8 w-8 animate-spin" />
+                                </div>
+                             ) : (
+                                <ScrollArea className="h-full pr-4">
+                                    {doubts.length > 0 ? (
+                                        <div className="space-y-6">
+                                            {doubts.map(doubt => {
+                                                 const zonedDate = toZonedTime(new Date(doubt.createdAt), timeZone);
+                                                 return (
+                                                    <div key={doubt.id} className="border-l-4 pl-4 py-2" style={{borderColor: doubt.status === 'answered' ? 'hsl(var(--primary))' : 'hsl(var(--border))'}}>
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <p className="text-sm text-muted-foreground">{format(zonedDate, "PPP p")}</p>
+                                                            <Badge variant={doubt.status === 'answered' ? 'default' : 'secondary'}>
+                                                                {doubt.status}
+                                                            </Badge>
                                                         </div>
-                                                    )}
-                                                </div>
-                                             )
-                                        })}
-                                    </div>
-                                ) : (
-                                     <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
-                                        <MessageSquare className="h-12 w-12 mb-4" />
-                                        <p className="font-semibold">You haven't asked any questions yet.</p>
-                                        <p className="text-sm">Use the form to submit your first doubt.</p>
-                                    </div>
-                                )}
-                            </ScrollArea>
+                                                        <p className="font-semibold text-card-foreground mb-3">{doubt.question}</p>
+                                                        
+                                                        {doubt.status === 'answered' && doubt.answer && (
+                                                            <div className="bg-muted p-3 rounded-md mt-2">
+                                                                <p className="text-sm font-semibold text-primary">Admin's Reply:</p>
+                                                                <p className="text-sm text-foreground whitespace-pre-wrap">{doubt.answer}</p>
+                                                                 {doubt.answeredAt && (
+                                                                    <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
+                                                                        Answered by {doubt.answeredBy} on {format(toZonedTime(new Date(doubt.answeredAt), timeZone), "PPP p")}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                 )
+                                            })}
+                                        </div>
+                                    ) : (
+                                         <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+                                            <MessageSquare className="h-12 w-12 mb-4" />
+                                            <p className="font-semibold">You haven't asked any questions yet.</p>
+                                            <p className="text-sm">Use the form to submit your first doubt.</p>
+                                        </div>
+                                    )}
+                                </ScrollArea>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

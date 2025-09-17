@@ -43,9 +43,11 @@ const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
                     <div className="mt-4 bg-muted p-3 rounded-md border">
                         <p className="text-sm font-semibold text-primary">Reply:</p>
                         <p className="text-sm whitespace-pre-wrap">{doubt.answer}</p>
-                         <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
-                            Answered by {doubt.answeredBy} on {format(toZonedTime(new Date(doubt.answeredAt!), timeZone), "PPP p")}
-                        </p>
+                         {doubt.answeredAt && (
+                             <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
+                                Answered by {doubt.answeredBy} on {format(toZonedTime(new Date(doubt.answeredAt), timeZone), "PPP p")}
+                            </p>
+                        )}
                     </div>
                 )}
             </CardContent>
