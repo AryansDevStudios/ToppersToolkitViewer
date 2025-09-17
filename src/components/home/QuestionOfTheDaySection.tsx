@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, HelpCircle, Check, X, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { submitUserAnswer } from "@/lib/data";
+import { submitUserAnswer, getUserQotdAnswer } from "@/lib/data";
 import type { QuestionOfTheDay, UserQotdAnswer, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -40,15 +40,28 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
   const { user, dbUser: authDbUser, loading: authLoading } = useAuth();
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userAnswer, setUserAnswer] = useState<UserQotdAnswer | null>(null);
+  const [isLoadingAnswer, setIsLoadingAnswer] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
 
   // Use the authenticated user's data if available, otherwise fall back to the initial server-rendered user data
   const dbUser = authDbUser || initialUser;
   
-  const userAnswer = dbUser?.qotdAnswers?.find(
-    (ans) => ans.questionId === initialQuestion.id
-  );
+  useEffect(() => {
+    async function fetchUserAnswer() {
+      if (!user) {
+        setIsLoadingAnswer(false);
+        return;
+      }
+      setIsLoadingAnswer(true);
+      const answer = await getUserQotdAnswer(user.uid, initialQuestion.id);
+      setUserAnswer(answer);
+      setIsLoadingAnswer(false);
+    }
+    fetchUserAnswer();
+  }, [user, initialQuestion.id]);
+
 
   const handleSubmit = async () => {
     if (!user || !initialQuestion || selectedOptionIndex === null) return;
@@ -69,7 +82,9 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
           : "Better luck next time!",
         variant: result.isCorrect ? "default" : "destructive",
       });
-      // Refresh router to get updated user data (dbUser)
+      // Fetch the new answer to update the UI
+      const newAnswer = await getUserQotdAnswer(user.uid, initialQuestion.id);
+      setUserAnswer(newAnswer);
       router.refresh();
     } else {
       toast({
@@ -137,13 +152,19 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
     );
   };
 
-  return (
-    <Card>
-        {authLoading && !dbUser ? (
+  if (authLoading || isLoadingAnswer) {
+      return (
+        <Card>
             <div className="flex items-center justify-center h-48">
                 <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-        ) : user ? (
+        </Card>
+      );
+  }
+
+  return (
+    <Card>
+        {user ? (
             renderContent()
         ) : (
             <div className="text-center text-muted-foreground h-48 flex flex-col justify-center items-center">
@@ -155,3 +176,5 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
     </Card>
   );
 }
+
+    

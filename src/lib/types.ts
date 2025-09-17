@@ -62,6 +62,7 @@ export interface QuestionOfTheDay {
 }
 
 export interface UserQotdAnswer {
+  userId: string;
   questionId: string;
   selectedOptionIndex: number;
   isCorrect: boolean;
@@ -85,5 +86,6 @@ export interface User {
   hasFullNotesAccess?: boolean;
   score?: number;
   showOnLeaderboard?: boolean;
-  qotdAnswers?: UserQotdAnswer[];
 }
+
+    

@@ -1,7 +1,4 @@
 
-
-
-
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer } from "./types";
@@ -743,49 +740,58 @@ export async function deleteQuestionOfTheDay(id: string) {
   }
 }
 
+export async function getUserQotdAnswer(userId: string, questionId: string): Promise<UserQotdAnswer | null> {
+    noStore();
+    if (!userId || !questionId) return null;
+
+    const answerDocRef = doc(db, 'qotd_answers', `${userId}_${questionId}`);
+    const answerDoc = await getDoc(answerDocRef);
+
+    if (answerDoc.exists()) {
+        return answerDoc.data() as UserQotdAnswer;
+    }
+    return null;
+}
+
 export async function submitUserAnswer(userId: string, questionId: string, selectedOptionIndex: number) {
   noStore();
   const userDocRef = doc(db, 'users', userId);
   const qotdDocRef = doc(db, 'qotd', questionId);
+  const answerDocRef = doc(db, 'qotd_answers', `${userId}_${questionId}`);
 
   try {
     return await runTransaction(db, async (transaction) => {
-      const [userDoc, qotdDoc] = await Promise.all([
+      const [userDoc, qotdDoc, answerDoc] = await Promise.all([
         transaction.get(userDocRef),
-        transaction.get(qotdDocRef)
+        transaction.get(qotdDocRef),
+        transaction.get(answerDocRef)
       ]);
 
       if (!userDoc.exists()) throw new Error("User not found.");
       if (!qotdDoc.exists()) throw new Error("Question not found.");
-
+      if (answerDoc.exists()) throw new Error("You have already answered this question.");
+      
       const userData = userDoc.data() as User;
       const qotdData = qotdDoc.data() as QuestionOfTheDay;
-
-      // Check if user has already answered this question
-      if (userData.qotdAnswers?.some(ans => ans.questionId === questionId)) {
-        throw new Error("You have already answered this question.");
-      }
 
       const isCorrect = qotdData.correctOptionIndex === selectedOptionIndex;
 
       const newAnswer: UserQotdAnswer = {
+        userId,
         questionId,
         selectedOptionIndex,
         isCorrect,
         answeredAt: Date.now(),
       };
       
-      const newScore = (userData.score || 0) + (isCorrect ? 10 : 0);
-
-      const updateData: any = {
-        qotdAnswers: arrayUnion(newAnswer),
-      };
-
-      if (isCorrect) {
-          updateData.score = newScore;
-      }
+      // Save the answer in its own collection
+      transaction.set(answerDocRef, newAnswer);
       
-      transaction.update(userDocRef, updateData);
+      // Update the user's score if correct
+      if (isCorrect) {
+          const newScore = (userData.score || 0) + 10;
+          transaction.update(userDocRef, { score: newScore });
+      }
 
       return { success: true, isCorrect, correctOptionIndex: qotdData.correctOptionIndex };
     });
@@ -793,3 +799,5 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return { success: false, error: e.message };
   }
 }
+
+    
