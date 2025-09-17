@@ -7,24 +7,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getUsers } from "@/lib/data";
 import { Trophy, EyeOff } from "lucide-react";
-import type { User } from "@/lib/types";
 import { UpdateScoreForm } from "@/components/admin/leaderboard/UpdateScoreForm";
 import { ToggleLeaderboardSwitch } from "@/components/admin/leaderboard/ToggleLeaderboardSwitch";
 
 export const revalidate = 0;
-
-const getInitials = (name: string | null | undefined): string => {
-    if (!name) return 'U';
-    const names = name.trim().split(' ').filter(Boolean);
-    if (names.length > 1) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return names[0].substring(0, 2).toUpperCase();
-};
 
 export default async function AdminLeaderboardPage() {
   const users = await getUsers();
@@ -65,15 +54,7 @@ export default async function AdminLeaderboardPage() {
                   <TableRow key={user.id} className={user.showOnLeaderboard === false ? "bg-muted/30" : ""}>
                     <TableCell className="font-bold text-lg text-center">{index + 1}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                           <div className="font-medium">{user.name || 'N/A'}</div>
-                           <div className="text-sm text-muted-foreground">{user.email}</div>
-                        </div>
-                      </div>
+                        <div className="font-medium">{user.name || 'N/A'}</div>
                     </TableCell>
                     <TableCell className="text-center">
                         <ToggleLeaderboardSwitch userId={user.id} isVisible={user.showOnLeaderboard !== false} />

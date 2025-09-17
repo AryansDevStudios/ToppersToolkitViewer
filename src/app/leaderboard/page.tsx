@@ -54,8 +54,7 @@ const TopPlayerCard = ({ user, rank }: { user: User; rank: number }) => {
         />
         <RankBadge rank={rank} />
         <h3 className="mt-4 text-2xl font-bold">{user.name}</h3>
-        <p className="text-muted-foreground mt-1">{user.email}</p>
-        <Badge variant="secondary" className="mt-4 text-lg">
+        <Badge variant="secondary" className="mt-6 text-lg">
           {user.score || 0} Points
         </Badge>
       </CardContent>
@@ -111,7 +110,6 @@ export default async function LeaderboardPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-lg">{user.name}</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
                 <Badge variant="outline" className="text-base">
                   {user.score || 0} Points
