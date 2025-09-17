@@ -43,12 +43,11 @@ export function GlobalSearch() {
         note.subjectName.toLowerCase().includes(lowerCaseQuery)
       );
       setResults(filtered.slice(0, 10)); // Limit to top 10 results
-      setIsOpen(true);
+      if (!isOpen) setIsOpen(true);
     } else {
       setResults([]);
-      setIsOpen(false);
     }
-  }, [query, allNotes]);
+  }, [query, allNotes, isOpen]);
   
   const handleSelect = () => {
     setQuery('');
@@ -64,6 +63,9 @@ export function GlobalSearch() {
             <Input
               ref={inputRef}
               value={query}
+              onFocus={() => {
+                if (query.length > 1) setIsOpen(true);
+              }}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search notes by title, chapter, subject..."
               className="w-full pl-10"
@@ -96,3 +98,4 @@ export function GlobalSearch() {
     </Popover>
   );
 }
+
