@@ -6,22 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { getUsers } from "@/lib/data";
 import { Trophy } from "lucide-react";
 import type { User } from "@/lib/types";
 
 export const revalidate = 0;
-
-const getInitials = (name: string | null | undefined): string => {
-  if (!name) return "U";
-  const names = name.trim().split(" ").filter(Boolean);
-  if (names.length > 1) {
-    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-  }
-  return names[0].substring(0, 2).toUpperCase();
-};
 
 const rankColorMap: { [key: number]: string } = {
   1: "bg-amber-400 text-amber-900 border-amber-500",
@@ -63,13 +53,8 @@ const TopPlayerCard = ({ user, rank }: { user: User; rank: number }) => {
           }`}
         />
         <RankBadge rank={rank} />
-        <Avatar className="w-24 h-24 mt-4 border-4 border-background">
-          <AvatarFallback className="text-3xl">
-            {getInitials(user.name)}
-          </AvatarFallback>
-        </Avatar>
         <h3 className="mt-4 text-2xl font-bold">{user.name}</h3>
-        <p className="text-muted-foreground">{user.email}</p>
+        <p className="text-muted-foreground mt-1">{user.email}</p>
         <Badge variant="secondary" className="mt-4 text-lg">
           {user.score || 0} Points
         </Badge>
@@ -79,7 +64,8 @@ const TopPlayerCard = ({ user, rank }: { user: User; rank: number }) => {
 };
 
 export default async function LeaderboardPage() {
-  const users = await getUsers();
+  const allUsers = await getUsers();
+  const users = allUsers.filter(user => user.role !== 'Teacher');
   const sortedUsers = users.sort((a, b) => (b.score || 0) - (a.score || 0));
   const topThree = sortedUsers.slice(0, 3);
   const restOfUsers = sortedUsers.slice(3);
@@ -123,11 +109,6 @@ export default async function LeaderboardPage() {
                 <div className="font-bold text-lg w-8 text-center text-muted-foreground">
                   {index + 4}
                 </div>
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback className="text-xl">
-                    {getInitials(user.name)}
-                  </AvatarFallback>
-                </Avatar>
                 <div className="flex-1">
                   <p className="font-semibold text-lg">{user.name}</p>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
