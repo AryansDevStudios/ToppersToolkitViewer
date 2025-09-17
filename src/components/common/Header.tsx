@@ -65,13 +65,13 @@ export function AppHeader() {
           </Link>
         </div>
         
-        <div className="flex-1 flex justify-start items-center">
-          <div className="w-full max-w-sm">
-             <GlobalSearch />
-          </div>
+        <div className="flex-1 flex justify-start items-center md:justify-center">
+            <div className="w-full max-w-sm">
+                <GlobalSearch />
+            </div>
         </div>
         
-        <div className="flex flex-none items-center justify-end space-x-1 sm:space-x-2">
+        <div className="flex flex-none items-center justify-end pl-4">
            {mounted && user && role === 'Admin' && (
               <Button variant="ghost" asChild className="hidden md:flex">
                   <Link href="/admin">Admin Panel</Link>
@@ -82,8 +82,22 @@ export function AppHeader() {
             <ThemeToggle />
           </div>
 
-          <div>
+          <div className="hidden sm:block">
             {loading ? (
+              <Skeleton className="h-10 w-10 rounded-full" />
+            ) : user ? (
+              <UserProfileMenu />
+            ) : (
+              <Button asChild>
+                <Link href="/login">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
+              </Button>
+            )}
+          </div>
+           <div className="sm:hidden">
+             {loading ? (
               <Skeleton className="h-10 w-10 rounded-full" />
             ) : user ? (
               <UserProfileMenu />
