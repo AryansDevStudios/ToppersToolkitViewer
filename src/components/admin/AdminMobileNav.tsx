@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Users, Library, Trophy } from "lucide-react";
+import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin/notes", icon: FileText, label: "Notes" },
   { href: "/admin/users", icon: Users, label: "Users" },
   { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
+  { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
 ];
 
 export function AdminMobileNav() {

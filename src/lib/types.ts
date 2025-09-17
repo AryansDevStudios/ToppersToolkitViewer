@@ -48,6 +48,27 @@ export interface Subject {
   subSubjects: SubSubject[];
 }
 
+export interface QotdOption {
+  id: string;
+  text: string;
+}
+
+export interface QuestionOfTheDay {
+  id: string;
+  question: string;
+  options: QotdOption[];
+  correctOptionId: string;
+  date: string; // YYYY-MM-DD
+  createdAt: number;
+}
+
+export interface UserQotdAnswer {
+  questionId: string;
+  selectedOptionId: string;
+  isCorrect: boolean;
+  answeredAt: number;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -65,4 +86,5 @@ export interface User {
   hasFullNotesAccess?: boolean;
   score?: number;
   showOnLeaderboard?: boolean;
+  qotdAnswers?: UserQotdAnswer[];
 }

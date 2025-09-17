@@ -2,10 +2,10 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit } from "firebase/firestore";
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
@@ -675,5 +675,113 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
     }
 };
 
-    
+// --- Question of the Day ---
 
+export async function getQuestionsOfTheDay(): Promise<QuestionOfTheDay[]> {
+  noStore();
+  const qotdCollection = collection(db, 'qotd');
+  const qotdSnapshot = await getDocs(query(qotdCollection, orderBy('date', 'desc')));
+  return qotdSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuestionOfTheDay));
+}
+
+export async function getQuestionOfTheDay(date: string): Promise<QuestionOfTheDay | null> {
+  noStore();
+  const qotdCollection = collection(db, 'qotd');
+  const q = query(qotdCollection, where('date', '==', date), limit(1));
+  const qotdSnapshot = await getDocs(q);
+
+  if (qotdSnapshot.empty) {
+    // If no question for today, get the most recent one
+    const recentQuery = query(qotdCollection, orderBy('date', 'desc'), limit(1));
+    const recentSnapshot = await getDocs(recentQuery);
+    if (recentSnapshot.empty) return null;
+    return { id: recentSnapshot.docs[0].id, ...recentSnapshot.docs[0].data() } as QuestionOfTheDay;
+  }
+
+  return { id: qotdSnapshot.docs[0].id, ...qotdSnapshot.docs[0].data() } as QuestionOfTheDay;
+}
+
+export async function upsertQuestionOfTheDay(questionData: Omit<QuestionOfTheDay, 'id' | 'createdAt'> & { id?: string }) {
+  const { id, ...data } = questionData;
+  const isNew = !id;
+  const docId = isNew ? uuidv4() : id;
+  const qotdDocRef = doc(db, 'qotd', docId);
+
+  try {
+    if (isNew) {
+      const docWithMeta = { ...data, id: docId, createdAt: Date.now() };
+      await setDoc(qotdDocRef, docWithMeta);
+    } else {
+      await updateDoc(qotdDocRef, data);
+    }
+    revalidatePath('/admin/qotd');
+    revalidatePath('/');
+    return { success: true, message: `Question successfully ${isNew ? 'created' : 'updated'}.` };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function deleteQuestionOfTheDay(id: string) {
+  if (!id) return { success: false, error: "Question ID is required." };
+  const qotdDocRef = doc(db, 'qotd', id);
+  try {
+    await deleteDoc(qotdDocRef);
+    revalidatePath('/admin/qotd');
+    revalidatePath('/');
+    return { success: true, message: "Question deleted successfully." };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
+export async function submitUserAnswer(userId: string, questionId: string, selectedOptionId: string) {
+  noStore();
+  const userDocRef = doc(db, 'users', userId);
+  const qotdDocRef = doc(db, 'qotd', questionId);
+
+  try {
+    return await runTransaction(db, async (transaction) => {
+      const [userDoc, qotdDoc] = await Promise.all([
+        transaction.get(userDocRef),
+        transaction.get(qotdDocRef)
+      ]);
+
+      if (!userDoc.exists()) throw new Error("User not found.");
+      if (!qotdDoc.exists()) throw new Error("Question not found.");
+
+      const userData = userDoc.data() as User;
+      const qotdData = qotdDoc.data() as QuestionOfTheDay;
+
+      // Check if user has already answered this question
+      if (userData.qotdAnswers?.some(ans => ans.questionId === questionId)) {
+        throw new Error("You have already answered this question.");
+      }
+
+      const isCorrect = qotdData.correctOptionId === selectedOptionId;
+
+      const newAnswer: UserQotdAnswer = {
+        questionId,
+        selectedOptionId,
+        isCorrect,
+        answeredAt: Date.now(),
+      };
+      
+      const newScore = (userData.score || 0) + (isCorrect ? 10 : 0);
+
+      const updateData: any = {
+        qotdAnswers: arrayUnion(newAnswer),
+      };
+
+      if (isCorrect) {
+          updateData.score = newScore;
+      }
+      
+      transaction.update(userDocRef, updateData);
+
+      return { success: true, isCorrect, correctOptionId: qotdData.correctOptionId };
+    });
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
