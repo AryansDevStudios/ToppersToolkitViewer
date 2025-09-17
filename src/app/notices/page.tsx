@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { ClipboardList } from 'lucide-react';
 import { getNotices } from '@/lib/data';
 import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 export const revalidate = 0;
 
 export default async function NoticesPage() {
   const notices = await getNotices();
+  const timeZone = 'Asia/Kolkata';
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -25,19 +27,21 @@ export default async function NoticesPage() {
       <main className="max-w-3xl mx-auto">
         {notices.length > 0 ? (
           <div className="space-y-8">
-            {notices.map((notice) => (
+            {notices.map((notice) => {
+              const zonedDate = toZonedTime(new Date(notice.createdAt), timeZone);
+              return (
               <Card key={notice.id} className="shadow-md">
                 <CardHeader>
                   <CardTitle className="text-2xl">{notice.title}</CardTitle>
                   <CardDescription>
-                    Posted on: {format(new Date(notice.createdAt), 'PPP p')}
+                    Posted on: {format(zonedDate, 'PPP p')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-card-foreground whitespace-pre-wrap">{notice.content}</p>
                 </CardContent>
               </Card>
-            ))}
+            )})}
           </div>
         ) : (
           <Card>

@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, ClipboardList, Edit, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { format } from 'date-fns';
+import { toZonedTime } from "date-fns-tz";
 import { NoticeForm } from "@/components/admin/notices/NoticeForm";
 import { DeleteNoticeDialog } from "@/components/admin/notices/DeleteNoticeDialog";
 
@@ -18,6 +19,7 @@ export const revalidate = 0;
 
 export default async function AdminNoticesPage() {
   const notices = await getNotices();
+  const timeZone = 'Asia/Kolkata';
 
   return (
     <div className="space-y-8">
@@ -50,27 +52,30 @@ export default async function AdminNoticesPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {notices.map((notice) => (
-            <Card key={notice.id}>
-              <CardHeader>
-                <CardTitle>{notice.title}</CardTitle>
-                <CardDescription>
-                  Posted on: {format(new Date(notice.createdAt), "PPP p")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-wrap">{notice.content}</p>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2 bg-muted/30 p-3">
-                <NoticeForm notice={notice}>
-                  <Button variant="outline" size="sm">
-                    <Edit className="mr-2 h-4 w-4" /> Edit
-                  </Button>
-                </NoticeForm>
-                <DeleteNoticeDialog noticeId={notice.id} />
-              </CardFooter>
-            </Card>
-          ))}
+          {notices.map((notice) => {
+            const zonedDate = toZonedTime(new Date(notice.createdAt), timeZone);
+            return (
+              <Card key={notice.id}>
+                <CardHeader>
+                  <CardTitle>{notice.title}</CardTitle>
+                  <CardDescription>
+                    Posted on: {format(zonedDate, "PPP p")}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-wrap">{notice.content}</p>
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2 bg-muted/30 p-3">
+                  <NoticeForm notice={notice}>
+                    <Button variant="outline" size="sm">
+                      <Edit className="mr-2 h-4 w-4" /> Edit
+                    </Button>
+                  </NoticeForm>
+                  <DeleteNoticeDialog noticeId={notice.id} />
+                </CardFooter>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>
