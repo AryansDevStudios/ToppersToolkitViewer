@@ -1,6 +1,6 @@
 
 import { getUsers } from "@/lib/data";
-import { Trophy, EyeOff } from "lucide-react";
+import { Trophy } from "lucide-react";
 import type { User } from "@/lib/types";
 import { LeaderboardTable } from "@/components/admin/leaderboard/LeaderboardTable";
 
@@ -8,7 +8,6 @@ export const revalidate = 0;
 
 export default async function AdminLeaderboardPage() {
   const users = await getUsers();
-  const sortedUsers: User[] = users.sort((a, b) => (b.score || 0) - (a.score || 0));
   
   return (
     <div className="space-y-8">
@@ -23,7 +22,7 @@ export default async function AdminLeaderboardPage() {
           </p>
         </div>
       </header>
-      <LeaderboardTable initialUsers={sortedUsers} />
+      <LeaderboardTable initialUsers={users} />
     </div>
   );
 }

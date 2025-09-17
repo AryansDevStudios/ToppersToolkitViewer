@@ -17,6 +17,9 @@ export function ToggleLeaderboardSwitch({ userId, isVisible }: ToggleLeaderboard
     const router = useRouter();
     const { toast } = useToast();
 
+    // This component is no longer responsible for saving.
+    // The parent component `LeaderboardTable` will handle state and saving.
+    // This could be further simplified to just be a Switch if all logic moves to the parent.
     const handleToggle = (checked: boolean) => {
         startTransition(async () => {
             const result = await upsertUser({
@@ -49,4 +52,3 @@ export function ToggleLeaderboardSwitch({ userId, isVisible }: ToggleLeaderboard
         />
     );
 }
-

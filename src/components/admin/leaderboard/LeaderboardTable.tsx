@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -18,30 +18,28 @@ import { Loader2, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/lib/types";
 import { upsertUser } from "@/lib/data";
-import { ToggleLeaderboardSwitch } from "./ToggleLeaderboardSwitch";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 
 interface LeaderboardTableProps {
   initialUsers: User[];
 }
 
-type UserWithScore = User & { score: number };
-
 export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
-  const [users, setUsers] = useState<UserWithScore[]>(
-    initialUsers.map(u => ({ ...u, score: u.score || 0 }))
-  );
+  const [users, setUsers] = useState<User[]>(initialUsers);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const router = useRouter();
   const [changedUserIds, setChangedUserIds] = useState<Set<string>>(new Set());
 
-  // Re-sort users whenever the 'users' state changes
-  useEffect(() => {
-    const sorted = [...users].sort((a, b) => b.score - a.score);
-    // Only update state if the order has actually changed to prevent infinite loops
-    if (JSON.stringify(users) !== JSON.stringify(sorted)) {
-      setUsers(sorted);
-    }
+  const visibleUsers = useMemo(() => {
+    return users
+      .filter(u => u.showOnLeaderboard !== false)
+      .sort((a, b) => (b.score || 0) - (a.score || 0));
+  }, [users]);
+
+  const hiddenUsers = useMemo(() => {
+    return users.filter(u => u.showOnLeaderboard === false);
   }, [users]);
 
 
@@ -57,6 +55,16 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
     }
   };
 
+  const handleVisibilityChange = (userId: string, isVisible: boolean) => {
+    setUsers(currentUsers =>
+        currentUsers.map(user =>
+            user.id === userId ? { ...user, showOnLeaderboard: isVisible } : user
+        )
+    );
+    setChangedUserIds(prev => new Set(prev).add(userId));
+  };
+
+
   const handleSave = () => {
     startTransition(async () => {
       const usersToUpdate = users.filter(user => changedUserIds.has(user.id));
@@ -66,7 +74,11 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
       }
 
       const results = await Promise.all(
-        usersToUpdate.map(user => upsertUser({ id: user.id, score: user.score }))
+        usersToUpdate.map(user => upsertUser({ 
+            id: user.id, 
+            score: user.score,
+            showOnLeaderboard: user.showOnLeaderboard,
+        }))
       );
 
       const failedUpdates = results.filter(r => !r.success);
@@ -74,12 +86,12 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
       if (failedUpdates.length > 0) {
         toast({
           title: "Some Updates Failed",
-          description: "Not all user scores could be saved. Please try again.",
+          description: "Not all user data could be saved. Please try again.",
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Scores Saved",
+          title: "Leaderboard Saved",
           description: "All changes have been successfully saved.",
         });
         setChangedUserIds(new Set());
@@ -87,33 +99,32 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
       }
     });
   };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>User Scores</CardTitle>
-        <CardDescription>A list of all users and their scores.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
+  
+  const renderUserTable = (userList: User[], isVisibleList: boolean) => (
+     <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80px]">Rank</TableHead>
+              {isVisibleList && <TableHead className="w-[80px]">Rank</TableHead>}
               <TableHead>User</TableHead>
               <TableHead className="w-[100px] text-center">Visible</TableHead>
               <TableHead className="w-[150px] text-right">Score</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length > 0 ? (
-              users.map((user, index) => (
+            {userList.length > 0 ? (
+              userList.map((user, index) => (
                 <TableRow key={user.id} className={user.showOnLeaderboard === false ? "bg-muted/30" : ""}>
-                  <TableCell className="font-bold text-lg text-center">{index + 1}</TableCell>
+                 {isVisibleList && <TableCell className="font-bold text-lg text-center">{index + 1}</TableCell>}
                   <TableCell>
                     <div className="font-medium">{user.name || 'N/A'}</div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <ToggleLeaderboardSwitch userId={user.id} isVisible={user.showOnLeaderboard !== false} />
+                    <Switch
+                        checked={user.showOnLeaderboard !== false}
+                        onCheckedChange={(checked) => handleVisibilityChange(user.id, checked)}
+                        disabled={isPending}
+                        aria-label="Toggle user visibility on leaderboard"
+                    />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end items-center gap-2">
@@ -122,7 +133,7 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
                         )}
                         <Input
                             type="number"
-                            value={user.score}
+                            value={user.score || 0}
                             onChange={(e) => handleScoreChange(user.id, e.target.value)}
                             className="w-24 text-right"
                             disabled={isPending}
@@ -134,14 +145,39 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={4} className="h-24 text-center">
-                  No users found.
+                  No users in this list.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+  );
+
+  return (
+    <>
+    <Card>
+      <CardHeader>
+        <CardTitle>Visible Users</CardTitle>
+        <CardDescription>Users currently displayed on the public leaderboard, sorted by score.</CardDescription>
+      </CardHeader>
+      <CardContent className="p-0">
+       {renderUserTable(visibleUsers, true)}
       </CardContent>
-       <CardFooter className="flex justify-end">
+    </Card>
+
+    <Separator className="my-8" />
+
+    <Card>
+         <CardHeader>
+            <CardTitle>Hidden Users</CardTitle>
+            <CardDescription>These users are not displayed on the public leaderboard.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+           {renderUserTable(hiddenUsers, false)}
+        </CardContent>
+    </Card>
+
+     <div className="flex justify-end mt-8">
           <Button onClick={handleSave} disabled={isPending || changedUserIds.size === 0}>
             {isPending ? (
               <>
@@ -152,7 +188,7 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
               `Save Changes (${changedUserIds.size})`
             )}
           </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </>
   );
 }
