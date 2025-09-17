@@ -1,8 +1,6 @@
 
-
 import { Suspense } from "react";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
-import { QuestionOfTheDaySection } from "@/components/home/QuestionOfTheDaySection";
 
 export const revalidate = 0; 
 
@@ -20,14 +18,6 @@ export default function Home() {
             </p>
           </div>
         </section>
-
-        <Suspense fallback={
-            <div className="container">
-                <div className="h-64 w-full bg-muted rounded-lg animate-pulse" />
-            </div>
-        }>
-            <QuestionOfTheDaySection />
-        </Suspense>
 
         <Suspense>
             <FeatureGrid />

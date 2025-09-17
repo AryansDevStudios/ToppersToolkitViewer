@@ -29,6 +29,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
 
 const getTodayDateString = () => {
   const today = new Date();
@@ -169,7 +170,7 @@ export function QuestionOfTheDaySection() {
           })}
         </CardContent>
         <CardFooter className="flex-col sm:flex-row items-center justify-between gap-4">
-          <AlertDialog>
+           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost">
                 Your Stats: {correctAnswers} / {totalAnswers} Correct
@@ -187,9 +188,12 @@ export function QuestionOfTheDaySection() {
                         {dbUser?.qotdAnswers?.map(ans => (
                             <li key={ans.questionId} className="flex items-center gap-2">
                                 {ans.isCorrect ? <Check className="h-4 w-4 text-green-500" /> : <X className="h-4 w-4 text-red-500" />}
-                                <span>Answered on {format(new Date(ans.answeredAt), 'PPP')} - {ans.isCorrect ? 'Correct' : 'Incorrect'}</span>
+                                <span>Answered on {new Date(ans.answeredAt).toLocaleDateString()} - {ans.isCorrect ? 'Correct' : 'Incorrect'}</span>
                             </li>
                         ))}
+                         {(!dbUser?.qotdAnswers || dbUser.qotdAnswers.length === 0) && (
+                            <p className="text-muted-foreground text-center py-4">You haven't answered any questions yet.</p>
+                        )}
                     </ul>
                 </div>
                 <AlertDialogFooter>
@@ -218,24 +222,20 @@ export function QuestionOfTheDaySection() {
   };
 
   return (
-    <section className="w-full pb-12">
-        <div className="container">
-            <Card className="max-w-4xl mx-auto">
-                {authLoading ? (
-                    <div className="flex items-center justify-center h-48">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                    </div>
-                ) : user ? (
-                    renderContent()
-                ) : (
-                    <div className="text-center text-muted-foreground h-48 flex flex-col justify-center items-center">
-                        <ShieldCheck className="h-10 w-10 mb-2" />
-                        <p className="font-semibold">Question of the Day is available for users.</p>
-                        <p>Please log in or register to participate.</p>
-                    </div>
-                )}
-            </Card>
-        </div>
-    </section>
+    <Card className="max-w-4xl mx-auto">
+        {authLoading ? (
+            <div className="flex items-center justify-center h-48">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        ) : user ? (
+            renderContent()
+        ) : (
+            <div className="text-center text-muted-foreground h-48 flex flex-col justify-center items-center">
+                <ShieldCheck className="h-10 w-10 mb-2" />
+                <p className="font-semibold">Question of the Day is available for users.</p>
+                <p>Please log in or register to participate.</p>
+            </div>
+        )}
+    </Card>
   );
 }

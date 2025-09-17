@@ -1,6 +1,7 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Suspense } from "react";
 import { Puzzle } from 'lucide-react';
+import { QuestionOfTheDaySection } from "@/components/home/QuestionOfTheDaySection";
 
 export default function PuzzleAndQuizPage() {
   return (
@@ -13,20 +14,15 @@ export default function PuzzleAndQuizPage() {
           Puzzles & Quizzes
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Challenge your mind with our puzzles and test your knowledge with quizzes.
+          Challenge yourself with our question of the day!
         </p>
       </header>
       <main>
-        <Card>
-          <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              This section is being developed. Get ready to solve some brain-teasers and test your skills!
-            </p>
-          </CardContent>
-        </Card>
+        <Suspense fallback={
+            <div className="h-64 w-full bg-muted rounded-lg animate-pulse" />
+        }>
+            <QuestionOfTheDaySection />
+        </Suspense>
       </main>
     </div>
   );
