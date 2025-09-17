@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { DeleteUserAnswerDialog } from "./DeleteUserAnswerDialog";
 
 interface QotdAnswersDialogProps {
   question: QuestionOfTheDay;
@@ -67,56 +68,56 @@ export function QotdAnswersDialog({ question, users: initialUsers, answerCount }
   const [isLoading, setIsLoading] = useState(false);
   const [answers, setAnswers] = useState<AnswerDetails[]>([]);
   const { toast } = useToast();
+
+  const fetchAnswers = async () => {
+      if (!isOpen) return;
+      setIsLoading(true);
+      try {
+        const [allUserAnswers, allUsers] = await Promise.all([
+            getAllQotdAnswers(),
+            getUsers()
+        ]);
+        console.log("QOTD Dialog: Fetched allUserAnswers", allUserAnswers);
+        console.log("QOTD Dialog: Fetched allUsers", allUsers);
+
+        const relevantAnswers: AnswerDetails[] = [];
+        const userMap = new Map(allUsers.map(u => [u.id, u]));
+
+        allUserAnswers.forEach(userAnswerDoc => {
+          if (userAnswerDoc && Array.isArray(userAnswerDoc.answers)) {
+              const answerForThisQuestion = userAnswerDoc.answers.find(a => a.questionId === question.id);
+              if (answerForThisQuestion) {
+                const user = userMap.get(userAnswerDoc.userId);
+                if (user) {
+                  relevantAnswers.push({
+                    userId: user.id,
+                    userName: user.name,
+                    userEmail: user.email,
+                    userRole: user.role,
+                    hasFullNotesAccess: user.hasFullNotesAccess,
+                    selectedOption: question.options[answerForThisQuestion.selectedOptionIndex]?.text || 'Invalid Option',
+                    isCorrect: answerForThisQuestion.isCorrect,
+                  });
+                } else {
+                    console.warn("QOTD Dialog: Could not find user with ID:", userAnswerDoc.userId);
+                }
+              }
+          }
+        });
+        
+        console.log("QOTD Dialog: Found relevant answers:", relevantAnswers);
+        setAnswers(relevantAnswers);
+
+      } catch (error) {
+        console.error("QOTD Dialog: Error fetching answers:", error);
+        toast({ title: "Error", description: "Failed to fetch answers.", variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
+    };
   
   useEffect(() => {
-    if (isOpen) {
-      const fetchAnswers = async () => {
-        setIsLoading(true);
-        try {
-          const [allUserAnswers, allUsers] = await Promise.all([
-             getAllQotdAnswers(),
-             getUsers()
-          ]);
-          console.log("QOTD Dialog: Fetched allUserAnswers", allUserAnswers);
-          console.log("QOTD Dialog: Fetched allUsers", allUsers);
-
-          const relevantAnswers: AnswerDetails[] = [];
-          const userMap = new Map(allUsers.map(u => [u.id, u]));
-
-          allUserAnswers.forEach(userAnswerDoc => {
-            if (userAnswerDoc && Array.isArray(userAnswerDoc.answers)) {
-                const answerForThisQuestion = userAnswerDoc.answers.find(a => a.questionId === question.id);
-                if (answerForThisQuestion) {
-                  const user = userMap.get(userAnswerDoc.userId);
-                  if (user) {
-                    relevantAnswers.push({
-                      userId: user.id,
-                      userName: user.name,
-                      userEmail: user.email,
-                      userRole: user.role,
-                      hasFullNotesAccess: user.hasFullNotesAccess,
-                      selectedOption: question.options[answerForThisQuestion.selectedOptionIndex]?.text || 'Invalid Option',
-                      isCorrect: answerForThisQuestion.isCorrect,
-                    });
-                  } else {
-                     console.warn("QOTD Dialog: Could not find user with ID:", userAnswerDoc.userId);
-                  }
-                }
-            }
-          });
-          
-          console.log("QOTD Dialog: Found relevant answers:", relevantAnswers);
-          setAnswers(relevantAnswers);
-
-        } catch (error) {
-          console.error("QOTD Dialog: Error fetching answers:", error);
-          toast({ title: "Error", description: "Failed to fetch answers.", variant: "destructive" });
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchAnswers();
-    }
+    fetchAnswers();
   }, [isOpen, question, toast]);
 
   return (
@@ -153,13 +154,20 @@ export function QotdAnswersDialog({ question, users: initialUsers, answerCount }
                                 <p className="font-semibold text-sm">{answer.userName}</p>
                                 <p className="text-xs text-muted-foreground">{answer.selectedOption}</p>
                             </div>
-                            <Badge variant={answer.isCorrect ? "default" : "destructive"} className="gap-1.5 pl-2 pr-2.5 py-1">
-                                {answer.isCorrect 
-                                    ? <CheckCircle2 className="h-3.5 w-3.5"/> 
-                                    : <XCircle className="h-3.5 w-3.5" />
-                                }
-                                {answer.isCorrect ? "Correct" : "Incorrect"}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                                <Badge variant={answer.isCorrect ? "default" : "destructive"} className="gap-1.5 pl-2 pr-2.5 py-1">
+                                    {answer.isCorrect 
+                                        ? <CheckCircle2 className="h-3.5 w-3.5"/> 
+                                        : <XCircle className="h-3.5 w-3.5" />
+                                    }
+                                    {answer.isCorrect ? "Correct" : "Incorrect"}
+                                </Badge>
+                                <DeleteUserAnswerDialog
+                                  userId={answer.userId}
+                                  questionId={question.id}
+                                  onDeleteSuccess={fetchAnswers}
+                                />
+                            </div>
                         </li>
                     ))}
                 </ul>

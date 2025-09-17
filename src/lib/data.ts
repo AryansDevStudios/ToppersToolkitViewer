@@ -544,29 +544,12 @@ export const getUsers = async (): Promise<User[]> => {
   noStore();
   try {
     const usersCollection = collection(db, 'users');
-    const leaderboardCollection = collection(db, 'leaderboard');
-    
-    const [usersSnapshot, leaderboardSnapshot] = await Promise.all([
-        getDocs(usersCollection),
-        getDocs(leaderboardCollection)
-    ]);
-    
-    const leaderboardData = new Map(
-      leaderboardSnapshot.docs.map(doc => [doc.id, doc.data() as { score: number; showOnLeaderboard: boolean }])
-    );
-
-    return usersSnapshot.docs.map(doc => {
-      const userData = doc.data() as Omit<User, 'id'>;
-      const userLeaderboard = leaderboardData.get(doc.id);
-      return {
-        id: doc.id,
-        ...userData,
-        score: userLeaderboard?.score || 0,
-        showOnLeaderboard: userLeaderboard?.showOnLeaderboard,
-      };
-    }) as User[];
+    const usersSnapshot = await getDocs(usersCollection);
+    return usersSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as User[];
   } catch (error) {
-    console.error("Error fetching users and leaderboard data:", error);
     return [];
   }
 };
@@ -578,27 +561,16 @@ export const upsertUser = async (userData: Partial<User> & { id: string }) => {
     }
 
     const userDocRef = doc(db, 'users', id);
-    const leaderboardDocRef = doc(db, 'leaderboard', id);
 
     try {
-        const batch = writeBatch(db);
+        const dataToUpdate: { [key: string]: any } = { ...profileData };
+        if (score !== undefined) dataToUpdate.score = score;
+        if (showOnLeaderboard !== undefined) dataToUpdate.showOnLeaderboard = showOnLeaderboard;
 
-        // Update profile data in 'users' collection if there is any
-        if (Object.keys(profileData).length > 0) {
-           batch.set(userDocRef, profileData, { merge: true });
-        }
-
-        // Update score and visibility in 'leaderboard' collection
-        const leaderboardUpdate: { score?: number; showOnLeaderboard?: boolean } = {};
-        if (score !== undefined) leaderboardUpdate.score = score;
-        if (showOnLeaderboard !== undefined) leaderboardUpdate.showOnLeaderboard = showOnLeaderboard;
-
-        if (Object.keys(leaderboardUpdate).length > 0) {
-            batch.set(leaderboardDocRef, leaderboardUpdate, { merge: true });
+        if (Object.keys(dataToUpdate).length > 0) {
+            await setDoc(userDocRef, dataToUpdate, { merge: true });
         }
         
-        await batch.commit();
-
         revalidatePath('/admin/users');
         revalidatePath('/admin/leaderboard');
         revalidatePath('/leaderboard');
@@ -810,14 +782,14 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
   noStore();
   const qotdDocRef = doc(db, 'qotd', questionId);
   const answerDocRef = doc(db, 'qotd_answers', userId);
-  const leaderboardDocRef = doc(db, 'leaderboard', userId);
+  const userDocRef = doc(db, 'users', userId);
 
   try {
     return await runTransaction(db, async (transaction) => {
-      const [qotdDoc, answerDoc, leaderboardDoc] = await Promise.all([
+      const [qotdDoc, answerDoc, userDoc] = await Promise.all([
         transaction.get(qotdDocRef),
         transaction.get(answerDocRef),
-        transaction.get(leaderboardDocRef)
+        transaction.get(userDocRef)
       ]);
 
       if (!qotdDoc.exists()) throw new Error("Question not found.");
@@ -850,15 +822,53 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
       }
       
       // Update the user's score if correct
-      if (isCorrect) {
-          const currentScore = leaderboardDoc.exists() ? (leaderboardDoc.data().score || 0) : 0;
+      if (isCorrect && userDoc.exists()) {
+          const userData = userDoc.data() as User;
+          const currentScore = userData.score || 0;
           const newScore = currentScore + 10;
-          transaction.set(leaderboardDocRef, { score: newScore }, { merge: true });
+          transaction.update(userDocRef, { score: newScore });
       }
 
       return { success: true, isCorrect, correctOptionIndex: qotdData.correctOptionIndex };
     });
   } catch (e: any) {
     return { success: false, error: e.message };
+  }
+}
+
+export async function deleteUserQotdAnswer(userId: string, questionId: string) {
+  if (!userId || !questionId) {
+    return { success: false, error: "User ID and Question ID are required." };
+  }
+
+  const answerDocRef = doc(db, 'qotd_answers', userId);
+
+  try {
+    await runTransaction(db, async (transaction) => {
+      const answerDoc = await transaction.get(answerDocRef);
+      if (!answerDoc.exists()) {
+        // If the document doesn't exist, there's nothing to delete.
+        return;
+      }
+
+      const docData = answerDoc.data();
+      const existingAnswers: UserQotdAnswer[] = docData.answers || [];
+      
+      // Find the answer to remove
+      const answerToRemove = existingAnswers.find(ans => ans.questionId === questionId);
+
+      if (answerToRemove) {
+        // Use arrayRemove to atomically remove the element from the array
+        transaction.update(answerDocRef, {
+          answers: arrayRemove(answerToRemove)
+        });
+      }
+    });
+
+    revalidatePath('/admin/qotd');
+    return { success: true, message: "User's answer has been deleted." };
+  } catch (e: any) {
+    console.error("Error deleting user QOTD answer:", e);
+    return { success: false, error: e.message || "An unknown error occurred while deleting the answer." };
   }
 }
