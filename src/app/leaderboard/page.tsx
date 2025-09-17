@@ -53,7 +53,7 @@ const TopPlayerCard = ({ user, rank }: { user: User; rank: number }) => {
           }`}
         />
         <RankBadge rank={rank} />
-        <h3 className="mt-4 text-2xl font-bold">{user.name}</h3>
+        <h3 className="mt-4 text-2xl font-bold text-foreground">{user.name}</h3>
         <Badge variant="secondary" className="mt-6 text-lg">
           {user.score || 0} Points
         </Badge>
