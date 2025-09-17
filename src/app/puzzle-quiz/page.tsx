@@ -28,8 +28,10 @@ export const revalidate = 0;
 
 const groupQuestionsByDate = (questions: QuestionOfTheDay[]) => {
     return questions.reduce((acc, question) => {
-        // We need to parse the date as if it's UTC and then format it.
-        const dateStr = format(parseISO(question.date), 'PPP');
+        const timeZone = 'Asia/Kolkata';
+        // We need to parse the date as if it's UTC and then format it in the target timezone
+        const zonedDate = toZonedTime(parseISO(question.date), timeZone);
+        const dateStr = format(zonedDate, 'PPP');
         if (!acc[dateStr]) {
             acc[dateStr] = [];
         }
@@ -47,12 +49,11 @@ export default async function PuzzleAndQuizPage() {
   const now = new Date();
   const zonedNow = toZonedTime(now, timeZone);
   
-  // By converting the question's UTC date string to a Date object,
-  // it correctly represents the start of that day in UTC.
-  // We can then compare it to the current zoned time.
   const pastAndPresentQuestions = allQuestions.filter(q => {
-      // parseISO treats 'YYYY-MM-DD' as UTC midnight
+      // parseISO treats 'YYYY-MM-DD' as UTC midnight.
+      // We convert it to a date object representing that moment in time.
       const questionDate = parseISO(q.date);
+      // We compare this moment to the current time in the target timezone.
       return questionDate <= zonedNow;
   });
 

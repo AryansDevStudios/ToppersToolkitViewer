@@ -30,7 +30,7 @@ export default async function NoticesPage() {
                 <CardHeader>
                   <CardTitle className="text-2xl">{notice.title}</CardTitle>
                   <CardDescription>
-                    Posted on: {format(new Date(notice.createdAt), 'PPP')}
+                    Posted on: {format(new Date(notice.createdAt), 'PPP p')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
