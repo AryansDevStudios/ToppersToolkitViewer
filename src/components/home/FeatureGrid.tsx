@@ -68,7 +68,7 @@ export function FeatureGrid() {
   return (
     <section className="w-full py-12">
       <div className="container px-4">
-        <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto lg:gap-8">
+        <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto md:gap-6 lg:gap-8">
           {features.map((feature) => {
             const Icon = iconMap[feature.icon] || Puzzle;
             const LinkComponent = feature.isExternal ? 'a' : Link;
@@ -81,10 +81,10 @@ export function FeatureGrid() {
               >
                 <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
                   <CardContent className="p-4 flex flex-col items-center justify-center aspect-square">
-                    <div className="bg-primary/10 text-primary p-3 rounded-lg mb-2 lg:p-4 lg:mb-3">
-                      <Icon className="h-6 w-6 lg:h-8 lg:w-8" />
+                    <div className="bg-primary/10 text-primary p-3 rounded-lg mb-2 md:p-4 md:mb-3">
+                      <Icon className="h-6 w-6 md:h-8 md:w-8" />
                     </div>
-                    <CardTitle className="text-sm lg:text-base font-semibold text-center truncate">
+                    <CardTitle className="text-sm md:text-base font-semibold text-center truncate">
                       {feature.title}
                     </CardTitle>
                   </CardContent>
