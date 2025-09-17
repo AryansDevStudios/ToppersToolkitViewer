@@ -1,5 +1,6 @@
 
-import { getQuestionsOfTheDay } from "@/lib/data";
+
+import { getQuestionsOfTheDay, getUsers } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, HelpCircle, Edit } from "lucide-react";
@@ -7,11 +8,14 @@ import { QotdForm } from "@/components/admin/qotd/QotdForm";
 import Link from "next/link";
 import { format } from "date-fns";
 import { DeleteQotdDialog } from "@/components/admin/qotd/DeleteQotdDialog";
+import { QotdAnswersDialog } from "@/components/admin/qotd/QotdAnswersDialog";
+import type { User } from "@/lib/types";
 
 export const revalidate = 0;
 
 export default async function AdminQotdPage() {
   const questions = await getQuestionsOfTheDay();
+  const users: User[] = await getUsers();
 
   return (
     <div className="space-y-8">
@@ -65,6 +69,7 @@ export default async function AdminQotdPage() {
                       </ul>
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2 bg-muted/30 p-3">
+                      <QotdAnswersDialog question={q} users={users} />
                       <QotdForm question={q}>
                         <Button variant="outline" size="sm">
                             <Edit className="mr-2 h-4 w-4" /> Edit
@@ -80,3 +85,4 @@ export default async function AdminQotdPage() {
     </div>
   );
 }
+

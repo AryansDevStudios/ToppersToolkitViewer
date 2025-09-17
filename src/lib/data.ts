@@ -755,6 +755,20 @@ export async function getUserQotdAnswers(userId: string): Promise<UserQotdAnswer
     return null;
 }
 
+export async function getAllQotdAnswers(): Promise<{ userId: string, answers: UserQotdAnswer[] }[]> {
+    noStore();
+    const answersCollection = collection(db, 'qotd_answers');
+    const answersSnapshot = await getDocs(answersCollection);
+    return answersSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            userId: doc.id,
+            answers: data.answers as UserQotdAnswer[]
+        };
+    });
+}
+
+
 export async function submitUserAnswer(userId: string, questionId: string, selectedOptionIndex: number) {
   noStore();
   const userDocRef = doc(db, 'users', userId);
@@ -812,3 +826,4 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return { success: false, error: e.message };
   }
 }
+
