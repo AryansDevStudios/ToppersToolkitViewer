@@ -106,5 +106,6 @@ export interface Doubt {
     createdAt: number;
     answeredAt?: number;
     answeredBy?: string; // Admin's name
+    answeredByAdminId?: string; // Admin's user ID
 }
     

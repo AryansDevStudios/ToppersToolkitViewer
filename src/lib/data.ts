@@ -939,7 +939,7 @@ export async function createDoubt(userId: string, userName: string, userClassAnd
     try {
         await setDoc(doubtDocRef, newDoubt);
         revalidatePath('/doubt-box');
-        // We will also need to revalidate the admin page for doubts later
+        revalidatePath('/admin/doubts');
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -959,5 +959,43 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
     } catch (error) {
         console.error("Error fetching user doubts:", error);
         return [];
+    }
+}
+
+export async function getAllDoubts(): Promise<Doubt[]> {
+    noStore();
+    const doubtsCollection = collection(db, 'doubts');
+    const q = query(doubtsCollection, orderBy('createdAt', 'desc'));
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => doc.data() as Doubt);
+    } catch (error) {
+        console.error("Error fetching all doubts:", error);
+        return [];
+    }
+}
+
+export async function answerDoubt(doubtId: string, answer: string, adminId: string, adminName: string): Promise<{ success: boolean, error?: string }> {
+    if (!doubtId || !answer || !adminId || !adminName) {
+        return { success: false, error: "Missing required information to answer doubt." };
+    }
+    const doubtDocRef = doc(db, "doubts", doubtId);
+
+    const updateData = {
+        answer,
+        status: 'answered' as const,
+        answeredAt: Date.now(),
+        answeredBy: adminName,
+        answeredByAdminId: adminId,
+    };
+
+    try {
+        await updateDoc(doubtDocRef, updateData);
+        revalidatePath('/doubt-box');
+        revalidatePath('/admin/doubts');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
     }
 }
