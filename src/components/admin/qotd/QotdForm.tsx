@@ -53,16 +53,14 @@ export function QotdForm({ question, children }: QotdFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const isEditing = !!question;
 
-  const getInitialFormValues = () => ({
-    question: question?.question || "",
-    options: question?.options && question.options.length > 0 ? question.options : [{ id: uuidv4(), text: "" }, { id: uuidv4(), text: "" }],
-    correctOptionId: question?.correctOptionId || "",
-    date: question ? new Date(question.date) : new Date(),
-  });
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: getInitialFormValues(),
+    defaultValues: {
+      question: "",
+      options: [{ id: uuidv4(), text: "" }, { id: uuidv4(), text: "" }],
+      correctOptionId: "",
+      date: new Date(),
+    }
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -72,7 +70,13 @@ export function QotdForm({ question, children }: QotdFormProps) {
   
   useEffect(() => {
     if (isOpen) {
-      form.reset(getInitialFormValues());
+        const defaultValues = {
+            question: question?.question || "",
+            options: question?.options && question.options.length > 0 ? question.options : [{ id: uuidv4(), text: "" }, { id: uuidv4(), text: "" }],
+            correctOptionId: question?.correctOptionId || "",
+            date: question ? new Date(question.date) : new Date(),
+        };
+        form.reset(defaultValues);
     }
   }, [isOpen, question, form]);
 
