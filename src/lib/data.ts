@@ -1,6 +1,7 @@
 
 
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer } from "./types";
@@ -742,7 +743,7 @@ export async function deleteQuestionOfTheDay(id: string) {
   }
 }
 
-export async function submitUserAnswer(userId: string, questionId: string, selectedOptionId: string) {
+export async function submitUserAnswer(userId: string, questionId: string, selectedOptionIndex: number) {
   noStore();
   const userDocRef = doc(db, 'users', userId);
   const qotdDocRef = doc(db, 'qotd', questionId);
@@ -765,11 +766,11 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
         throw new Error("You have already answered this question.");
       }
 
-      const isCorrect = qotdData.correctOptionId === selectedOptionId;
+      const isCorrect = qotdData.correctOptionIndex === selectedOptionIndex;
 
       const newAnswer: UserQotdAnswer = {
         questionId,
-        selectedOptionId,
+        selectedOptionIndex,
         isCorrect,
         answeredAt: Date.now(),
       };
@@ -786,7 +787,7 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
       
       transaction.update(userDocRef, updateData);
 
-      return { success: true, isCorrect, correctOptionId: qotdData.correctOptionId };
+      return { success: true, isCorrect, correctOptionIndex: qotdData.correctOptionIndex };
     });
   } catch (e: any) {
     return { success: false, error: e.message };

@@ -27,17 +27,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { v4 as uuidv4 } from 'uuid';
 
 const optionSchema = z.object({
-  id: z.string(),
   text: z.string().min(1, "Option text cannot be empty"),
 });
 
 const formSchema = z.object({
   question: z.string().min(3, "Question must be at least 3 characters."),
   options: z.array(optionSchema).min(2, "At least two options are required."),
-  correctOptionId: z.string().min(1, "You must select a correct answer."),
+  correctOptionIndex: z.number().min(0, "You must select a correct answer."),
   date: z.date({ required_error: "A date is required."}),
 });
 
@@ -57,8 +55,8 @@ export function QotdForm({ question, children }: QotdFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       question: "",
-      options: [{ id: uuidv4(), text: "" }, { id: uuidv4(), text: "" }],
-      correctOptionId: "",
+      options: [{ text: "" }, { text: "" }],
+      correctOptionIndex: -1,
       date: new Date(),
     }
   });
@@ -72,8 +70,8 @@ export function QotdForm({ question, children }: QotdFormProps) {
     if (isOpen) {
         const defaultValues = {
             question: question?.question || "",
-            options: question?.options && question.options.length > 0 ? question.options : [{ id: uuidv4(), text: "" }, { id: uuidv4(), text: "" }],
-            correctOptionId: question?.correctOptionId || "",
+            options: question?.options && question.options.length > 0 ? question.options : [{ text: "" }, { text: "" }],
+            correctOptionIndex: question?.correctOptionIndex ?? -1,
             date: question ? new Date(question.date) : new Date(),
         };
         form.reset(defaultValues);
@@ -151,11 +149,11 @@ export function QotdForm({ question, children }: QotdFormProps) {
                                 <div className="flex items-center gap-2">
                                     <Button 
                                         type="button"
-                                        variant={form.watch('correctOptionId') === field.id ? 'default' : 'outline'}
-                                        onClick={() => form.setValue('correctOptionId', field.id, { shouldValidate: true })}
+                                        variant={form.watch('correctOptionIndex') === index ? 'default' : 'outline'}
+                                        onClick={() => form.setValue('correctOptionIndex', index, { shouldValidate: true })}
                                         className="h-10 w-24"
                                     >
-                                        {form.watch('correctOptionId') === field.id ? 'Correct' : 'Mark'}
+                                        {form.watch('correctOptionIndex') === index ? 'Correct' : 'Mark'}
                                     </Button>
                                     <FormControl>
                                         <Input {...optionField} placeholder={`Option ${index + 1}`} />
@@ -171,9 +169,9 @@ export function QotdForm({ question, children }: QotdFormProps) {
                     ))}
                  </div>
                   {form.formState.errors.options && <FormMessage>{form.formState.errors.options.message}</FormMessage>}
-                  {form.formState.errors.correctOptionId && <FormMessage className="mt-2">{form.formState.errors.correctOptionId.message}</FormMessage>}
+                  {form.formState.errors.correctOptionIndex && <FormMessage className="mt-2">{form.formState.errors.correctOptionIndex.message}</FormMessage>}
 
-                <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append({ id: uuidv4(), text: '' })}>
+                <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append({ text: '' })}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Option
                 </Button>
             </div>

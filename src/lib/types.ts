@@ -49,7 +49,6 @@ export interface Subject {
 }
 
 export interface QotdOption {
-  id: string;
   text: string;
 }
 
@@ -57,14 +56,14 @@ export interface QuestionOfTheDay {
   id: string;
   question: string;
   options: QotdOption[];
-  correctOptionId: string;
+  correctOptionIndex: number;
   date: string; // YYYY-MM-DD
   createdAt: number;
 }
 
 export interface UserQotdAnswer {
   questionId: string;
-  selectedOptionId: string;
+  selectedOptionIndex: number;
   isCorrect: boolean;
   answeredAt: number;
 }

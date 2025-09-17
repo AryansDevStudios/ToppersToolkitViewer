@@ -38,7 +38,7 @@ interface QuestionOfTheDaySectionProps {
 
 export function QuestionOfTheDaySection({ initialQuestion, initialUser }: QuestionOfTheDaySectionProps) {
   const { user, dbUser: authDbUser, loading: authLoading } = useAuth();
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -51,13 +51,13 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
   );
 
   const handleSubmit = async () => {
-    if (!user || !initialQuestion || !selectedOptionId) return;
+    if (!user || !initialQuestion || selectedOptionIndex === null) return;
 
     setIsSubmitting(true);
     const result = await submitUserAnswer(
       user.uid,
       initialQuestion.id,
-      selectedOptionId
+      selectedOptionIndex
     );
     setIsSubmitting(false);
 
@@ -82,8 +82,8 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
 
   const renderContent = () => {
     const hasAnswered = !!userAnswer;
-    const correctId = hasAnswered ? (userAnswer.isCorrect ? userAnswer.selectedOptionId : initialQuestion.correctOptionId) : null;
-    const selectedId = userAnswer?.selectedOptionId;
+    const correctIndex = hasAnswered ? (userAnswer.isCorrect ? userAnswer.selectedOptionIndex : initialQuestion.correctOptionIndex) : null;
+    const selectedIndex = userAnswer?.selectedOptionIndex;
 
     return (
       <>
@@ -93,14 +93,14 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {initialQuestion.options.map((option) => {
-            const isSelected = selectedOptionId === option.id;
-            const isCorrect = hasAnswered && option.id === correctId;
-            const isWrong = hasAnswered && option.id === selectedId && !isCorrect;
+          {initialQuestion.options.map((option, index) => {
+            const isSelected = selectedOptionIndex === index;
+            const isCorrect = hasAnswered && index === correctIndex;
+            const isWrong = hasAnswered && index === selectedIndex && !isCorrect;
 
             return (
               <Button
-                key={option.id}
+                key={index}
                 variant="outline"
                 className={cn(
                   "w-full justify-start h-auto py-3 text-left whitespace-normal",
@@ -108,7 +108,7 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
                   isCorrect && "bg-green-100 border-green-300 text-green-900 hover:bg-green-200 dark:bg-green-900/50 dark:border-green-700 dark:text-green-100",
                   isWrong && "bg-red-100 border-red-300 text-red-900 hover:bg-red-200 dark:bg-red-900/50 dark:border-red-700 dark:text-red-100"
                 )}
-                onClick={() => !hasAnswered && setSelectedOptionId(option.id)}
+                onClick={() => !hasAnswered && setSelectedOptionIndex(index)}
                 disabled={hasAnswered || isSubmitting}
               >
                 <div className="flex items-center w-full">
@@ -124,7 +124,7 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
              <CardFooter className="flex-col sm:flex-row items-center justify-end gap-4">
               <Button
                 onClick={handleSubmit}
-                disabled={!selectedOptionId || isSubmitting}
+                disabled={selectedOptionIndex === null || isSubmitting}
               >
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

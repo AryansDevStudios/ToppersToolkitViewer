@@ -54,10 +54,10 @@ export default async function AdminQotdPage() {
                   </CardHeader>
                   <CardContent className="flex-1">
                       <ul className="space-y-2 text-sm">
-                        {q.options.map(opt => {
-                            const isCorrect = q.correctOptionId === opt.id;
+                        {q.options.map((opt, index) => {
+                            const isCorrect = q.correctOptionIndex === index;
                             return (
-                                <li key={opt.id} className={`p-2 rounded-md ${isCorrect ? 'bg-green-100 dark:bg-green-900/50 font-bold' : 'bg-muted/50'}`}>
+                                <li key={index} className={`p-2 rounded-md ${isCorrect ? 'bg-green-100 dark:bg-green-900/50 font-bold' : 'bg-muted/50'}`}>
                                     {opt.text}
                                 </li>
                             )
