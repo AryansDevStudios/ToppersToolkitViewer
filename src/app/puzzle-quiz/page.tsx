@@ -2,8 +2,37 @@
 import { Suspense } from "react";
 import { Puzzle } from 'lucide-react';
 import { QuestionOfTheDaySection } from "@/components/home/QuestionOfTheDaySection";
+import { getQuestionsOfTheDay } from "@/lib/data";
+import { getUserById } from "@/lib/data";
+import { auth } from "@/lib/firebase";
+import { cookies } from "next/headers";
+import { getApp } from "firebase-admin/app";
+import { getAuth as getAdminAuth } from "firebase-admin/auth";
 
-export default function PuzzleAndQuizPage() {
+async function getCurrentUser() {
+  const sessionCookie = cookies().get('session')?.value;
+  if (!sessionCookie) return null;
+
+  try {
+    const decodedClaims = await getAdminAuth(getApp()).verifySessionCookie(sessionCookie, true);
+    const user = await getUserById(decodedClaims.uid);
+    return user;
+  } catch (error) {
+    return null;
+  }
+}
+
+export const revalidate = 0;
+
+export default async function PuzzleAndQuizPage() {
+  const allQuestions = await getQuestionsOfTheDay();
+  const currentUser = await getCurrentUser();
+
+  const today = new Date();
+  today.setHours(23, 59, 59, 999); // Set to end of today
+
+  const pastAndPresentQuestions = allQuestions.filter(q => new Date(q.date) <= today);
+
   return (
     <div className="container mx-auto px-4 py-12">
       <header className="text-center mb-12">
@@ -14,14 +43,28 @@ export default function PuzzleAndQuizPage() {
           Puzzles & Quizzes
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Challenge yourself with our question of the day!
+          Challenge yourself with our daily questions!
         </p>
       </header>
-      <main>
+      <main className="max-w-4xl mx-auto space-y-8">
         <Suspense fallback={
             <div className="h-64 w-full bg-muted rounded-lg animate-pulse" />
         }>
-            <QuestionOfTheDaySection />
+            {pastAndPresentQuestions.length > 0 ? (
+                pastAndPresentQuestions.map(question => (
+                    <QuestionOfTheDaySection 
+                        key={question.id}
+                        initialQuestion={question}
+                        initialUser={currentUser}
+                    />
+                ))
+            ) : (
+                 <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+                    <Puzzle className="h-16 w-16 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold mb-2">No Questions... Yet!</h2>
+                    <p>The first daily question hasn't been posted. Check back soon!</p>
+                </div>
+            )}
         </Suspense>
       </main>
     </div>

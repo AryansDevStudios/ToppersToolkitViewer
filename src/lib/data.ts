@@ -1,5 +1,6 @@
 
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer } from "./types";
@@ -685,12 +686,15 @@ export async function getQuestionsOfTheDay(): Promise<QuestionOfTheDay[]> {
 }
 
 export async function getQuestionOfTheDay(date: string): Promise<QuestionOfTheDay | null> {
-  noStore();
-  const qotdCollection = collection(db, 'qotd');
-  const q = query(qotdCollection, where('date', '==', date), limit(1));
-  const qotdSnapshot = await getDocs(q);
+    noStore();
+    const qotdCollection = collection(db, 'qotd');
+    const q = query(qotdCollection, where('date', '==', date), limit(1));
+    const qotdSnapshot = await getDocs(q);
 
-  if (qotdSnapshot.empty) {
+    if (!qotdSnapshot.empty) {
+        return { id: qotdSnapshot.docs[0].id, ...qotdSnapshot.docs[0].data() } as QuestionOfTheDay;
+    }
+
     // If no question for today, get the most recent past or present one
     const pastOrPresentQuery = query(
         qotdCollection,
@@ -700,10 +704,8 @@ export async function getQuestionOfTheDay(date: string): Promise<QuestionOfTheDa
     );
     const recentSnapshot = await getDocs(pastOrPresentQuery);
     if (recentSnapshot.empty) return null;
+    
     return { id: recentSnapshot.docs[0].id, ...recentSnapshot.docs[0].data() } as QuestionOfTheDay;
-  }
-
-  return { id: qotdSnapshot.docs[0].id, ...qotdSnapshot.docs[0].data() } as QuestionOfTheDay;
 }
 
 export async function upsertQuestionOfTheDay(questionData: Omit<QuestionOfTheDay, 'id' | 'createdAt'> & { id?: string }) {
@@ -790,4 +792,3 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return { success: false, error: e.message };
   }
 }
-

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
 import { auth, onAuthStateChanged } from '@/lib/firebase';
 import type { User } from '@/lib/types';
+import { getUserById } from '@/lib/data';
 
 const setSessionCookie = async (user: FirebaseUser | null) => {
     if (user) {
@@ -35,11 +36,11 @@ export function useAuth() {
         
         // Fetch user data from our new API route
         try {
-            const res = await fetch(`/api/users/${firebaseUser.uid}`);
-            if (res.ok) {
-                const userData: User | null = await res.json();
+            // No longer using API route, directly use server action
+            const userData = await getUserById(firebaseUser.uid);
+            if (userData) {
                 setDbUser(userData);
-                setRole(userData?.role || 'User');
+                setRole(userData.role || 'User');
             } else {
                 setDbUser(null);
                 setRole(null);
