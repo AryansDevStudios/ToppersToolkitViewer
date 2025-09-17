@@ -80,8 +80,8 @@ export default function Home() {
             <h1 className="text-4xl md:text-6xl font-black font-headline tracking-tighter bg-gradient-to-r from-fuchsia-500 to-cyan-500 bg-clip-text text-transparent inline-block">
               Topper's Toolkit
             </h1>
-            <p className="max-w-2xl mx-auto text-lg text-muted-foreground mt-4">
-              High-quality, chapter-wise notes designed for academic excellence. Dive into any subject and start your journey to becoming a topper.
+            <p className="max-w-2xl mx-auto text-xl text-muted-foreground mt-4 italic">
+             "Study Smarter, Score Higher" <br /> -Kuldeep
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild size="lg">
