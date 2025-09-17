@@ -132,18 +132,13 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
                     </Button>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end items-center gap-2">
-                        {!isVisible && (
-                          <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <Input
-                            type="number"
-                            value={user.score || 0}
-                            onChange={(e) => handleScoreChange(user.id, e.target.value)}
-                            className="w-24 text-right"
-                            disabled={isPending}
-                        />
-                    </div>
+                    <Input
+                        type="number"
+                        value={user.score || 0}
+                        onChange={(e) => handleScoreChange(user.id, e.target.value)}
+                        className="w-24 text-right inline-flex"
+                        disabled={isPending}
+                    />
                   </TableCell>
                 </TableRow>
               )})
