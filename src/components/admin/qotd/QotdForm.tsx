@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useTransition, useState } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { upsertQuestionOfTheDay } from "@/lib/data";
 import type { QuestionOfTheDay, QotdOption } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -53,14 +53,16 @@ export function QotdForm({ question, children }: QotdFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const isEditing = !!question;
 
+  const getInitialFormValues = () => ({
+    question: question?.question || "",
+    options: question?.options && question.options.length > 0 ? question.options : [{ id: uuidv4(), text: "" }, { id: uuidv4(), text: "" }],
+    correctOptionId: question?.correctOptionId || "",
+    date: question ? new Date(question.date) : new Date(),
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      question: question?.question || "",
-      options: question?.options || [{ id: uuidv4(), text: "" }, { id: uuidv4(), text: "" }],
-      correctOptionId: question?.correctOptionId || "",
-      date: question ? new Date(question.date) : new Date(),
-    },
+    defaultValues: getInitialFormValues(),
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -68,14 +70,12 @@ export function QotdForm({ question, children }: QotdFormProps) {
     name: "options",
   });
   
-  const resetForm = () => {
-    form.reset({
-      question: question?.question || "",
-      options: question?.options || [{ id: uuidv4(), text: "" }, { id: uuidv4(), text: "" }],
-      correctOptionId: question?.correctOptionId || "",
-      date: question ? new Date(question.date) : new Date(),
-    });
-  };
+  useEffect(() => {
+    if (isOpen) {
+      form.reset(getInitialFormValues());
+    }
+  }, [isOpen, question, form]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
@@ -107,10 +107,7 @@ export function QotdForm({ question, children }: QotdFormProps) {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-        setIsOpen(open);
-        if (!open) resetForm();
-    }}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -151,7 +148,7 @@ export function QotdForm({ question, children }: QotdFormProps) {
                                     <Button 
                                         type="button"
                                         variant={form.watch('correctOptionId') === field.id ? 'default' : 'outline'}
-                                        onClick={() => form.setValue('correctOptionId', field.id)}
+                                        onClick={() => form.setValue('correctOptionId', field.id, { shouldValidate: true })}
                                         className="h-10 w-24"
                                     >
                                         {form.watch('correctOptionId') === field.id ? 'Correct' : 'Mark'}
@@ -170,7 +167,7 @@ export function QotdForm({ question, children }: QotdFormProps) {
                     ))}
                  </div>
                   {form.formState.errors.options && <FormMessage>{form.formState.errors.options.message}</FormMessage>}
-                  {form.formState.errors.correctOptionId && <FormMessage>{form.formState.errors.correctOptionId.message}</FormMessage>}
+                  {form.formState.errors.correctOptionId && <FormMessage className="mt-2">{form.formState.errors.correctOptionId.message}</FormMessage>}
 
                 <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append({ id: uuidv4(), text: '' })}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Option
