@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -13,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, HelpCircle, Check, X, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { submitUserAnswer, getUserQotdAnswer } from "@/lib/data";
+import { submitUserAnswer, getUserQotdAnswers } from "@/lib/data";
 import type { QuestionOfTheDay, UserQotdAnswer, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -55,8 +56,13 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
         return;
       }
       setIsLoadingAnswer(true);
-      const answer = await getUserQotdAnswer(user.uid, initialQuestion.id);
-      setUserAnswer(answer);
+      const answers = await getUserQotdAnswers(user.uid);
+      if (answers) {
+          const specificAnswer = answers.find(a => a.questionId === initialQuestion.id);
+          setUserAnswer(specificAnswer || null);
+      } else {
+          setUserAnswer(null);
+      }
       setIsLoadingAnswer(false);
     }
     fetchUserAnswer();
@@ -83,8 +89,11 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
         variant: result.isCorrect ? "default" : "destructive",
       });
       // Fetch the new answer to update the UI
-      const newAnswer = await getUserQotdAnswer(user.uid, initialQuestion.id);
-      setUserAnswer(newAnswer);
+      const answers = await getUserQotdAnswers(user.uid);
+      if (answers) {
+          const specificAnswer = answers.find(a => a.questionId === initialQuestion.id);
+          setUserAnswer(specificAnswer || null);
+      }
       router.refresh();
     } else {
       toast({

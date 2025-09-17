@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer } from "./types";
@@ -720,7 +721,7 @@ export async function upsertQuestionOfTheDay(questionData: Omit<QuestionOfTheDay
       await updateDoc(qotdDocRef, data);
     }
     revalidatePath('/admin/qotd');
-    revalidatePath('/');
+    revalidatePath('/puzzle-quiz');
     return { success: true, message: `Question successfully ${isNew ? 'created' : 'updated'}.` };
   } catch (e: any) {
     return { success: false, error: e.message };
@@ -733,22 +734,23 @@ export async function deleteQuestionOfTheDay(id: string) {
   try {
     await deleteDoc(qotdDocRef);
     revalidatePath('/admin/qotd');
-    revalidatePath('/');
+    revalidatePath('/puzzle-quiz');
     return { success: true, message: "Question deleted successfully." };
   } catch (e: any) {
     return { success: false, error: e.message };
   }
 }
 
-export async function getUserQotdAnswer(userId: string, questionId: string): Promise<UserQotdAnswer | null> {
+export async function getUserQotdAnswers(userId: string): Promise<UserQotdAnswer[] | null> {
     noStore();
-    if (!userId || !questionId) return null;
+    if (!userId) return null;
 
-    const answerDocRef = doc(db, 'qotd_answers', `${userId}_${questionId}`);
+    const answerDocRef = doc(db, 'qotd_answers', userId);
     const answerDoc = await getDoc(answerDocRef);
 
     if (answerDoc.exists()) {
-        return answerDoc.data() as UserQotdAnswer;
+        const data = answerDoc.data();
+        return data.answers as UserQotdAnswer[];
     }
     return null;
 }
@@ -757,7 +759,7 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
   noStore();
   const userDocRef = doc(db, 'users', userId);
   const qotdDocRef = doc(db, 'qotd', questionId);
-  const answerDocRef = doc(db, 'qotd_answers', `${userId}_${questionId}`);
+  const answerDocRef = doc(db, 'qotd_answers', userId);
 
   try {
     return await runTransaction(db, async (transaction) => {
@@ -769,23 +771,34 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
 
       if (!userDoc.exists()) throw new Error("User not found.");
       if (!qotdDoc.exists()) throw new Error("Question not found.");
-      if (answerDoc.exists()) throw new Error("You have already answered this question.");
       
       const userData = userDoc.data() as User;
       const qotdData = qotdDoc.data() as QuestionOfTheDay;
 
+      // Check if this question has already been answered by the user
+      if (answerDoc.exists()) {
+          const existingAnswers = answerDoc.data().answers as UserQotdAnswer[];
+          if (existingAnswers.some(ans => ans.questionId === questionId)) {
+              throw new Error("You have already answered this question.");
+          }
+      }
+
       const isCorrect = qotdData.correctOptionIndex === selectedOptionIndex;
 
       const newAnswer: UserQotdAnswer = {
-        userId,
         questionId,
+        question: qotdData.question,
         selectedOptionIndex,
         isCorrect,
         answeredAt: Date.now(),
       };
       
-      // Save the answer in its own collection
-      transaction.set(answerDocRef, newAnswer);
+      // Save the answer in the user's answer document
+      if (answerDoc.exists()) {
+           transaction.update(answerDocRef, { answers: arrayUnion(newAnswer) });
+      } else {
+           transaction.set(answerDocRef, { userId, answers: [newAnswer] });
+      }
       
       // Update the user's score if correct
       if (isCorrect) {
@@ -799,5 +812,3 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return { success: false, error: e.message };
   }
 }
-
-    

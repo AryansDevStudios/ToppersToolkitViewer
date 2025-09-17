@@ -62,8 +62,8 @@ export interface QuestionOfTheDay {
 }
 
 export interface UserQotdAnswer {
-  userId: string;
   questionId: string;
+  question: string;
   selectedOptionIndex: number;
   isCorrect: boolean;
   answeredAt: number;
