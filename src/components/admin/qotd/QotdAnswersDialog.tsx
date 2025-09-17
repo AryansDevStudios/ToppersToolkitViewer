@@ -16,14 +16,14 @@ import {
 import { Users, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { User, QuestionOfTheDay, UserQotdAnswer } from "@/lib/types";
-import { getAllQotdAnswers } from "@/lib/data";
+import { getAllQotdAnswers, getUsers } from "@/lib/data";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
 interface QotdAnswersDialogProps {
   question: QuestionOfTheDay;
-  users: User[];
+  users: User[]; // This can be a pre-filtered list, but we'll fetch all for safety
 }
 
 interface AnswerDetails {
@@ -43,7 +43,7 @@ const getInitials = (name: string | null | undefined): string => {
     return names[0].substring(0, 2).toUpperCase();
 };
 
-export function QotdAnswersDialog({ question, users }: QotdAnswersDialogProps) {
+export function QotdAnswersDialog({ question, users: initialUsers }: QotdAnswersDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [answers, setAnswers] = useState<AnswerDetails[]>([]);
@@ -54,10 +54,16 @@ export function QotdAnswersDialog({ question, users }: QotdAnswersDialogProps) {
       const fetchAnswers = async () => {
         setIsLoading(true);
         try {
-          const allUserAnswers = await getAllQotdAnswers();
-          
+          // Fetch both all answers and all users to ensure we have complete data
+          const [allUserAnswers, allUsers] = await Promise.all([
+             getAllQotdAnswers(),
+             getUsers()
+          ]);
+          console.log("QOTD Dialog: Fetched allUserAnswers", allUserAnswers);
+          console.log("QOTD Dialog: Fetched allUsers", allUsers);
+
           const relevantAnswers: AnswerDetails[] = [];
-          const userMap = new Map(users.map(u => [u.id, u]));
+          const userMap = new Map(allUsers.map(u => [u.id, u]));
 
           allUserAnswers.forEach(userAnswerDoc => {
             const answerForThisQuestion = userAnswerDoc.answers.find(a => a.questionId === question.id);
@@ -71,11 +77,17 @@ export function QotdAnswersDialog({ question, users }: QotdAnswersDialogProps) {
                   selectedOption: question.options[answerForThisQuestion.selectedOptionIndex]?.text || 'Invalid Option',
                   isCorrect: answerForThisQuestion.isCorrect,
                 });
+              } else {
+                 console.warn("QOTD Dialog: Could not find user with ID:", userAnswerDoc.userId);
               }
             }
           });
+          
+          console.log("QOTD Dialog: Found relevant answers:", relevantAnswers);
           setAnswers(relevantAnswers);
+
         } catch (error) {
+          console.error("QOTD Dialog: Error fetching answers:", error);
           toast({ title: "Error", description: "Failed to fetch answers.", variant: "destructive" });
         } finally {
           setIsLoading(false);
@@ -83,7 +95,7 @@ export function QotdAnswersDialog({ question, users }: QotdAnswersDialogProps) {
       };
       fetchAnswers();
     }
-  }, [isOpen, question, users, toast]);
+  }, [isOpen, question, toast]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
