@@ -117,6 +117,9 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
                  {isVisibleList && <TableCell className="font-bold text-lg text-center">{index + 1}</TableCell>}
                   <TableCell>
                     <div className="font-medium">{user.name || 'N/A'}</div>
+                    <div className="hidden text-sm text-muted-foreground md:inline">
+                        {user.email}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
