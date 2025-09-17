@@ -56,20 +56,22 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <Link href="/" className="mr-6 flex items-center space-x-2">
-          <Image src="https://topperstoolkit.netlify.app/icon/icon_main.png" alt="Topper's Toolkit Library Logo" width={32} height={32} />
-          <span className="font-bold inline-block text-base sm:text-lg">
-            Topper's Toolkit Library
-          </span>
-        </Link>
+        <div className="flex-none">
+          <Link href="/" className="mr-4 flex items-center space-x-2">
+            <Image src="https://topperstoolkit.netlify.app/icon/icon_main.png" alt="Topper's Toolkit Library Logo" width={32} height={32} />
+            <span className="font-bold hidden sm:inline-block text-base sm:text-lg">
+              Topper's Toolkit Library
+            </span>
+          </Link>
+        </div>
         
-        <div className="flex-1 justify-start items-center hidden md:flex">
+        <div className="flex-1 flex justify-start items-center">
           <div className="w-full max-w-sm">
              <GlobalSearch />
           </div>
         </div>
         
-        <div className="flex flex-1 items-center justify-end space-x-2">
+        <div className="flex flex-none items-center justify-end space-x-1 sm:space-x-2">
            {mounted && user && role === 'Admin' && (
               <Button variant="ghost" asChild className="hidden md:flex">
                   <Link href="/admin">Admin Panel</Link>
@@ -103,9 +105,6 @@ export function AppHeader() {
            )}
         </div>
       </div>
-       <div className="md:hidden p-2 border-t">
-          <GlobalSearch />
-        </div>
     </header>
   );
 }
