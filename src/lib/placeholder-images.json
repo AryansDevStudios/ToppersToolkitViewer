@@ -1,0 +1,43 @@
+
+{
+    "leaderboard": {
+        "src": "https://picsum.photos/seed/leaderboard/400/400",
+        "data-ai-hint": "trophy winner"
+    },
+    "puzzle": {
+        "src": "https://picsum.photos/seed/puzzle/400/400",
+        "data-ai-hint": "jigsaw puzzle"
+    },
+    "quiz": {
+        "src": "https://picsum.photos/seed/quiz/400/400",
+        "data-ai-hint": "question mark"
+    },
+    "notices": {
+        "src": "https://picsum.photos/seed/notices/400/400",
+        "data-ai-hint": "notice board"
+    },
+    "ai_help": {
+        "src": "https://picsum.photos/seed/aihelp/400/400",
+        "data-ai-hint": "robot brain"
+    },
+    "doubt_box": {
+        "src": "https://picsum.photos/seed/doubtbox/400/400",
+        "data-ai-hint": "question answer"
+    },
+    "about_us": {
+        "src": "https://picsum.photos/seed/aboutus/400/400",
+        "data-ai-hint": "team diverse"
+    },
+    "telegram_chat": {
+        "src": "https://picsum.photos/seed/telegram/400/400",
+        "data-ai-hint": "paper plane"
+    },
+    "mcqs": {
+        "src": "https://picsum.photos/seed/mcqs/400/400",
+        "data-ai-hint": "multiple choice"
+    },
+    "mindmap": {
+        "src": "https://picsum.photos/seed/mindmap/400/400",
+        "data-ai-hint": "network nodes"
+    }
+}
