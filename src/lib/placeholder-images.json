@@ -4,13 +4,9 @@
         "src": "https://picsum.photos/seed/leaderboard/400/400",
         "data-ai-hint": "trophy winner"
     },
-    "puzzle": {
-        "src": "https://picsum.photos/seed/puzzle/400/400",
-        "data-ai-hint": "jigsaw puzzle"
-    },
-    "quiz": {
-        "src": "https://picsum.photos/seed/quiz/400/400",
-        "data-ai-hint": "question mark"
+    "puzzle-quiz": {
+        "src": "https://picsum.photos/seed/puzzlequiz/400/400",
+        "data-ai-hint": "jigsaw question"
     },
     "notices": {
         "src": "https://picsum.photos/seed/notices/400/400",

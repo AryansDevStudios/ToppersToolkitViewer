@@ -22,14 +22,9 @@ const features = [
     href: '/leaderboard',
   },
   {
-    title: 'Puzzle',
+    title: 'Puzzle & Quiz',
     icon: 'Puzzle',
-    href: '/puzzle',
-  },
-  {
-    title: 'Quiz',
-    icon: 'FileQuestion',
-    href: '/quiz',
+    href: '/puzzle-quiz',
   },
   {
     title: 'Notices',
