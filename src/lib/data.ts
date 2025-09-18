@@ -788,7 +788,7 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return await runTransaction(db, async (transaction) => {
       const [qotdDoc, answerDoc, userDoc] = await Promise.all([
         transaction.get(qotdDocRef),
-        transaction.get(answerDocRef),
+        transaction.get(answerDoc),
         transaction.get(userDocRef)
       ]);
 
@@ -880,7 +880,13 @@ export async function getNotices(): Promise<Notice[]> {
   noStore();
   const noticesCollection = collection(db, 'notices');
   const noticesSnapshot = await getDocs(query(noticesCollection, orderBy('createdAt', 'desc')));
-  return noticesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notice));
+  
+  return noticesSnapshot.docs.map(doc => {
+    const data = doc.data();
+    // Ensure createdAt is a number
+    const createdAt = data.createdAt?.toMillis ? data.createdAt.toMillis() : (data.createdAt || 0);
+    return { id: doc.id, ...data, createdAt } as Notice;
+  });
 }
 
 export async function upsertNotice(noticeData: Omit<Notice, 'id' | 'createdAt'> & { id?: string }) {
@@ -891,7 +897,7 @@ export async function upsertNotice(noticeData: Omit<Notice, 'id' | 'createdAt'> 
 
   try {
     if (isNew) {
-      const docWithMeta = { ...data, id: docId, createdAt: Date.now() };
+      const docWithMeta = { ...data, id: docId, createdAt: serverTimestamp() };
       await setDoc(noticeDocRef, docWithMeta);
     } else {
       await updateDoc(noticeDocRef, data);
@@ -932,6 +938,7 @@ export async function createDoubt(userId: string, userName: string, userClassAnd
         userClassAndSection,
         question,
         status: 'pending',
+        createdAt: Date.now(),
     };
 
     try {
@@ -957,8 +964,8 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
             id: doc.id,
             ...doc.data(),
         } as Doubt));
-        // Sort manually since we can't use orderBy with a different field in a `where` clause on this plan.
-        return doubts.sort((a, b) => a.question.localeCompare(b.question));
+        // Sort manually to show newest first
+        return doubts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     } catch (error) {
         console.error("Error fetching user doubts:", error);
         return [];
@@ -976,8 +983,8 @@ export async function getAllDoubts(): Promise<Doubt[]> {
             id: doc.id,
             ...doc.data(),
         } as Doubt));
-        // Sort manually
-        return doubts.sort((a, b) => a.question.localeCompare(b.question));
+        // Sort manually to show newest first
+        return doubts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     } catch (error) {
         console.error("Error fetching all doubts:", error);
         return [];
@@ -996,6 +1003,7 @@ export async function answerDoubt(doubtId: string, answer: string, adminName: st
             status: 'answered',
             answeredBy: adminName,
             answeredByAdminId: adminId,
+            answeredAt: Date.now(),
         });
         revalidatePath('/admin/doubts');
         revalidatePath('/doubt-box');
