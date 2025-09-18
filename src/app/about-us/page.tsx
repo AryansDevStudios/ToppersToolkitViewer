@@ -19,10 +19,10 @@ const features: { title: string; icon: keyof typeof iconMap, description: string
     { title: 'Mindmaps', icon: 'BrainCircuit', description: 'Visualize topics with mindmaps for better retention. A powerful tool to organize and revise complex concepts easily.' },
 ];
 
-const FeatureItem = ({ title, icon, description }: { title: string, icon: LucideIcon, description: string }) => (
+const FeatureItem = ({ title, icon: Icon, description }: { title: string, icon: LucideIcon, description: string }) => (
     <div className="flex items-start gap-4">
         <div className="bg-primary/10 text-primary rounded-lg p-3">
-            <icon className="h-6 w-6" />
+            <Icon className="h-6 w-6" />
         </div>
         <div>
             <h3 className="text-lg font-semibold">{title}</h3>
