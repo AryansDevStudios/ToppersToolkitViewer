@@ -246,7 +246,7 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "The beautiful thing about learning is that no one can take it away from you.",
     about: [
-      "As the Owner and Founder of Topper's Toolkit, Kuldeep Singh is the visionary behind the platform. With over a decade of experience, he is passionate about creating high-quality educational content that is accessible and exciting for all students.",
+      "As the Owner and Founder of Topper's Toolkit, Kuldeep Singh is the visionary behind the platform. He is passionate about creating high-quality educational content that is accessible and exciting for all students.",
       "He believes in a hands-on approach to learning, encouraging students to ask questions and fostering a lifelong love for inquiry and discovery.",
       "His work is the foundation of this library, driven by a mission to help every student achieve their full academic potential."
     ],
@@ -255,7 +255,7 @@ export const teachers: TeacherProfile[] = [
     id: "aryan-gupta",
     name: "Aryan Gupta",
     subject: "Technology & Development",
-    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
+    photoUrl: "/images/AryansImage.webp",
     quote: "Technology is best when it brings people together.",
     about: [
       "As the developer behind Topper's Toolkit, Aryan Gupta focuses on creating digital tools that enhance the learning experience.",
