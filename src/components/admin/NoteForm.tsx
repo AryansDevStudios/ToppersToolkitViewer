@@ -38,7 +38,8 @@ const formSchema = z.object({
   subSubjectId: z.string().min(1, { message: "Please select a sub-subject." }),
   chapterName: z.string().min(1, { message: "Chapter Name is required." }),
   type: z.string().min(1, { message: "Note type is required." }),
-  pdfUrl: z.string().url({ message: "Please enter a valid URL." }),
+  url: z.string().url({ message: "Please enter a valid URL." }),
+  renderAs: z.enum(["pdf", "image", "iframe"]),
   linkType: z.enum(["github", "other"]),
   serveViaJsDelivr: z.boolean(),
   useProxy: z.boolean(),
@@ -66,7 +67,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       subSubjectId: note?.subSubjectId || "",
       chapterName: note?.chapterName || "",
       type: note?.type || "",
-      pdfUrl: note?.originalPdfUrl || note?.pdfUrl || "",
+      url: note?.originalUrl || note?.url || note?.pdfUrl || "",
+      renderAs: note?.renderAs || 'pdf',
       linkType: note?.linkType || "github",
       serveViaJsDelivr: note?.serveViaJsDelivr === undefined ? true : note.serveViaJsDelivr,
       useProxy: note?.useProxy === undefined ? true : note.useProxy,
@@ -80,6 +82,11 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     name: "subjectId",
   });
   
+  const selectedSubSubjectId = useWatch({
+    control: form.control,
+    name: "subSubjectId",
+  });
+
   const linkType = useWatch({
       control: form.control,
       name: "linkType",
@@ -113,7 +120,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
             subSubjectId: values.subSubjectId, // keep sub-subject
             chapterName: values.chapterName, // keep chapter
             type: "", // clear type
-            pdfUrl: "", // clear URL
+            url: "", // clear URL
+            renderAs: "pdf",
             linkType: "github",
             serveViaJsDelivr: true,
             useProxy: true,
@@ -131,6 +139,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       }
     });
   }
+
+  const compositeChapterId = isEditing && note?.chapterId ? `${selectedSubjectId}/${selectedSubSubjectId}/${note.chapterId}` : undefined;
 
   return (
     <Card>
@@ -246,6 +256,45 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                   </FormItem>
               )}
             />
+
+             <FormField
+              control={form.control}
+              name="renderAs"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Render As</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex space-x-4"
+                      disabled={isPending}
+                    >
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="pdf" />
+                        </FormControl>
+                        <FormLabel className="font-normal">PDF</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="image" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Image</FormLabel>
+                      </FormItem>
+                       <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="iframe" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Iframe</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="linkType"
@@ -279,15 +328,15 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
             />
             <FormField
               control={form.control}
-              name="pdfUrl"
+              name="url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>PDF URL</FormLabel>
+                  <FormLabel>Content URL</FormLabel>
                   <FormControl>
                     <Input placeholder="https://..." {...field} disabled={isPending} />
                   </FormControl>
                    <FormDescription>
-                    {linkType === 'github' ? "Enter the standard GitHub blob URL." : "Enter the direct URL to the PDF."}
+                    {linkType === 'github' ? "Enter the standard GitHub blob URL." : "Enter the direct URL to the content."}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -376,10 +425,10 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
           </CardContent>
           <CardFooter className="flex justify-between">
             <div>
-              {isEditing && note.id && note.chapterId && (
+              {isEditing && note?.id && compositeChapterId && (
                 <DeleteNoteDialog 
                   noteId={note.id} 
-                  chapterId={note.chapterId} 
+                  chapterId={compositeChapterId} 
                   isTriggerButton
                 />
               )}
@@ -393,3 +442,4 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     </Card>
   );
 }
+
