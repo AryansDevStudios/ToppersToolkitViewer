@@ -49,7 +49,7 @@ const features = [
   {
     title: 'Telegram Chat',
     icon: 'Send',
-    href: 'https://t.me/topperstoolkit',
+    href: 'https://t.me/+BP99uVTapfw3YmY1',
     isExternal: true,
   },
   {

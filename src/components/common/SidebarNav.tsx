@@ -25,7 +25,7 @@ const mainNavLinks = [
   { title: 'AI Help', icon: 'Bot', href: '/solve-doubts' },
   { title: 'Doubt Box', icon: 'MessageSquare', href: '/doubt-box' },
   { title: 'About Us', icon: 'Users', href: '/about-us' },
-  { title: 'Telegram Chat', icon: 'Send', href: 'https://t.me/topperstoolkit', isExternal: true },
+  { title: 'Telegram Chat', icon: 'Send', href: 'https://t.me/+BP99uVTapfw3YmY1', isExternal: true },
   { title: 'MCQs', icon: 'BookCheck', href: '/mcqs' },
   { title: 'Mindmap', icon: 'BrainCircuit', href: '/mindmap' },
 ];

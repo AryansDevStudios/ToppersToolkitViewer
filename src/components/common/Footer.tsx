@@ -37,8 +37,8 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-2 justify-center md:justify-start">
                 <Send className="h-4 w-4" />
-                 <a href="https://t.me/topperstoolkit" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-                  Telegram: @topperstoolkit
+                 <a href="https://t.me/+BP99uVTapfw3YmY1" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                  Telegram: Topper's Toolkit
                 </a>
               </li>
             </ul>
