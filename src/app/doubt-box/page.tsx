@@ -13,47 +13,26 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { createDoubt, getUserDoubts } from "@/lib/data";
 import type { Doubt } from "@/lib/types";
-import { format } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
-import type { Timestamp } from 'firebase/firestore';
-
 
 const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
-    const timeZone = 'Asia/Kolkata';
-
-    // Data is already a JS Date object from the server action.
-    const zonedDate = toZonedTime(doubt.createdAt as Date, timeZone);
-    let answeredAtDate = null;
-    if (doubt.answeredAt) {
-      answeredAtDate = toZonedTime(doubt.answeredAt as Date, timeZone);
-    }
-
     return (
         <Card className="break-inside-avoid">
             <CardHeader>
                 <div className="flex justify-between items-start">
-                    <p className="text-xs text-muted-foreground pt-1">
-                        Asked on: {format(zonedDate, "PPP p")}
-                    </p>
+                    <p className="font-semibold text-base">{doubt.question}</p>
                     <Badge variant={doubt.status === 'answered' ? 'default' : 'secondary'}>
                         {doubt.status}
                     </Badge>
                 </div>
             </CardHeader>
-            <CardContent>
-                <p className="font-semibold">{doubt.question}</p>
-                {doubt.status === 'answered' && doubt.answer && (
-                     <div className="mt-4 bg-muted p-3 rounded-md border">
+            {doubt.status === 'answered' && doubt.answer && (
+                <CardContent>
+                     <div className="mt-2 bg-muted p-3 rounded-md border">
                         <p className="text-sm font-semibold text-primary">Reply from Admin:</p>
                         <p className="text-sm whitespace-pre-wrap">{doubt.answer}</p>
-                         {answeredAtDate && (
-                             <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
-                                Answered on {format(answeredAtDate, "PPP p")}
-                            </p>
-                        )}
                     </div>
-                )}
-            </CardContent>
+                </CardContent>
+            )}
         </Card>
     )
 }

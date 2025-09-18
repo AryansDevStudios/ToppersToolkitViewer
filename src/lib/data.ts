@@ -926,14 +926,13 @@ export async function createDoubt(userId: string, userName: string, userClassAnd
     const doubtId = uuidv4();
     const doubtDocRef = doc(db, "doubts", doubtId);
 
-    const newDoubt = {
+    const newDoubt: Doubt = {
         id: doubtId,
         userId,
         userName,
         userClassAndSection,
         question,
-        status: 'pending' as 'pending',
-        createdAt: serverTimestamp(),
+        status: 'pending',
     };
 
     try {
@@ -951,19 +950,13 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
     if (!userId) return [];
     
     const doubtsCollection = collection(db, 'doubts');
-    const q = query(doubtsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const q = query(doubtsCollection, where('userId', '==', userId));
     
     try {
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => {
             const data = doc.data();
-            // Convert Firestore Timestamps to JS Dates
-            return {
-                ...data,
-                id: doc.id,
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
-                answeredAt: data.answeredAt?.toDate ? data.answeredAt.toDate() : null,
-            } as Doubt;
+            return { ...data, id: doc.id } as Doubt;
         });
     } catch (error) {
         console.error("Error fetching user doubts:", error);
@@ -974,18 +967,13 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
 export async function getAllDoubts(): Promise<Doubt[]> {
     noStore();
     const doubtsCollection = collection(db, 'doubts');
-    const q = query(doubtsCollection, orderBy('createdAt', 'desc'));
+    const q = query(doubtsCollection);
     
     try {
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => {
             const data = doc.data();
-            return {
-                ...data,
-                id: doc.id,
-                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
-                answeredAt: data.answeredAt?.toDate ? data.answeredAt.toDate() : null,
-            } as Doubt;
+            return { ...data, id: doc.id } as Doubt;
         });
     } catch (error) {
         console.error("Error fetching all doubts:", error);
@@ -1004,7 +992,6 @@ export async function answerDoubt(doubtId: string, answer: string, adminName: st
         await updateDoc(doubtDocRef, {
             answer: answer,
             status: 'answered',
-            answeredAt: serverTimestamp(),
             answeredBy: adminName,
             answeredByAdminId: adminId,
         });
@@ -1015,3 +1002,4 @@ export async function answerDoubt(doubtId: string, answer: string, adminName: st
         return { success: false, error: e.message };
     }
 }
+

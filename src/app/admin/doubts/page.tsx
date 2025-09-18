@@ -1,4 +1,5 @@
 
+
 import { getAllDoubts } from "@/lib/data";
 import { MessageSquare, Check, Clock } from "lucide-react";
 import type { Doubt } from "@/lib/types";
@@ -11,23 +12,11 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format } from 'date-fns';
-import { toZonedTime } from 'date-fns-tz';
 import { AnswerDoubtDialog } from "@/components/admin/doubts/AnswerDoubtDialog";
-import type { Timestamp } from "firebase/firestore";
 
 export const revalidate = 0;
 
 const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
-    const timeZone = 'Asia/Kolkata';
-    
-    // Data is already a JS Date object from the server action.
-    const zonedDate = toZonedTime(doubt.createdAt as Date, timeZone);
-    let answeredAtDate = null;
-    if (doubt.answeredAt) {
-      answeredAtDate = toZonedTime(doubt.answeredAt as Date, timeZone);
-    }
-
     return (
         <Card>
             <CardHeader>
@@ -40,9 +29,6 @@ const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
                         {doubt.status}
                     </Badge>
                 </div>
-                 <p className="text-xs text-muted-foreground pt-2">
-                    Asked on: {format(zonedDate, "PPP p")}
-                </p>
             </CardHeader>
             <CardContent>
                 <p className="font-semibold">{doubt.question}</p>
@@ -50,9 +36,9 @@ const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
                     <div className="mt-4 bg-muted p-3 rounded-md border">
                         <p className="text-sm font-semibold text-primary">Reply:</p>
                         <p className="text-sm whitespace-pre-wrap">{doubt.answer}</p>
-                         {answeredAtDate && (
+                         {doubt.answeredBy && (
                              <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
-                                Answered by {doubt.answeredBy} on {format(answeredAtDate, "PPP p")}
+                                Answered by {doubt.answeredBy}
                             </p>
                         )}
                     </div>
