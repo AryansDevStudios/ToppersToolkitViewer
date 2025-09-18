@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, ShoppingBag, LogIn, Sparkles } from "lucide-react";
+import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -67,7 +67,7 @@ export function MobileBottomNav() {
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Compass, label: "Browse" },
       { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-400" },
-      { href: "https://topperstoolkit.netlify.app", icon: ShoppingBag, label: "Shop", isExternal: true },
+      { href: "/mcqs", icon: BookCheck, label: "MCQs" },
     ];
 
     const renderAuthSlot = () => {
