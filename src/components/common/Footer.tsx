@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="bg-card mt-12 border-t pb-20 md:pb-0">
       <div className="container py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left">
+        <div className="grid grid-cols-1 gap-8 text-center">
           <div>
             <h3 className="text-lg font-black mb-2">Topper's Toolkit</h3>
              <div className="mt-4 space-x-4">
@@ -17,30 +17,6 @@ export function Footer() {
                     User Manual
                 </Link>
             </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Contact Us</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2 justify-center md:justify-start">
-                 <Mail className="h-4 w-4" />
-                 <a href="mailto:kuldeepsingh012011@gmail.com" className="hover:text-primary">
-                    kuldeepsingh012011@gmail.com
-                </a>
-              </li>
-              <li className="flex items-center gap-2 justify-center md:justify-start">
-                <Smartphone className="h-4 w-4" />
-                <a href="https://wa.me/917754000411" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-                  WhatsApp: +91 77540 00411
-                </a>
-              </li>
-              <li className="flex items-center gap-2 justify-center md:justify-start">
-                <Send className="h-4 w-4" />
-                 <a href="https://t.me/+BP99uVTapfw3YmY1" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-                  Telegram: Topper's Toolkit
-                </a>
-              </li>
-            </ul>
           </div>
         </div>
         <div className="mt-8 border-t pt-4 text-center text-sm text-muted-foreground">
