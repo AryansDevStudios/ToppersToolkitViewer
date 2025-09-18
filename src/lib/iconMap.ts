@@ -1,4 +1,4 @@
-import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book, Library, Folder, FileText, Calculator, PenSquare, Code, Palette, Music, BrainCircuit, Swords, Puzzle, ClipboardList, MessageSquare, Users, Bot, Send, FileQuestion, BookCheck, Menu, Gavel, Gift, HelpCircle, History, LogOut, Trophy } from "lucide-react";
+import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book, Library, Folder, FileText, Calculator, PenSquare, Code, Palette, Music, BrainCircuit, Swords, Puzzle, ClipboardList, MessageSquare, Users, Bot, Send, FileQuestion, BookCheck, Menu, Gavel, Gift, HelpCircle, History, LogOut, Trophy, Home } from "lucide-react";
 
 export const iconMap: { [key: string]: React.FC<any> } = {
   Atom,
@@ -35,6 +35,7 @@ export const iconMap: { [key: string]: React.FC<any> } = {
   History,
   LogOut,
   Trophy,
+  Home,
 };
 
 export const iconNames = Object.keys(iconMap).sort();

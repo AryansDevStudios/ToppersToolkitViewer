@@ -9,7 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, Compass } from "lucide-react";
+import { Menu, LogOut, Compass, Home } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,6 +20,7 @@ import { auth } from "@/lib/firebase";
 import { useState } from "react";
 
 const mainNavLinks = [
+  { title: 'Home', icon: 'Home', href: '/' },
   { title: 'Browse', icon: 'Compass', href: '/browse' },
   { title: 'Leaderboard', icon: 'Swords', href: '/leaderboard' },
   { title: 'Puzzle & Quiz', icon: 'Puzzle', href: '/puzzle-quiz' },
