@@ -5,10 +5,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Loader2, Image as ImageIcon, FileText } from "lucide-react";
+import { ShieldAlert, Loader2, Image as ImageIcon, FileText, Maximize, Minimize } from "lucide-react";
 import { getUserById, getNoteById as fetchNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useRef, useCallback } from "react";
 import dynamic from 'next/dynamic';
 import type { Note } from "@/lib/types";
 import Image from 'next/image';
@@ -58,6 +58,33 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
     const [note, setNote] = useState<Note | null>(null);
     const [isLoadingNote, setIsLoadingNote] = useState(true);
 
+    // Fullscreen state
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleFullscreen = useCallback(() => {
+        if (!containerRef.current) return;
+
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }, []);
+
+    useEffect(() => {
+        const onFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener("fullscreenchange", onFullscreenChange);
+
+        return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    }, []);
+
+
     useEffect(() => {
         async function loadNote() {
             setIsLoadingNote(true);
@@ -104,7 +131,16 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
     if (contentType === 'iframe' && contentUrl) {
          if (hasAccess === false) return <AccessDenied />;
          return (
-            <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+            <div ref={containerRef} className="relative w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+                 <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute bottom-2 right-2 z-10 bg-background/50 hover:bg-background/80"
+                    onClick={handleFullscreen}
+                    title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                >
+                    {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                </Button>
                 <iframe
                     src={contentUrl}
                     className="w-full h-full border-0"
