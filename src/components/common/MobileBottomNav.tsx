@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck } from "lucide-react";
+import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck, Puzzle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -69,6 +69,8 @@ export function MobileBottomNav() {
       { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-400" },
       { href: "/mcqs", icon: BookCheck, label: "MCQs" },
     ];
+    
+    const quizItem = { href: "/puzzle-quiz", icon: Puzzle, label: "Quiz" };
 
     const renderAuthSlot = () => {
       if (loading) {
@@ -80,7 +82,8 @@ export function MobileBottomNav() {
         )
       }
       if (user) {
-        return <UserProfileMenu isMobile={true} />;
+        const isActive = pathname.startsWith(quizItem.href);
+        return <NavItem {...quizItem} isActive={isActive} />;
       } else {
         return (
           <Link href="/login" className="flex items-center justify-center w-full h-full p-1">
