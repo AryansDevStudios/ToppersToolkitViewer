@@ -42,7 +42,6 @@ export default async function MindmapPage() {
                         <div className="p-3 bg-primary/10 rounded-lg">
                           <Icon className="w-6 h-6 text-primary" />
                         </div>
-                        <Badge variant="secondary">{note.subjectName}</Badge>
                       </div>
                     </CardHeader>
                     <CardContent className="flex flex-col h-full pt-0">
