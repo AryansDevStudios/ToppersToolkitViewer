@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt } from "./types";
@@ -958,7 +957,7 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
     if (!userId) return [];
     
     const doubtsCollection = collection(db, 'doubts');
-    const q = query(doubtsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const q = query(doubtsCollection, where('userId', '==', userId));
     
     try {
         const querySnapshot = await getDocs(q);
@@ -966,6 +965,8 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
             id: doc.id,
             ...doc.data(),
         } as Doubt));
+        // Sort by the 'createdAt' number in descending order
+        doubts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         return doubts;
     } catch (error) {
         console.error("Error fetching user doubts:", error);
@@ -1027,3 +1028,5 @@ export async function deleteDoubt(doubtId: string): Promise<{ success: boolean; 
         return { success: false, error: e.message };
     }
 }
+
+    
