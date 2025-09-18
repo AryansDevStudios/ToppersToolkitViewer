@@ -40,8 +40,8 @@ const AccessDenied = () => (
 const LoadingState = () => (
    <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-        <h2 className="text-2xl font-bold">Verifying Access...</h2>
-        <p className="mt-2 text-muted-foreground">Please wait while we check your permissions.</p>
+        <h2 className="text-2xl font-bold">Loading Content...</h2>
+        <p className="mt-2 text-muted-foreground">Please wait while we load your document.</p>
     </div>
 )
 
