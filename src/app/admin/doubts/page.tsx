@@ -14,12 +14,21 @@ import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { AnswerDoubtDialog } from "@/components/admin/doubts/AnswerDoubtDialog";
+import type { Timestamp } from "firebase/firestore";
 
 export const revalidate = 0;
 
 const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
     const timeZone = 'Asia/Kolkata';
-    const zonedDate = toZonedTime(new Date(doubt.createdAt), timeZone);
+    
+    const createdAtDate = (doubt.createdAt as Timestamp)?.toDate ? (doubt.createdAt as Timestamp).toDate() : new Date(doubt.createdAt as Date);
+    const zonedDate = toZonedTime(createdAtDate, timeZone);
+
+    let answeredAtDate = null;
+    if (doubt.answeredAt) {
+      const answeredAt = (doubt.answeredAt as Timestamp)?.toDate ? (doubt.answeredAt as Timestamp).toDate() : new Date(doubt.answeredAt as Date);
+      answeredAtDate = toZonedTime(answeredAt, timeZone);
+    }
 
     return (
         <Card>
@@ -43,9 +52,9 @@ const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
                     <div className="mt-4 bg-muted p-3 rounded-md border">
                         <p className="text-sm font-semibold text-primary">Reply:</p>
                         <p className="text-sm whitespace-pre-wrap">{doubt.answer}</p>
-                         {doubt.answeredAt && (
+                         {answeredAtDate && (
                              <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
-                                Answered by {doubt.answeredBy} on {format(toZonedTime(new Date(doubt.answeredAt), timeZone), "PPP p")}
+                                Answered by {doubt.answeredBy} on {format(answeredAtDate, "PPP p")}
                             </p>
                         )}
                     </div>

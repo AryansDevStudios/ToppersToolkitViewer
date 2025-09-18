@@ -1,77 +1,119 @@
 
+
 "use client";
 
-import { useState, useEffect, useTransition } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { MessageSquare, Loader2, Send } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
-import { createDoubt, getUserDoubts } from '@/lib/data';
-import type { Doubt } from '@/lib/types';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useTransition, useEffect, FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Send, MessageSquare, Check, Clock } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { createDoubt, getUserDoubts } from "@/lib/data";
+import type { Doubt } from "@/lib/types";
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import type { Timestamp } from 'firebase/firestore';
+
+
+const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
+    const timeZone = 'Asia/Kolkata';
+
+    // Safely handle Firestore Timestamp or JS Date
+    const createdAtDate = (doubt.createdAt as Timestamp)?.toDate ? (doubt.createdAt as Timestamp).toDate() : new Date(doubt.createdAt as Date);
+    const zonedDate = toZonedTime(createdAtDate, timeZone);
+    
+    let answeredAtDate = null;
+    if (doubt.answeredAt) {
+      const answeredAt = (doubt.answeredAt as Timestamp)?.toDate ? (doubt.answeredAt as Timestamp).toDate() : new Date(doubt.answeredAt as Date);
+      answeredAtDate = toZonedTime(answeredAt, timeZone);
+    }
+
+    return (
+        <Card className="break-inside-avoid">
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <p className="text-xs text-muted-foreground pt-1">
+                        Asked on: {format(zonedDate, "PPP p")}
+                    </p>
+                    <Badge variant={doubt.status === 'answered' ? 'default' : 'secondary'}>
+                        {doubt.status}
+                    </Badge>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <p className="font-semibold">{doubt.question}</p>
+                {doubt.status === 'answered' && doubt.answer && (
+                     <div className="mt-4 bg-muted p-3 rounded-md border">
+                        <p className="text-sm font-semibold text-primary">Reply from Admin:</p>
+                        <p className="text-sm whitespace-pre-wrap">{doubt.answer}</p>
+                         {answeredAtDate && (
+                             <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
+                                Answered on {format(answeredAtDate, "PPP p")}
+                            </p>
+                        )}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
 
 export default function DoubtBoxPage() {
     const { user, dbUser, loading: authLoading } = useAuth();
-    const router = useRouter();
-    const [question, setQuestion] = useState('');
-    const [doubts, setDoubts] = useState<Doubt[]>([]);
-    const [isLoadingDoubts, setIsLoadingDoubts] = useState(true);
-    const [isSubmitting, startSubmitting] = useTransition();
     const { toast } = useToast();
-    const timeZone = 'Asia/Kolkata';
+    const [question, setQuestion] = useState("");
+    const [doubts, setDoubts] = useState<Doubt[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, startTransition] = useTransition();
 
     useEffect(() => {
-        if (authLoading) return;
-        if (!user) {
-            router.push('/login');
-            return;
-        }
+        if (!user) return;
 
         async function fetchDoubts() {
-            setIsLoadingDoubts(true);
+            setIsLoading(true);
             try {
                 const userDoubts = await getUserDoubts(user!.uid);
                 setDoubts(userDoubts);
             } catch (error) {
                 toast({ title: "Error", description: "Could not fetch your past doubts.", variant: "destructive" });
             } finally {
-                setIsLoadingDoubts(false);
+                setIsLoading(false);
             }
         }
-
         fetchDoubts();
-    }, [user, authLoading, router, toast]);
+    }, [user, toast]);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!question.trim() || !user || !dbUser) return;
 
-        startSubmitting(async () => {
+        startTransition(async () => {
             const result = await createDoubt(user.uid, dbUser.name, dbUser.classAndSection, question);
             if (result.success) {
-                toast({ title: "Doubt Submitted!", description: "Your question has been sent to the admins." });
-                setQuestion('');
+                toast({ title: "Doubt Submitted", description: "Your question has been sent to the admins." });
+                setQuestion("");
                 // Refetch doubts to show the new one
-                const userDoubts = await getUserDoubts(user.uid);
-                setDoubts(userDoubts);
+                try {
+                    const userDoubts = await getUserDoubts(user!.uid);
+                    setDoubts(userDoubts);
+                } catch (error) {
+                    // The main list will just be slightly delayed, not a critical error to show the user
+                }
             } else {
                 toast({ title: "Submission Failed", description: result.error, variant: "destructive" });
             }
         });
     };
-
-    if (authLoading || (!user && !authLoading)) {
-        return (
-            <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+    
+    if (authLoading) {
+        return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    }
+    
+    if (!user) {
+        return <div className="p-8 text-center text-muted-foreground">Please log in to use the Doubt Box.</div>;
     }
     
     return (
@@ -84,15 +126,19 @@ export default function DoubtBoxPage() {
                     Doubt Box
                 </h1>
                 <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                    Have a question? Ask our team directly and we'll get back to you.
+                    Have a question? Drop it in the doubt box for our admins to answer.
                 </p>
             </header>
-            <main className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 {/* Form Section */}
                 <div className="lg:order-2">
                     <Card>
                         <CardHeader>
                             <CardTitle>Ask a New Question</CardTitle>
+                             <CardDescription>
+                                Your question will be sent to an admin for review.
+                            </CardDescription>
                         </CardHeader>
                         <form onSubmit={handleSubmit}>
                             <CardContent>
@@ -104,18 +150,12 @@ export default function DoubtBoxPage() {
                                     disabled={isSubmitting}
                                 />
                             </CardContent>
-                            <CardFooter className="flex justify-end">
-                                <Button type="submit" disabled={isSubmitting || !question.trim()}>
+                            <CardFooter>
+                                <Button type="submit" disabled={!question.trim() || isSubmitting}>
                                     {isSubmitting ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Submitting...
-                                        </>
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>
                                     ) : (
-                                        <>
-                                            <Send className="mr-2 h-4 w-4" />
-                                            Submit Doubt
-                                        </>
+                                        <><Send className="mr-2 h-4 w-4" />Submit Doubt</>
                                     )}
                                 </Button>
                             </CardFooter>
@@ -125,66 +165,25 @@ export default function DoubtBoxPage() {
 
                 {/* History Section */}
                 <div className="lg:order-1">
-                     <Card className="h-full">
-                        <CardHeader>
-                            <CardTitle>Your Past Questions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="h-[50vh]">
-                             {isLoadingDoubts ? (
-                                <div className="flex items-center justify-center h-full">
-                                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <h2 className="text-2xl font-bold mb-4">Your Past Questions</h2>
+                    <ScrollArea className="h-[60vh] w-full pr-4">
+                         <div className="space-y-6">
+                            {isLoading ? (
+                                <div className="flex justify-center items-center h-48">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
                                 </div>
-                             ) : (
-                                <ScrollArea className="h-full pr-4">
-                                    {doubts.length > 0 ? (
-                                        <div className="space-y-6">
-                                            {doubts.map(doubt => {
-                                                 // Correctly handle Firestore Timestamps
-                                                const createdAtDate = (doubt.createdAt as any)?.toDate ? (doubt.createdAt as any).toDate() : new Date(doubt.createdAt);
-                                                const answeredAtDate = (doubt.answeredAt as any)?.toDate ? (doubt.answeredAt as any).toDate() : (doubt.answeredAt ? new Date(doubt.answeredAt) : null);
-
-                                                const zonedDate = toZonedTime(createdAtDate, timeZone);
-                                                 
-                                                 return (
-                                                    <div key={doubt.id} className="border-l-4 pl-4 py-2" style={{borderColor: doubt.status === 'answered' ? 'hsl(var(--primary))' : 'hsl(var(--border))'}}>
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <p className="text-sm text-muted-foreground">{format(zonedDate, "PPP p")}</p>
-                                                            <Badge variant={doubt.status === 'answered' ? 'default' : 'secondary'}>
-                                                                {doubt.status}
-                                                            </Badge>
-                                                        </div>
-                                                        <p className="font-semibold text-card-foreground mb-3">{doubt.question}</p>
-                                                        
-                                                        {doubt.status === 'answered' && doubt.answer && (
-                                                            <div className="bg-muted p-3 rounded-md mt-2">
-                                                                <p className="text-sm font-semibold text-primary">Admin's Reply:</p>
-                                                                <p className="text-sm text-foreground whitespace-pre-wrap">{doubt.answer}</p>
-                                                                 {answeredAtDate && (
-                                                                    <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
-                                                                        Answered by {doubt.answeredBy} on {format(toZonedTime(answeredAtDate, timeZone), "PPP p")}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                 )
-                                            })}
-                                        </div>
-                                    ) : (
-                                         <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
-                                            <MessageSquare className="h-12 w-12 mb-4" />
-                                            <p className="font-semibold">You haven't asked any questions yet.</p>
-                                            <p className="text-sm">Use the form to submit your first doubt.</p>
-                                        </div>
-                                    )}
-                                </ScrollArea>
+                            ) : doubts.length > 0 ? (
+                                doubts.map((doubt) => <DoubtCard key={doubt.id} doubt={doubt} />)
+                            ) : (
+                                <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+                                    <h3 className="text-lg font-semibold mb-1">You haven't asked any questions yet.</h3>
+                                    <p>Use the form to submit your first doubt.</p>
+                                </div>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </ScrollArea>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }
-
-    

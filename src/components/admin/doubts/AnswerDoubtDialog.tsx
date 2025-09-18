@@ -1,38 +1,39 @@
 
+
 "use client";
 
-import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { useTransition, useState, useEffect } from "react";
+import { answerDoubt } from "@/lib/data";
+import type { Doubt } from "@/lib/types";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription
 } from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import type { Doubt } from "@/lib/types";
-import { answerDoubt } from "@/lib/data";
-import { Loader2, Send } from "lucide-react";
+import { Send } from "lucide-react";
 
 const formSchema = z.object({
-  answer: z.string().min(10, { message: "Answer must be at least 10 characters." }),
+  answer: z.string().min(10, "Answer must be at least 10 characters."),
 });
 
 interface AnswerDoubtDialogProps {
@@ -40,11 +41,11 @@ interface AnswerDoubtDialogProps {
 }
 
 export function AnswerDoubtDialog({ doubt }: AnswerDoubtDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const { user, dbUser } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
-  const { user } = useAuth(); // We need the admin's info
+  const [isPending, startTransition] = useTransition();
+  const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,76 +54,81 @@ export function AnswerDoubtDialog({ doubt }: AnswerDoubtDialogProps) {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    if (!user?.uid || !user.displayName) {
-        toast({ title: "Error", description: "You must be logged in to answer.", variant: "destructive" });
+  useEffect(() => {
+    if (!isOpen) {
+      form.reset();
+    }
+  }, [isOpen, form]);
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user || !dbUser) {
+        toast({ title: "Authentication Error", description: "You must be logged in to answer.", variant: "destructive" });
         return;
     }
     
     startTransition(async () => {
-      const result = await answerDoubt(doubt.id, values.answer, user.uid, user.displayName!);
+      const result = await answerDoubt(doubt.id, values.answer, dbUser.name, user.uid);
       if (result.success) {
-        toast({ title: "Answer Submitted", description: "The student will be notified." });
+        toast({
+          title: "Reply Sent",
+          description: "The user has been notified.",
+        });
         setIsOpen(false);
-        form.reset();
         router.refresh();
       } else {
-        toast({ title: "Error", description: result.error || "Could not submit answer.", variant: "destructive" });
+        toast({
+          title: "Operation Failed",
+          description: result.error || "Could not send the reply.",
+          variant: "destructive",
+        });
       }
     });
-  };
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button size="sm">
             <Send className="mr-2 h-4 w-4" />
             Answer
         </Button>
-      </DialogTrigger>
+    </DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Reply to Doubt</DialogTitle>
+          <DialogTitle>Reply to {doubt.userName}</DialogTitle>
           <DialogDescription>
-            Provide an answer to the student's question.
+            Your answer will be visible to the student.
           </DialogDescription>
         </DialogHeader>
-        <div className="my-4">
-            <p className="font-semibold text-sm">Student's Question:</p>
-            <p className="text-sm bg-muted p-3 rounded-md mt-1">{doubt.question}</p>
+        <div className="my-4 p-4 border rounded-md bg-muted/50">
+            <p className="font-semibold text-sm mb-1">Question:</p>
+            <p className="text-sm">{doubt.question}</p>
         </div>
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name="answer"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Your Answer</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                placeholder="Type your detailed answer here..."
-                                className="min-h-[150px]"
-                                {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <DialogFooter>
-                    <Button type="submit" disabled={isPending}>
-                    {isPending ? (
-                        <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
-                        </>
-                    ) : (
-                        "Submit Answer"
-                    )}
-                    </Button>
-                </DialogFooter>
-            </form>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="answer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Your Answer</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="e.g., The formula for photosynthesis is..."
+                      className="min-h-[150px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Sending..." : "Send Reply"}
+              </Button>
+            </DialogFooter>
+          </form>
         </Form>
       </DialogContent>
     </Dialog>

@@ -5,7 +5,7 @@
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp } from "firebase/firestore";
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
@@ -926,14 +926,14 @@ export async function createDoubt(userId: string, userName: string, userClassAnd
     const doubtId = uuidv4();
     const doubtDocRef = doc(db, "doubts", doubtId);
 
-    const newDoubt: Doubt = {
+    const newDoubt = {
         id: doubtId,
         userId,
         userName,
         userClassAndSection,
         question,
-        status: 'pending',
-        createdAt: Date.now(),
+        status: 'pending' as 'pending',
+        createdAt: serverTimestamp(),
     };
 
     try {
@@ -955,7 +955,16 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
     
     try {
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => doc.data() as Doubt);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            // Convert Firestore Timestamps to JS Dates
+            return {
+                ...data,
+                id: doc.id,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+                answeredAt: data.answeredAt?.toDate ? data.answeredAt.toDate() : null,
+            } as Doubt;
+        });
     } catch (error) {
         console.error("Error fetching user doubts:", error);
         return [];
@@ -969,31 +978,38 @@ export async function getAllDoubts(): Promise<Doubt[]> {
     
     try {
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => doc.data() as Doubt);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                id: doc.id,
+                createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+                answeredAt: data.answeredAt?.toDate ? data.answeredAt.toDate() : null,
+            } as Doubt;
+        });
     } catch (error) {
         console.error("Error fetching all doubts:", error);
         return [];
     }
 }
 
-export async function answerDoubt(doubtId: string, answer: string, adminId: string, adminName: string): Promise<{ success: boolean, error?: string }> {
-    if (!doubtId || !answer || !adminId || !adminName) {
-        return { success: false, error: "Missing required information to answer doubt." };
-    }
-    const doubtDocRef = doc(db, "doubts", doubtId);
 
-    const updateData = {
-        answer,
-        status: 'answered' as const,
-        answeredAt: Date.now(),
-        answeredBy: adminName,
-        answeredByAdminId: adminId,
-    };
+export async function answerDoubt(doubtId: string, answer: string, adminName: string, adminId: string): Promise<{ success: boolean; error?: string }> {
+    if (!doubtId || !answer || !adminName || !adminId) {
+        return { success: false, error: "Missing required fields." };
+    }
+    const doubtDocRef = doc(db, 'doubts', doubtId);
 
     try {
-        await updateDoc(doubtDocRef, updateData);
-        revalidatePath('/doubt-box');
+        await updateDoc(doubtDocRef, {
+            answer: answer,
+            status: 'answered',
+            answeredAt: serverTimestamp(),
+            answeredBy: adminName,
+            answeredByAdminId: adminId,
+        });
         revalidatePath('/admin/doubts');
+        revalidatePath('/doubt-box');
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };

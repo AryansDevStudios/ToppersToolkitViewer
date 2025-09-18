@@ -1,5 +1,7 @@
 
 
+import type { Timestamp } from "firebase/firestore";
+
 export interface LoginLog {
   timestamp: number;
   ipAddress?: string; // Note: Capturing IP on server is more reliable
@@ -103,8 +105,8 @@ export interface Doubt {
     question: string;
     answer?: string;
     status: 'pending' | 'answered';
-    createdAt: number;
-    answeredAt?: number;
+    createdAt: Date | Timestamp;
+    answeredAt?: Date | Timestamp;
     answeredBy?: string; // Admin's name
     answeredByAdminId?: string; // Admin's user ID
 }
