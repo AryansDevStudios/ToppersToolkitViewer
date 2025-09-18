@@ -246,9 +246,9 @@ export const teachers: TeacherProfile[] = [
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "The beautiful thing about learning is that no one can take it away from you.",
     about: [
-      "With over a decade of experience, Kuldeep Singh is passionate about creating high-quality educational content that is accessible and exciting for all students.",
-      "He believes in a hands-on approach to learning, encouraging students to experiment and ask questions. His goal is to foster a lifelong love for inquiry and discovery.",
-      "As the creator of the notes and materials on Topper's Toolkit, his work is the foundation of this library, aimed at helping every student achieve their full academic potential."
+      "As the Owner and Founder of Topper's Toolkit, Kuldeep Singh is the visionary behind the platform. With over a decade of experience, he is passionate about creating high-quality educational content that is accessible and exciting for all students.",
+      "He believes in a hands-on approach to learning, encouraging students to ask questions and fostering a lifelong love for inquiry and discovery.",
+      "His work is the foundation of this library, driven by a mission to help every student achieve their full academic potential."
     ],
   },
   {
@@ -264,6 +264,8 @@ export const teachers: TeacherProfile[] = [
     ],
   },
 ];
+
+    
 
     
 
