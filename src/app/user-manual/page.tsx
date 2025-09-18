@@ -1,11 +1,12 @@
+
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BookUser, ShoppingCart, LogIn, Search, ShieldCheck, ShieldQuestion } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: "User Manual - Topper's Toolkit Library",
-    description: "A simple guide to using the Topper's Toolkit Library.",
+    title: "User Manual - Topper's Toolkit",
+    description: "A simple guide to using the Topper's Toolkit.",
 };
 
 export const revalidate = 0;

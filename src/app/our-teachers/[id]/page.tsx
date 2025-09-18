@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: TeacherProfilePageProps): Pro
   }
 
   return {
-    title: `${teacher.name} - Topper's Toolkit Library`,
+    title: `${teacher.name} - Topper's Toolkit`,
     description: `Learn more about ${teacher.name}, our ${teacher.subject}.`,
   };
 }

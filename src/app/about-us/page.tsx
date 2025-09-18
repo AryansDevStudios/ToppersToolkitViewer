@@ -41,7 +41,7 @@ const PlatformCard = () => (
                 <CardTitle className="text-2xl">About Our Platform</CardTitle>
             </div>
              <p className="text-muted-foreground pt-2">
-                Topper's Toolkit Library is a dedicated platform designed to provide students with high-quality study materials in a secure and user-friendly environment. Our purpose is to help you access the resources you need to excel in your studies, all in one place. Here's what you can do:
+                Topper's Toolkit is a dedicated platform designed to provide students with high-quality study materials in a secure and user-friendly environment. Our purpose is to help you access the resources you need to excel in your studies, all in one place. Here's what you can do:
             </p>
         </CardHeader>
         <CardContent>

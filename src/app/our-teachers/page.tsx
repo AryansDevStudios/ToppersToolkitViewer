@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-    title: "Our Teachers - Topper's Toolkit Library",
+    title: "Our Teachers - Topper's Toolkit",
     description: "Meet the dedicated educators behind Topper's Toolkit.",
 };
 
