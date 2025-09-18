@@ -54,14 +54,6 @@ export function MobileBottomNav() {
     if (isDoubtSolverPage) {
         return null;
     }
-
-    if (!mounted) {
-        return (
-            <nav className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
-                <MobileNavSkeleton />
-            </nav>
-        );
-    }
     
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
@@ -73,7 +65,7 @@ export function MobileBottomNav() {
     const quizItem = { href: "/puzzle-quiz", icon: Puzzle, label: "Quiz" };
 
     const renderAuthSlot = () => {
-      if (loading) {
+      if (loading && !mounted) {
          return (
             <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
                 <Skeleton className="h-7 w-7 rounded-full" />
@@ -120,3 +112,4 @@ export function MobileBottomNav() {
         </nav>
     );
 }
+
