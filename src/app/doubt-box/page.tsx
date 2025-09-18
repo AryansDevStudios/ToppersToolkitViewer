@@ -139,7 +139,12 @@ export default function DoubtBoxPage() {
                                     {doubts.length > 0 ? (
                                         <div className="space-y-6">
                                             {doubts.map(doubt => {
-                                                 const zonedDate = toZonedTime(new Date(doubt.createdAt), timeZone);
+                                                 // Correctly handle Firestore Timestamps
+                                                const createdAtDate = (doubt.createdAt as any)?.toDate ? (doubt.createdAt as any).toDate() : new Date(doubt.createdAt);
+                                                const answeredAtDate = (doubt.answeredAt as any)?.toDate ? (doubt.answeredAt as any).toDate() : (doubt.answeredAt ? new Date(doubt.answeredAt) : null);
+
+                                                const zonedDate = toZonedTime(createdAtDate, timeZone);
+                                                 
                                                  return (
                                                     <div key={doubt.id} className="border-l-4 pl-4 py-2" style={{borderColor: doubt.status === 'answered' ? 'hsl(var(--primary))' : 'hsl(var(--border))'}}>
                                                         <div className="flex justify-between items-center mb-2">
@@ -154,9 +159,9 @@ export default function DoubtBoxPage() {
                                                             <div className="bg-muted p-3 rounded-md mt-2">
                                                                 <p className="text-sm font-semibold text-primary">Admin's Reply:</p>
                                                                 <p className="text-sm text-foreground whitespace-pre-wrap">{doubt.answer}</p>
-                                                                 {doubt.answeredAt && (
+                                                                 {answeredAtDate && (
                                                                     <p className="text-xs text-muted-foreground pt-2 mt-2 border-t">
-                                                                        Answered by {doubt.answeredBy} on {format(toZonedTime(new Date(doubt.answeredAt), timeZone), "PPP p")}
+                                                                        Answered by {doubt.answeredBy} on {format(toZonedTime(answeredAtDate, timeZone), "PPP p")}
                                                                     </p>
                                                                 )}
                                                             </div>
@@ -181,3 +186,5 @@ export default function DoubtBoxPage() {
         </div>
     );
 }
+
+    
