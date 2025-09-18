@@ -4,14 +4,31 @@ import { FeatureGrid } from "@/components/home/FeatureGrid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Mail, Send, Smartphone } from "lucide-react";
 
-export const revalidate = 0; 
+const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+    <path d="m10 12 5-3-5-3z" />
+  </svg>
+);
+
 
 function ContactSection() {
   const contactMethods = [
-    { name: 'Email', value: 'kuldeepsingh012011@gmail.com', href: 'mailto:kuldeepsingh012011@gmail.com' },
-    { name: 'WhatsApp', value: '+91 77540 00411', href: 'https://wa.me/917754000411' },
-    { name: 'Telegram', value: 'Topper\'s Toolkit Channel', href: 'https://t.me/+BP99uVTapfw3YmY1' },
+    { name: 'Email', href: 'mailto:kuldeepsingh012011@gmail.com', icon: Mail },
+    { name: 'WhatsApp', href: 'https://wa.me/917754000411', icon: Smartphone },
+    { name: 'Telegram', href: 'https://t.me/+BP99uVTapfw3YmY1', icon: Send },
+    { name: 'YouTube', href: 'https://youtube.com/@toppers_toolkit?si=pepc5bT3zMCULfGY', icon: YoutubeIcon }
   ];
 
   return (
@@ -21,23 +38,28 @@ function ContactSection() {
                 <h2 className="text-3xl font-bold tracking-tight">Contact Us</h2>
                 <p className="mt-2 text-muted-foreground">Have questions? We're here to help.</p>
             </div>
-            <div className="mt-8 max-w-sm mx-auto grid gap-4">
-                {contactMethods.map((method) => (
-                    <a
-                      key={method.name}
-                      href={method.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                        <Card className="hover:bg-accent hover:border-primary/50 transition-colors">
-                            <CardContent className="p-4">
-                                <p className="font-semibold text-base">{method.name}</p>
-                                <p className="text-sm text-primary">{method.value}</p>
-                            </CardContent>
-                        </Card>
-                    </a>
-                ))}
+            <div className="mt-8 max-w-lg mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+                {contactMethods.map((method) => {
+                    const Icon = method.icon;
+                    return (
+                        <a
+                          key={method.name}
+                          href={method.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block group"
+                        >
+                            <Card className="hover:bg-accent hover:border-primary/50 transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
+                                <CardContent className="p-4 flex flex-col items-center justify-center aspect-square">
+                                    <div className="bg-primary/10 text-primary p-4 rounded-lg mb-3">
+                                      <Icon className="h-8 w-8" />
+                                    </div>
+                                    <p className="font-semibold text-base text-center">{method.name}</p>
+                                </CardContent>
+                            </Card>
+                        </a>
+                    )
+                })}
             </div>
         </div>
     </section>
