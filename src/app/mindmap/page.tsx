@@ -52,9 +52,6 @@ export default async function MindmapPage() {
                       <p className="text-sm text-muted-foreground mb-1">
                         {note.subSubjectName}
                       </p>
-                       <p className="text-xs text-muted-foreground">
-                        Type: {note.type}
-                      </p>
                     </CardContent>
                   </Card>
                 </Link>
