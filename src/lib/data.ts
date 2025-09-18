@@ -932,6 +932,7 @@ export async function createDoubt(userId: string, userName: string, userClassAnd
         userClassAndSection,
         question,
         status: 'pending',
+        createdAt: serverTimestamp(),
     };
 
     try {
@@ -949,13 +950,18 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
     if (!userId) return [];
     
     const doubtsCollection = collection(db, 'doubts');
-    const q = query(doubtsCollection, where('userId', '==', userId));
+    const q = query(doubtsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
     
     try {
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => {
             const data = doc.data();
-            return { ...data, id: doc.id } as Doubt;
+            const createdAt = data.createdAt;
+            return {
+              ...data,
+              id: doc.id,
+              createdAt: createdAt ? createdAt.toMillis() : 0,
+            } as Doubt;
         });
     } catch (error) {
         console.error("Error fetching user doubts:", error);
@@ -966,13 +972,18 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
 export async function getAllDoubts(): Promise<Doubt[]> {
     noStore();
     const doubtsCollection = collection(db, 'doubts');
-    const q = query(doubtsCollection);
+    const q = query(doubtsCollection, orderBy('createdAt', 'desc'));
     
     try {
         const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => {
             const data = doc.data();
-            return { ...data, id: doc.id } as Doubt;
+            const createdAt = data.createdAt;
+            return {
+              ...data,
+              id: doc.id,
+              createdAt: createdAt ? createdAt.toMillis() : 0,
+            } as Doubt;
         });
     } catch (error) {
         console.error("Error fetching all doubts:", error);
@@ -993,6 +1004,7 @@ export async function answerDoubt(doubtId: string, answer: string, adminName: st
             status: 'answered',
             answeredBy: adminName,
             answeredByAdminId: adminId,
+            answeredAt: serverTimestamp(),
         });
         revalidatePath('/admin/doubts');
         revalidatePath('/doubt-box');
