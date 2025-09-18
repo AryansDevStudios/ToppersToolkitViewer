@@ -105,8 +105,6 @@ export interface Doubt {
     question: string;
     answer?: string;
     status: 'pending' | 'answered';
-    createdAt: number | Timestamp;
-    answeredAt?: number | Timestamp;
     answeredBy?: string; // Admin's name
     answeredByAdminId?: string; // Admin's user ID
 }
