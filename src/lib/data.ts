@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp } from "firebase/firestore";
@@ -1042,3 +1042,76 @@ export async function deleteDoubt(doubtId: string): Promise<{ success: boolean; 
         return { success: false, error: e.message };
     }
 }
+
+// --- MCQ Management ---
+export const upsertMCQ = async (data: { subjectId: string, subSubjectId: string, chapterId: string, mcqId?: string, question: string, options: string[], correctOptionIndex: number }) => {
+    const { subjectId, subSubjectId, chapterId, mcqId, ...mcqData } = data;
+    const isNew = !mcqId;
+    const newMcqId = isNew ? uuidv4() : mcqId;
+    const subjectDocRef = doc(db, "subjects", subjectId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) throw new Error("Subject not found!");
+            const subjectData = subjectDoc.data() as Subject;
+
+            const subSubject = subjectData.subSubjects?.find(ss => ss.id === subSubjectId);
+            if (!subSubject) throw new Error("Sub-subject not found!");
+
+            const chapter = subSubject.chapters?.find(c => c.id === chapterId);
+            if (!chapter) throw new Error("Chapter not found!");
+
+            if (!chapter.mcqs) chapter.mcqs = [];
+
+            const newMCQ: MCQ = { id: newMcqId, ...mcqData };
+
+            if (isNew) {
+                chapter.mcqs.push(newMCQ);
+            } else {
+                const mcqIndex = chapter.mcqs.findIndex(m => m.id === newMcqId);
+                if (mcqIndex > -1) {
+                    chapter.mcqs[mcqIndex] = newMCQ;
+                } else {
+                    // If editing but not found, add it.
+                    chapter.mcqs.push(newMCQ);
+                }
+            }
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+
+        revalidatePath('/admin/mcqs');
+        revalidatePath('/mcqs');
+        return { success: true, message: `MCQ successfully ${isNew ? 'created' : 'updated'}.` };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+};
+
+export const deleteMCQ = async (subjectId: string, subSubjectId: string, chapterId: string, mcqId: string) => {
+    const subjectDocRef = doc(db, "subjects", subjectId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) throw new Error("Subject not found!");
+            const subjectData = subjectDoc.data() as Subject;
+
+            const subSubject = subjectData.subSubjects?.find(ss => ss.id === subSubjectId);
+            if (!subSubject) throw new Error("Sub-subject not found!");
+
+            const chapter = subSubject.chapters?.find(c => c.id === chapterId);
+            if (!chapter || !chapter.mcqs) throw new Error("Chapter or MCQs not found!");
+
+            chapter.mcqs = chapter.mcqs.filter(m => m.id !== mcqId);
+
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+
+        revalidatePath('/admin/mcqs');
+        revalidatePath('/mcqs');
+        return { success: true, message: "MCQ deleted successfully." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+};
