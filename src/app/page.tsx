@@ -1,8 +1,49 @@
 
 import { Suspense } from "react";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export const revalidate = 0; 
+
+function ContactSection() {
+  const contactMethods = [
+    { name: 'Email', value: 'kuldeepsingh012011@gmail.com', href: 'mailto:kuldeepsingh012011@gmail.com' },
+    { name: 'WhatsApp', value: '+91 77540 00411', href: 'https://wa.me/917754000411' },
+    { name: 'Telegram', value: 'Topper\'s Toolkit Channel', href: 'https://t.me/+BP99uVTapfw3YmY1' },
+  ];
+
+  return (
+    <section className="w-full py-12 md:py-16">
+        <div className="container px-4">
+            <div className="max-w-3xl mx-auto text-center">
+                <h2 className="text-3xl font-bold tracking-tight">Contact Us</h2>
+                <p className="mt-2 text-muted-foreground">Have questions? We're here to help.</p>
+            </div>
+            <div className="mt-8 max-w-sm mx-auto grid gap-4">
+                {contactMethods.map((method) => (
+                    <a
+                      key={method.name}
+                      href={method.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                        <Card className="hover:bg-accent hover:border-primary/50 transition-colors">
+                            <CardContent className="p-4">
+                                <p className="font-semibold text-base">{method.name}</p>
+                                <p className="text-sm text-primary">{method.value}</p>
+                            </CardContent>
+                        </Card>
+                    </a>
+                ))}
+            </div>
+        </div>
+    </section>
+  );
+}
+
 
 export default function Home() {
   return (
@@ -22,6 +63,8 @@ export default function Home() {
         <Suspense>
             <FeatureGrid />
         </Suspense>
+
+        <ContactSection />
       </main>
     </div>
   );
