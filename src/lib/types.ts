@@ -20,8 +20,10 @@ export interface LoginLog {
 export interface Note {
   id: string;
   type: string;
-  pdfUrl: string;
-  originalPdfUrl?: string;
+  url: string;
+  originalUrl?: string;
+  pdfUrl?: string; // For backward compatibility
+  renderAs?: 'pdf' | 'iframe';
   linkType?: 'github' | 'other';
   serveViaJsDelivr?: boolean;
   useProxy?: boolean;

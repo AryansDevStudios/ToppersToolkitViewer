@@ -5,12 +5,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Loader2 } from "lucide-react";
+import { ShieldAlert, Loader2, Image as ImageIcon, FileText } from "lucide-react";
 import { getUserById, getNoteById as fetchNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo } from "react";
 import dynamic from 'next/dynamic';
 import type { Note } from "@/lib/types";
+import Image from 'next/image';
 
 const PdfViewerWrapper = dynamic(() => import('@/components/common/PdfViewerWrapper').then(mod => mod.PdfViewerWrapper), {
     ssr: false,
@@ -39,23 +40,36 @@ const AccessDenied = () => (
 const LoadingState = () => (
    <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
-        <h2 className="text-2xl font-bold">Loading Content...</h2>
-        <p className="mt-2 text-muted-foreground">Please wait while we load your content.</p>
+        <h2 className="text-2xl font-bold">Verifying Access...</h2>
+        <p className="mt-2 text-muted-foreground">Please wait while we check your permissions.</p>
     </div>
 )
 
 interface NoteViewerProps {
     noteId: string;
-    pdfUrl: string;
+    url?: string;
+    renderAs?: 'pdf' | 'iframe';
 }
 
-const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
+const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
     const { user, dbUser, loading: authLoading } = useAuth();
     const router = useRouter();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+    const [note, setNote] = useState<Note | null>(null);
+    const [isLoadingNote, setIsLoadingNote] = useState(true);
 
     useEffect(() => {
-        if (authLoading) {
+        async function loadNote() {
+            setIsLoadingNote(true);
+            const noteData = await fetchNoteById(noteId);
+            setNote(noteData);
+            setIsLoadingNote(false);
+        }
+        loadNote();
+    }, [noteId]);
+
+    useEffect(() => {
+        if (authLoading || isLoadingNote || !note) {
             return;
         }
 
@@ -64,37 +78,14 @@ const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
             return;
         }
         
-        // If dbUser is still loading, wait
         if (!dbUser) {
             return;
         }
-
-        setHasAccess(null); // Set to loading state while we run async checks
+        
+        setHasAccess(null); // Reset for re-check
 
         async function checkAccess() {
-            // Check for admin role first
-            if (dbUser.role === 'Admin') {
-                setHasAccess(true);
-                return;
-            }
-
-            // Fetch note data
-            const noteData = await fetchNoteById(noteId);
-
-            // Check if note is public
-            if (noteData?.isPublic) {
-                setHasAccess(true);
-                return;
-            }
-            
-            // Check if user has full access permission
-            if (dbUser?.hasFullNotesAccess) {
-                setHasAccess(true);
-                return;
-            }
-
-            // Check if user has access to this specific note
-            if (dbUser?.noteAccess?.includes(noteId)) {
+            if (dbUser.role === 'Admin' || note?.isPublic || dbUser.hasFullNotesAccess || dbUser.noteAccess?.includes(noteId)) {
                 setHasAccess(true);
             } else {
                 setHasAccess(false);
@@ -102,19 +93,48 @@ const NoteViewerComponent = ({ noteId, pdfUrl }: NoteViewerProps) => {
         }
 
         checkAccess();
-    }, [authLoading, user, dbUser, noteId, router]);
+    }, [authLoading, user, dbUser, noteId, router, note, isLoadingNote]);
+    
+    // Determine content type, defaulting to 'pdf' for backward compatibility
+    const contentType = note?.renderAs || 'pdf';
+    const contentUrl = note?.url || note?.pdfUrl || "";
 
-
-    if (hasAccess === null) {
+    // For iframes, we can render optimistically while checking permissions.
+    // For PDFs, we need to wait for the URL from the permission check.
+    if (contentType === 'iframe' && contentUrl) {
+         if (hasAccess === false) return <AccessDenied />;
+         return (
+            <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+                <iframe
+                    src={contentUrl}
+                    className="w-full h-full border-0"
+                    title="Embedded Content"
+                    allowFullScreen
+                ></iframe>
+            </div>
+        );
+    }
+    
+    // For other types, wait for access check to complete.
+    if (hasAccess === null || isLoadingNote) {
         return <LoadingState />;
     }
 
-    if (hasAccess) {
-        return (
-            <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
-                <PdfViewerWrapper url={pdfUrl} />
-            </div>
-        );
+    if (hasAccess === false) {
+        return <AccessDenied />;
+    }
+    
+    if (hasAccess && contentUrl) {
+        switch(contentType) {
+            case 'pdf':
+                return (
+                    <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+                        <PdfViewerWrapper url={contentUrl} />
+                    </div>
+                );
+            default:
+                 return <p>Unsupported content type.</p>
+        }
     }
     
     return <AccessDenied />;

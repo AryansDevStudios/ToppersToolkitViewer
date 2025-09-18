@@ -27,6 +27,7 @@ export const revalidate = 0;
 
 // Helper to group notes by chapter name, handling whitespace inconsistencies
 const groupNotesByChapter = (chapters: Chapter[]) => {
+    if (!chapters) return [];
     const grouped: { [key: string]: Note[] } = {};
     const chapterNameMap: { [key: string]: string } = {}; // To store the original name
 
@@ -69,7 +70,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
     notFound();
   }
   
-  const isNote = "pdfUrl" in current;
+  const isNote = "url" in current || "pdfUrl" in current;
   let breadcrumbItems: {name: string, href: string}[] = [];
   let currentPageName: string = '';
   let noteChapterName: string = '';
@@ -105,7 +106,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
   const renderContent = () => {
     if (isNote) {
       // The client component handles access check and rendering
-      return <NoteViewer noteId={current.id} pdfUrl={current.pdfUrl} />;
+      return <NoteViewer noteId={current.id} url={current.url || current.pdfUrl} renderAs={current.renderAs} />;
     }
     
     if (isSubSubject) {
@@ -199,12 +200,13 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
           </p>
         )}
       </header>
+      
+      {isNote ? renderContent() : (children && children.length > 0) ? renderContent() : (
+          <p className="text-muted-foreground italic text-center py-12">
+              No materials available here yet.
+          </p>
+      )}
 
-      {children.length > 0 || isNote ? renderContent() :
-        <p className="text-muted-foreground italic text-center py-12">
-            No materials available here yet.
-        </p>
-      }
     </div>
   );
 }
