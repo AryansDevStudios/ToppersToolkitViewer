@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ } from "./types";
@@ -785,11 +786,9 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
 
   try {
     return await runTransaction(db, async (transaction) => {
-      const [qotdDoc, answerDoc, userDoc] = await Promise.all([
-        transaction.get(qotdDocRef),
-        transaction.get(answerDoc),
-        transaction.get(userDocRef)
-      ]);
+      const qotdDoc = await transaction.get(qotdDocRef);
+      const answerDoc = await transaction.get(answerDocRef);
+      const userDoc = await transaction.get(userDocRef);
 
       if (!qotdDoc.exists()) throw new Error("Question not found.");
       
@@ -1115,3 +1114,4 @@ export const deleteMCQ = async (subjectId: string, subSubjectId: string, chapter
         return { success: false, error: e.message };
     }
 };
+
