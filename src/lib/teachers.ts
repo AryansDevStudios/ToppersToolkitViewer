@@ -242,7 +242,7 @@ export const teachers: TeacherProfile[] = [
   {
     id: "kuldeep-singh",
     name: "Kuldeep Singh",
-    subject: "Content Creator",
+    subject: "Owner and Founder",
     photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
     quote: "The beautiful thing about learning is that no one can take it away from you.",
     about: [
@@ -264,6 +264,8 @@ export const teachers: TeacherProfile[] = [
     ],
   },
 ];
+
+    
 
     
 
