@@ -40,11 +40,19 @@ const formSchema = z.object({
   type: z.string().min(1, { message: "Note type is required." }),
   url: z.string().url({ message: "Please enter a valid URL." }),
   renderAs: z.enum(["pdf", "iframe"]),
-  linkType: z.enum(["github", "other"]),
-  serveViaJsDelivr: z.boolean(),
-  useProxy: z.boolean(),
+  linkType: z.enum(["github", "other"]).optional(),
+  serveViaJsDelivr: z.boolean().optional(),
+  useProxy: z.boolean().optional(),
   icon: z.string().optional(),
   isPublic: z.boolean(),
+}).refine(data => {
+    if (data.renderAs !== 'iframe') {
+        return !!data.linkType;
+    }
+    return true;
+}, {
+    message: "Link type is required for PDFs.",
+    path: ["linkType"],
 });
 
 // We expect a version of Subject without the icon for client-side components
@@ -86,6 +94,12 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     control: form.control,
     name: "subSubjectId",
   });
+  
+  const renderAs = useWatch({
+    control: form.control,
+    name: "renderAs",
+  });
+
 
   const linkType = useWatch({
       control: form.control,
@@ -98,13 +112,18 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      const result = await upsertNote({
+      const dataToSubmit = {
         id: note?.id,
         ...values,
         chapterName: values.chapterName.trim(),
         type: values.type.trim(),
         icon: values.icon,
-      });
+        linkType: values.renderAs === 'iframe' ? undefined : values.linkType,
+        serveViaJsDelivr: values.renderAs === 'iframe' ? undefined : values.serveViaJsDelivr,
+        useProxy: values.renderAs === 'iframe' ? undefined : values.useProxy,
+      };
+
+      const result = await upsertNote(dataToSubmit);
 
       if (result.success) {
         toast({
@@ -291,37 +310,6 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
 
             <FormField
               control={form.control}
-              name="linkType"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>Link Type</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex space-x-4"
-                      disabled={isPending}
-                    >
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <RadioGroupItem value="github" />
-                        </FormControl>
-                        <FormLabel className="font-normal">GitHub</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <RadioGroupItem value="other" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Other</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="url"
               render={({ field }) => (
                 <FormItem>
@@ -329,59 +317,99 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                   <FormControl>
                     <Input placeholder="https://..." {...field} disabled={isPending} />
                   </FormControl>
-                   <FormDescription>
-                    {linkType === 'github' ? "Enter the standard GitHub blob URL." : "Enter the direct URL to the content."}
-                  </FormDescription>
+                   {renderAs !== 'iframe' && (
+                    <FormDescription>
+                      {linkType === 'github' ? "Enter the standard GitHub blob URL." : "Enter the direct URL to the content."}
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {linkType === 'github' && (
+            
+            {renderAs !== 'iframe' && (
+              <>
                 <FormField
-                    control={form.control}
-                    name="serveViaJsDelivr"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                            <div className="space-y-0.5">
-                                <FormLabel>Serve via jsDelivr</FormLabel>
-                                <FormDescription>
-                                    Convert GitHub link to a faster jsDelivr CDN link.
-                                </FormDescription>
-                            </div>
+                  control={form.control}
+                  name="linkType"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Link Type</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex space-x-4"
+                          disabled={isPending}
+                        >
+                          <FormItem className="flex items-center space-x-2">
                             <FormControl>
-                                <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    disabled={isPending}
-                                />
+                              <RadioGroupItem value="github" />
                             </FormControl>
-                        </FormItem>
-                    )}
-                />
-            )}
-             {linkType === 'other' && (
-                <FormField
-                    control={form.control}
-                    name="useProxy"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                            <div className="space-y-0.5">
-                                <FormLabel>Use Proxy API</FormLabel>
-                                <FormDescription>
-                                    Route URL through the Netlify proxy to avoid CORS issues.
-                                </FormDescription>
-                            </div>
+                            <FormLabel className="font-normal">GitHub</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2">
                             <FormControl>
-                                <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    disabled={isPending}
-                                />
+                              <RadioGroupItem value="other" />
                             </FormControl>
-                        </FormItem>
-                    )}
+                            <FormLabel className="font-normal">Other</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
+                
+                {linkType === 'github' && (
+                    <FormField
+                        control={form.control}
+                        name="serveViaJsDelivr"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <FormLabel>Serve via jsDelivr</FormLabel>
+                                    <FormDescription>
+                                        Convert GitHub link to a faster jsDelivr CDN link.
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        disabled={isPending}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                )}
+                 {linkType === 'other' && (
+                    <FormField
+                        control={form.control}
+                        name="useProxy"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <FormLabel>Use Proxy API</FormLabel>
+                                    <FormDescription>
+                                        Route URL through the Netlify proxy to avoid CORS issues.
+                                    </FormDescription>
+                                </div>
+                                <FormControl>
+                                    <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        disabled={isPending}
+                                    />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                )}
+              </>
             )}
+
              <FormField
               control={form.control}
               name="icon"
