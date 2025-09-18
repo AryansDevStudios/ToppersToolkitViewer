@@ -211,8 +211,8 @@ export const getDashboardStats = async () => {
     };
 };
 
-export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; pdfUrl: string; linkType: 'github' | 'other'; serveViaJsDelivr: boolean; useProxy: boolean; icon?: string; isPublic?: boolean; }) => {
-    const { id, subjectId, subSubjectId, pdfUrl: originalUrl, icon, linkType, serveViaJsDelivr, useProxy, isPublic } = data;
+export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; url: string; renderAs: 'pdf' | 'iframe'; linkType?: 'github' | 'other'; serveViaJsDelivr?: boolean; useProxy?: boolean; icon?: string; isPublic?: boolean; }) => {
+    const { id, subjectId, subSubjectId, url: originalUrl, icon, linkType, serveViaJsDelivr, useProxy, isPublic, renderAs } = data;
     const isNewNote = !id;
     const noteId = isNewNote ? uuidv4() : id!;
     const trimmedChapterName = data.chapterName.trim();
@@ -276,30 +276,34 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             }
             
             let finalUrl = originalUrl;
-            if (linkType === 'github' && serveViaJsDelivr) {
+            if (renderAs === 'pdf' && linkType === 'github' && serveViaJsDelivr) {
                 finalUrl = convertToJsDelivr(originalUrl);
-            } else if (linkType === 'other' && useProxy) {
+            } else if (renderAs === 'pdf' && linkType === 'other' && useProxy) {
                 finalUrl = convertToProxyUrl(originalUrl);
             }
             
-            const newNote: Note = { 
+            const newNote: Partial<Note> = { 
                 id: noteId,
                 type: trimmedType, 
-                pdfUrl: finalUrl,
-                originalPdfUrl: originalUrl,
-                linkType,
-                serveViaJsDelivr,
-                useProxy,
+                url: finalUrl,
+                originalUrl: originalUrl,
+                renderAs,
+                linkType: linkType,
+                serveViaJsDelivr: serveViaJsDelivr,
+                useProxy: useProxy,
                 icon: icon || 'FileText',
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
                 isPublic: isPublic || false,
              };
-            
+             
+            // Remove undefined fields before saving
+            Object.keys(newNote).forEach(key => (newNote as any)[key] === undefined && delete (newNote as any)[key]);
+
             const existingNoteIndex = targetChapter.notes.findIndex(n => n.id === noteId);
             if (existingNoteIndex > -1) {
-                targetChapter.notes[existingNoteIndex] = newNote;
+                targetChapter.notes[existingNoteIndex] = newNote as Note;
             } else {
-                targetChapter.notes.push(newNote);
+                targetChapter.notes.push(newNote as Note);
             }
             
             const targetSubjectRef = doc(db, "subjects", targetSubject.id);
@@ -331,8 +335,10 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
             const subSubject = subjectData.subSubjects.find(ss => ss.id === subSubjectId);
             if (!subSubject) throw new Error("Sub-subject not found!");
 
-            const chapter = subSubject.chapters.find(c => c.id === chapId);
-            if (!chapter) throw new Error("Chapter not found!");
+            const chapterIndex = subSubject.chapters.findIndex(c => c.id === chapId);
+            if (chapterIndex === -1) throw new Error("Chapter not found!");
+            
+            const chapter = subSubject.chapters[chapterIndex];
 
             const noteIndex = chapter.notes.findIndex(n => n.id === noteId);
             if (noteIndex !== -1) {
@@ -340,10 +346,15 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
 
                 // If the chapter is now empty, remove it.
                 if (chapter.notes.length === 0) {
-                    subSubject.chapters = subSubject.chapters.filter(c => c.id !== chapId);
+                    subSubject.chapters.splice(chapterIndex, 1);
                 }
             } else {
                 throw new Error("Note not found to delete.");
+            }
+            
+             // If the sub-subject is now empty of chapters, remove it
+            if (subSubject.chapters.length === 0) {
+                subjectData.subSubjects = subjectData.subSubjects.filter(ss => ss.id !== subSubjectId);
             }
 
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
@@ -513,7 +524,7 @@ export const deleteChapter = async (subjectId: string, subSubjectId: string, cha
             if(subSubject.chapters) {
                 subSubject.chapters = subSubject.chapters.filter(c => c.id !== chapterId);
 
-                // If sub-subject is now empty, remove it.
+                // If sub-subject is now empty of chapters, remove it.
                 if (subSubject.chapters.length === 0) {
                     subjectData.subSubjects = subjectData.subSubjects.filter(ss => ss.id !== subSubjectId);
                 }
@@ -1123,3 +1134,6 @@ export const deleteMCQ = async (subjectId: string, subSubjectId: string, chapter
 };
 
 
+
+
+    
