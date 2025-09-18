@@ -30,10 +30,18 @@ export interface Note {
   isPublic?: boolean;
 }
 
+export interface MCQ {
+  id: string;
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+}
+
 export interface Chapter {
   id:string;
   name: string;
   notes: Note[];
+  mcqs?: MCQ[];
 }
 
 export interface SubSubject {

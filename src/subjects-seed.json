@@ -9,8 +9,13 @@
         "name": "Physics",
         "icon": "Atom",
         "chapters": [
-          { "id": "motion", "name": "Motion", "notes": [] },
-          { "id": "force-and-laws-of-motion", "name": "Force and Laws of Motion", "notes": [] }
+          { "id": "motion", "name": "Motion", "notes": [], "mcqs": [
+            { "id": "mcq-m-1", "question": "What is the SI unit of speed?", "options": ["m/s", "km/h", "m/s²", "N"], "correctOptionIndex": 0 },
+            { "id": "mcq-m-2", "question": "A body is moving with uniform velocity. Its acceleration is:", "options": ["Zero", "Constant", "Increasing", "Decreasing"], "correctOptionIndex": 0 }
+          ] },
+          { "id": "force-and-laws-of-motion", "name": "Force and Laws of Motion", "notes": [], "mcqs": [
+            { "id": "mcq-f-1", "question": "Newton's first law of motion is also called the law of:", "options": ["Inertia", "Action-Reaction", "Momentum", "Force"], "correctOptionIndex": 0 }
+          ] }
         ]
       },
       {

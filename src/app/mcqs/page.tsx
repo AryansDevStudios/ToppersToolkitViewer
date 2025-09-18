@@ -1,8 +1,14 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getSubjects } from '@/lib/data';
 import { BookCheck } from 'lucide-react';
+import type { Subject, MCQ } from '@/lib/types';
+import { SubjectSelector } from '@/components/mcqs/SubjectSelector';
 
-export default function MCQsPage() {
+export const revalidate = 0;
+
+export default async function MCQsPage() {
+  const subjects = await getSubjects();
+
   return (
     <div className="container mx-auto px-4 py-12">
       <header className="text-center mb-12">
@@ -10,23 +16,14 @@ export default function MCQsPage() {
           <BookCheck className="h-12 w-12" />
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-2">
-          MCQs
+          MCQs Practice
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Practice with Multiple Choice Questions.
+          Select a subject and chapter to test your knowledge.
         </p>
       </header>
       <main>
-        <Card>
-          <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              A large bank of MCQs for practice is coming soon. Keep an eye on this space!
-            </p>
-          </CardContent>
-        </Card>
+        <SubjectSelector subjects={subjects} />
       </main>
     </div>
   );
