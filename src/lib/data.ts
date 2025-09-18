@@ -926,8 +926,7 @@ export async function createDoubt(userId: string, userName: string, userClassAnd
     const doubtId = uuidv4();
     const doubtDocRef = doc(db, "doubts", doubtId);
 
-    const newDoubt: Doubt = {
-        id: doubtId,
+    const newDoubt: Omit<Doubt, 'id'> = {
         userId,
         userName,
         userClassAndSection,

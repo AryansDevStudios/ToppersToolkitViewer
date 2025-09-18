@@ -56,7 +56,8 @@ export default function DoubtBoxPage() {
             setIsLoading(true);
             try {
                 const userDoubts = await getUserDoubts(user!.uid);
-                setDoubts(userDoubts);
+                // No need to sort by timestamp anymore
+                setDoubts(userDoubts.reverse());
             } catch (error) {
                 toast({ title: "Error", description: "Could not fetch your past doubts.", variant: "destructive" });
             } finally {
@@ -78,7 +79,7 @@ export default function DoubtBoxPage() {
                 // Refetch doubts to show the new one
                 try {
                     const userDoubts = await getUserDoubts(user!.uid);
-                    setDoubts(userDoubts);
+                    setDoubts(userDoubts.reverse());
                 } catch (error) {
                     // The main list will just be slightly delayed, not a critical error to show the user
                 }
