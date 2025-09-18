@@ -97,9 +97,9 @@ export default async function AdminNotesPage() {
                              </DropdownMenuItem>
                             <NoteAccessDialog note={note} users={usersWithAccess} />
                             <DropdownMenuItem asChild>
-                              <Link href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
+                              <a href={note.pdfUrl || note.originalPdfUrl || '#'} target="_blank" rel="noopener noreferrer">
                                   View PDF
-                              </Link>
+                              </a>
                             </DropdownMenuItem>
                              <DropdownMenuSeparator />
                             <DeleteNoteDialog noteId={note.id} chapterId={note.chapterId} />
