@@ -47,10 +47,13 @@ export default async function MindmapPage() {
                     </CardHeader>
                     <CardContent className="flex flex-col h-full pt-0">
                       <CardTitle className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                        {note.type}
+                        {note.chapter}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground mb-1">
-                        Chapter: {note.chapter}
+                        {note.subSubjectName}
+                      </p>
+                       <p className="text-xs text-muted-foreground">
+                        Type: {note.type}
                       </p>
                     </CardContent>
                   </Card>
