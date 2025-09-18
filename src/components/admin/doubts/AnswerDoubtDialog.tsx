@@ -38,14 +38,17 @@ const formSchema = z.object({
 
 interface AnswerDoubtDialogProps {
   doubt: Doubt;
+  children?: React.ReactNode;
 }
 
-export function AnswerDoubtDialog({ doubt }: AnswerDoubtDialogProps) {
+export function AnswerDoubtDialog({ doubt, children }: AnswerDoubtDialogProps) {
   const { user, dbUser } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+
+  const isEditing = doubt.status === 'answered';
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,10 +58,12 @@ export function AnswerDoubtDialog({ doubt }: AnswerDoubtDialogProps) {
   });
 
   useEffect(() => {
-    if (!isOpen) {
-      form.reset();
+    if (isOpen) {
+      form.reset({
+          answer: doubt.answer || "",
+      });
     }
-  }, [isOpen, form]);
+  }, [isOpen, doubt, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user || !dbUser) {
@@ -70,34 +75,38 @@ export function AnswerDoubtDialog({ doubt }: AnswerDoubtDialogProps) {
       const result = await answerDoubt(doubt.id, values.answer, dbUser.name, user.uid);
       if (result.success) {
         toast({
-          title: "Reply Sent",
-          description: "The user has been notified.",
+          title: isEditing ? "Reply Updated" : "Reply Sent",
+          description: isEditing ? "The reply has been updated." : "The user has been notified.",
         });
         setIsOpen(false);
         router.refresh();
       } else {
         toast({
           title: "Operation Failed",
-          description: result.error || "Could not send the reply.",
+          description: result.error || "Could not save the reply.",
           variant: "destructive",
         });
       }
     });
   }
 
+  const triggerButton = children ? (
+    children
+  ) : (
+    <Button size="sm">
+      <Send className="mr-2 h-4 w-4" />
+      Answer
+    </Button>
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-            <Send className="mr-2 h-4 w-4" />
-            Answer
-        </Button>
-    </DialogTrigger>
+      <DialogTrigger asChild>{triggerButton}</DialogTrigger>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Reply to {doubt.userName}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Reply' : `Reply to ${doubt.userName}`}</DialogTitle>
           <DialogDescription>
-            Your answer will be visible to the student.
+            {isEditing ? 'You are editing a previously sent reply.' : 'Your answer will be visible to the student.'}
           </DialogDescription>
         </DialogHeader>
         <div className="my-4 p-4 border rounded-md bg-muted/50">
@@ -125,7 +134,7 @@ export function AnswerDoubtDialog({ doubt }: AnswerDoubtDialogProps) {
             />
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Sending..." : "Send Reply"}
+                {isPending ? (isEditing ? "Saving..." : "Sending...") : (isEditing ? "Save Changes" : "Send Reply")}
               </Button>
             </DialogFooter>
           </form>

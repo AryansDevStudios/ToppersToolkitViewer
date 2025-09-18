@@ -999,13 +999,27 @@ export async function answerDoubt(doubtId: string, answer: string, adminName: st
     const doubtDocRef = doc(db, 'doubts', doubtId);
 
     try {
-        await updateDoc(doubtDocRef, {
-            answer: answer,
-            status: 'answered',
-            answeredBy: adminName,
-            answeredByAdminId: adminId,
-            answeredAt: Date.now(),
+        await runTransaction(db, async (transaction) => {
+            const doubtDoc = await transaction.get(doubtDocRef);
+            if (!doubtDoc.exists()) {
+                throw new Error("Doubt not found.");
+            }
+
+            const dataToUpdate: { [key: string]: any } = {
+                answer: answer,
+                answeredBy: adminName,
+                answeredByAdminId: adminId,
+            };
+
+            // Only update status and answeredAt if it's the first time being answered
+            if (doubtDoc.data().status !== 'answered') {
+                dataToUpdate.status = 'answered';
+                dataToUpdate.answeredAt = Date.now();
+            }
+
+            transaction.update(doubtDocRef, dataToUpdate);
         });
+
         revalidatePath('/admin/doubts');
         revalidatePath('/doubt-box');
         return { success: true };
@@ -1028,5 +1042,3 @@ export async function deleteDoubt(doubtId: string): Promise<{ success: boolean; 
         return { success: false, error: e.message };
     }
 }
-
-    
