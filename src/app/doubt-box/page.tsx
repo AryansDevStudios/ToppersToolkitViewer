@@ -35,13 +35,18 @@ export default function DoubtBoxPage() {
 
         async function fetchDoubts() {
             setIsLoadingDoubts(true);
-            const userDoubts = await getUserDoubts(user!.uid);
-            setDoubts(userDoubts);
-            setIsLoadingDoubts(false);
+            try {
+                const userDoubts = await getUserDoubts(user!.uid);
+                setDoubts(userDoubts);
+            } catch (error) {
+                toast({ title: "Error", description: "Could not fetch your past doubts.", variant: "destructive" });
+            } finally {
+                setIsLoadingDoubts(false);
+            }
         }
 
         fetchDoubts();
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, toast]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
