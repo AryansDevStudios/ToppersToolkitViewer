@@ -23,6 +23,25 @@ const MissionCard = () => (
     </Card>
 );
 
+const PlatformCard = () => (
+    <Card>
+        <CardHeader>
+            <div className="flex items-center gap-3">
+                <div className="bg-primary/10 text-primary p-3 rounded-full">
+                    <BookCopy className="h-6 w-6" />
+                </div>
+                <CardTitle className="text-2xl">About Our Platform</CardTitle>
+            </div>
+        </CardHeader>
+        <CardContent>
+            <p className="text-lg text-foreground">
+                Topper's Toolkit Library is a dedicated platform designed to provide students with high-quality study materials in a secure and user-friendly environment. Our purpose is to help you access the resources you need to excel in your studies, all in one place.
+            </p>
+        </CardContent>
+    </Card>
+);
+
+
 const CreatorCard = ({ creator }: { creator: TeacherProfile }) => (
     <Card className="overflow-hidden flex flex-col">
         <div className="relative aspect-[4/3] w-full">
@@ -78,6 +97,10 @@ export default function AboutUsPage() {
                 {kuldeep && <CreatorCard creator={kuldeep} />}
                 {aryan && <CreatorCard creator={aryan} />}
             </div>
+        </section>
+        
+        <section>
+            <PlatformCard />
         </section>
       </main>
     </div>
