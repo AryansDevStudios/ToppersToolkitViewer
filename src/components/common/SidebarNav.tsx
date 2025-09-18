@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -8,7 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Compass } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ import { auth } from "@/lib/firebase";
 import { useState } from "react";
 
 const mainNavLinks = [
+  { title: 'Browse', icon: 'Compass', href: '/browse' },
   { title: 'Leaderboard', icon: 'Swords', href: '/leaderboard' },
   { title: 'Puzzle & Quiz', icon: 'Puzzle', href: '/puzzle-quiz' },
   { title: 'Notices', icon: 'ClipboardList', href: '/notices' },
@@ -51,7 +53,7 @@ export function SidebarNav() {
   };
 
   const renderNavLink = (link: any) => {
-    const Icon = iconMap[link.icon];
+    const Icon = iconMap[link.icon] || Compass;
     const LinkComponent = link.isExternal ? 'a' : Link;
     
     return (

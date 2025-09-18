@@ -1,24 +1,25 @@
 
-
 "use client";
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { getAllNotes, getUserById } from '@/lib/data';
+import { getAllNotes, getUserById, getSubjects } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText, Loader2, Library, Folder } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import type { Note, User } from '@/lib/types';
+import type { Note, User, Subject } from '@/lib/types';
 import { iconMap } from '@/lib/iconMap';
 import { useRouter } from 'next/navigation';
+import { Separator } from '@/components/ui/separator';
 
 type NoteItem = (Note & { subject: string; chapter: string; chapterId: string; slug: string });
 
 export default function BrowseAllNotesPage() {
   const [allNotes, setAllNotes] = useState<NoteItem[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<NoteItem[]>([]);
   const [showAllNotes, setShowAllNotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,12 +37,14 @@ export default function BrowseAllNotesPage() {
     async function fetchInitialData() {
       if (user) {
         setIsLoading(true);
-        const [notes, dbUser] = await Promise.all([
+        const [notes, dbUser, subjectsData] = await Promise.all([
           getAllNotes(),
-          getUserById(user.uid)
+          getUserById(user.uid),
+          getSubjects()
         ]);
         const sortedNotes = notes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setAllNotes(sortedNotes);
+        setSubjects(subjectsData);
         setCurrentUser(dbUser);
         setIsLoading(false);
       }
@@ -82,15 +85,57 @@ export default function BrowseAllNotesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <header className="mb-8">
+       <header className="mb-8">
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2 font-headline">
-          Latest Notes
+          Browse Content
         </h1>
         <p className="text-muted-foreground text-lg">
-          Browse all available notes, or filter to see only those you can access.
+          Explore subjects or find the latest notes.
         </p>
       </header>
 
+       <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-4">Browse by Subject</h2>
+             {displayLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => (
+                        <Card key={i} className="h-28 animate-pulse bg-muted"></Card>
+                    ))}
+                </div>
+            ) : (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {subjects.map((subject) => {
+                        const Icon = (subject.icon && iconMap[subject.icon]) || Library;
+                        return (
+                            <Link key={subject.id} href={`/browse/${subject.id}`} className="block">
+                                <Card className="h-full transition-shadow duration-300 hover:shadow-lg hover:border-primary/50">
+                                <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
+                                    <div className="p-3 bg-primary/10 rounded-lg">
+                                    <Icon className="w-8 h-8 text-primary" />
+                                    </div>
+                                    <div>
+                                    <CardTitle className="font-bold text-xl">{subject.name}</CardTitle>
+                                    </div>
+                                </CardHeader>
+                                </Card>
+                            </Link>
+                        )
+                    })}
+                </div>
+            )}
+        </section>
+
+      <Separator className="my-12" />
+
+      <header className="mb-8">
+        <h2 className="text-2xl font-bold mb-2">
+          Latest Notes
+        </h2>
+        <p className="text-muted-foreground">
+          Find recently added notes, or filter to see only those you can access.
+        </p>
+      </header>
+      
       {!isFullAccessUser && (
         <div className="flex items-center justify-end space-x-3 mb-8 p-4 border rounded-lg bg-card">
           <Label htmlFor="all-notes-toggle" className="font-semibold">Show All Notes</Label>
