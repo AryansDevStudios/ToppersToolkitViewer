@@ -35,7 +35,7 @@ const mainNavLinks = [
 ];
 
 const secondaryNavLinks = [
-    { title: 'Rules & Policies', icon: 'Gavel', href: '/rules-policies' },
+    { title: 'Rules & Policies', icon: 'Gavel', href: '/terms' },
     { title: 'Invite Friends', icon: 'Gift', href: '/invite-friends' },
     { title: 'Inquiry', icon: 'HelpCircle', href: '/inquiry' },
     { title: 'Purchase and History', icon: 'History', href: '/purchase-history' },
