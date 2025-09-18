@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AnswerDoubtDialog } from "@/components/admin/doubts/AnswerDoubtDialog";
+import { DeleteDoubtDialog } from "@/components/admin/doubts/DeleteDoubtDialog";
 
 export const revalidate = 0;
 
@@ -44,11 +45,10 @@ const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
                     </div>
                 )}
             </CardContent>
-            {doubt.status === 'pending' && (
-                <CardFooter className="flex justify-end bg-muted/30 p-3">
-                    <AnswerDoubtDialog doubt={doubt} />
-                </CardFooter>
-            )}
+            <CardFooter className="flex justify-end gap-2 bg-muted/30 p-3">
+                {doubt.status === 'pending' && <AnswerDoubtDialog doubt={doubt} />}
+                <DeleteDoubtDialog doubtId={doubt.id} />
+            </CardFooter>
         </Card>
     )
 }

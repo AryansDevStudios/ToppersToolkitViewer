@@ -879,11 +879,12 @@ export async function deleteUserQotdAnswer(userId: string, questionId: string) {
 export async function getNotices(): Promise<Notice[]> {
   noStore();
   const noticesCollection = collection(db, 'notices');
-  const noticesSnapshot = await getDocs(query(noticesCollection, orderBy('createdAt', 'desc')));
+  const q = query(noticesCollection, orderBy('createdAt', 'desc'));
+  const noticesSnapshot = await getDocs(q);
   
   return noticesSnapshot.docs.map(doc => {
     const data = doc.data();
-    // Ensure createdAt is a number
+    // Ensure createdAt is a number. If it's a Timestamp, convert it.
     const createdAt = data.createdAt?.toMillis ? data.createdAt.toMillis() : (data.createdAt || 0);
     return { id: doc.id, ...data, createdAt } as Notice;
   });
@@ -897,6 +898,7 @@ export async function upsertNotice(noticeData: Omit<Notice, 'id' | 'createdAt'> 
 
   try {
     if (isNew) {
+      // Use Firestore serverTimestamp for reliable time, getNotices will convert it
       const docWithMeta = { ...data, id: docId, createdAt: serverTimestamp() };
       await setDoc(noticeDocRef, docWithMeta);
     } else {
@@ -956,7 +958,7 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
     if (!userId) return [];
     
     const doubtsCollection = collection(db, 'doubts');
-    const q = query(doubtsCollection, where('userId', '==', userId));
+    const q = query(doubtsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
     
     try {
         const querySnapshot = await getDocs(q);
@@ -964,8 +966,7 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
             id: doc.id,
             ...doc.data(),
         } as Doubt));
-        // Sort manually to show newest first
-        return doubts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        return doubts;
     } catch (error) {
         console.error("Error fetching user doubts:", error);
         return [];
@@ -975,7 +976,7 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
 export async function getAllDoubts(): Promise<Doubt[]> {
     noStore();
     const doubtsCollection = collection(db, 'doubts');
-    const q = query(doubtsCollection);
+    const q = query(doubtsCollection, orderBy('createdAt', 'desc'));
     
     try {
         const querySnapshot = await getDocs(q);
@@ -983,8 +984,7 @@ export async function getAllDoubts(): Promise<Doubt[]> {
             id: doc.id,
             ...doc.data(),
         } as Doubt));
-        // Sort manually to show newest first
-        return doubts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        return doubts;
     } catch (error) {
         console.error("Error fetching all doubts:", error);
         return [];
@@ -1008,6 +1008,21 @@ export async function answerDoubt(doubtId: string, answer: string, adminName: st
         revalidatePath('/admin/doubts');
         revalidatePath('/doubt-box');
         return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteDoubt(doubtId: string): Promise<{ success: boolean; error?: string }> {
+    if (!doubtId) {
+        return { success: false, error: "Doubt ID is required." };
+    }
+    const doubtDocRef = doc(db, 'doubts', doubtId);
+    try {
+        await deleteDoc(doubtDocRef);
+        revalidatePath('/admin/doubts');
+        revalidatePath('/doubt-box');
+        return { success: true, message: "Doubt deleted successfully." };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
