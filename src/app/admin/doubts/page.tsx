@@ -21,13 +21,11 @@ export const revalidate = 0;
 const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
     const timeZone = 'Asia/Kolkata';
     
-    const createdAtDate = (doubt.createdAt as Timestamp)?.toDate ? (doubt.createdAt as Timestamp).toDate() : new Date(doubt.createdAt as Date);
-    const zonedDate = toZonedTime(createdAtDate, timeZone);
-
+    // Data is already a JS Date object from the server action.
+    const zonedDate = toZonedTime(doubt.createdAt as Date, timeZone);
     let answeredAtDate = null;
     if (doubt.answeredAt) {
-      const answeredAt = (doubt.answeredAt as Timestamp)?.toDate ? (doubt.answeredAt as Timestamp).toDate() : new Date(doubt.answeredAt as Date);
-      answeredAtDate = toZonedTime(answeredAt, timeZone);
+      answeredAtDate = toZonedTime(doubt.answeredAt as Date, timeZone);
     }
 
     return (

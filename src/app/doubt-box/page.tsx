@@ -21,14 +21,11 @@ import type { Timestamp } from 'firebase/firestore';
 const DoubtCard = ({ doubt }: { doubt: Doubt }) => {
     const timeZone = 'Asia/Kolkata';
 
-    // Safely handle Firestore Timestamp or JS Date
-    const createdAtDate = (doubt.createdAt as Timestamp)?.toDate ? (doubt.createdAt as Timestamp).toDate() : new Date(doubt.createdAt as Date);
-    const zonedDate = toZonedTime(createdAtDate, timeZone);
-    
+    // Data is already a JS Date object from the server action.
+    const zonedDate = toZonedTime(doubt.createdAt as Date, timeZone);
     let answeredAtDate = null;
     if (doubt.answeredAt) {
-      const answeredAt = (doubt.answeredAt as Timestamp)?.toDate ? (doubt.answeredAt as Timestamp).toDate() : new Date(doubt.answeredAt as Date);
-      answeredAtDate = toZonedTime(answeredAt, timeZone);
+      answeredAtDate = toZonedTime(doubt.answeredAt as Date, timeZone);
     }
 
     return (
@@ -70,7 +67,11 @@ export default function DoubtBoxPage() {
     const [isSubmitting, startTransition] = useTransition();
 
     useEffect(() => {
-        if (!user) return;
+        if (authLoading) return; // Wait until auth state is resolved
+        if (!user) {
+            setIsLoading(false);
+            return;
+        }
 
         async function fetchDoubts() {
             setIsLoading(true);
@@ -84,7 +85,7 @@ export default function DoubtBoxPage() {
             }
         }
         fetchDoubts();
-    }, [user, toast]);
+    }, [user, authLoading, toast]);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
