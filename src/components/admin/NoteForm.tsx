@@ -39,7 +39,7 @@ const formSchema = z.object({
   chapterName: z.string().min(1, { message: "Chapter Name is required." }),
   type: z.string().min(1, { message: "Note type is required." }),
   url: z.string().url({ message: "Please enter a valid URL." }),
-  renderAs: z.enum(["pdf", "image", "iframe"]),
+  renderAs: z.enum(["pdf", "iframe"]),
   linkType: z.enum(["github", "other"]),
   serveViaJsDelivr: z.boolean(),
   useProxy: z.boolean(),
@@ -68,7 +68,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       chapterName: note?.chapterName || "",
       type: note?.type || "",
       url: note?.originalUrl || note?.url || note?.pdfUrl || "",
-      renderAs: note?.renderAs || 'pdf',
+      renderAs: note?.renderAs === 'iframe' ? 'iframe' : 'pdf',
       linkType: note?.linkType || "github",
       serveViaJsDelivr: note?.serveViaJsDelivr === undefined ? true : note.serveViaJsDelivr,
       useProxy: note?.useProxy === undefined ? true : note.useProxy,
@@ -276,12 +276,6 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                         </FormControl>
                         <FormLabel className="font-normal">PDF</FormLabel>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <RadioGroupItem value="image" />
-                        </FormControl>
-                        <FormLabel className="font-normal">Image</FormLabel>
-                      </FormItem>
                        <FormItem className="flex items-center space-x-2">
                         <FormControl>
                           <RadioGroupItem value="iframe" />
@@ -443,3 +437,4 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   );
 }
 
+    
