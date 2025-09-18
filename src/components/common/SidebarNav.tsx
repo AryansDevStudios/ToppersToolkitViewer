@@ -18,6 +18,7 @@ import { Separator } from "../ui/separator";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useState } from "react";
+import { ScrollArea } from "../ui/scroll-area";
 
 const mainNavLinks = [
   { title: 'Home', icon: 'Home', href: '/' },
@@ -79,28 +80,30 @@ export function SidebarNav() {
           <span className="sr-only">Open Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-full max-w-xs sm:max-w-sm">
-        <SheetHeader>
+      <SheetContent side="left" className="w-full max-w-xs sm:max-w-sm p-0">
+        <SheetHeader className="p-6 pb-2">
           <SheetTitle className="text-2xl">Menu</SheetTitle>
         </SheetHeader>
-        <div className="py-4 space-y-4">
-          <nav className="space-y-1">
-            {mainNavLinks.map(renderNavLink)}
-          </nav>
-          <Separator />
-          <nav className="space-y-1">
-             {secondaryNavLinks.map(renderNavLink)}
-          </nav>
-          {user && (
-            <>
-              <Separator />
-              <Button variant="ghost" className="w-full justify-start gap-4 p-3 text-base font-medium" onClick={handleLogout}>
-                <LogOut className="h-5 w-5" />
-                Logout
-              </Button>
-            </>
-          )}
-        </div>
+        <ScrollArea className="h-[calc(100%-4rem)]">
+          <div className="py-4 px-6 space-y-4">
+            <nav className="space-y-1">
+              {mainNavLinks.map(renderNavLink)}
+            </nav>
+            <Separator />
+            <nav className="space-y-1">
+              {secondaryNavLinks.map(renderNavLink)}
+            </nav>
+            {user && (
+              <>
+                <Separator />
+                <Button variant="ghost" className="w-full justify-start gap-4 p-3 text-base font-medium" onClick={handleLogout}>
+                  <LogOut className="h-5 w-5" />
+                  Logout
+                </Button>
+              </>
+            )}
+          </div>
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   );
