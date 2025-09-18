@@ -317,29 +317,31 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
 
 
 export const deleteNote = async (noteId: string, chapterId: string) => {
-     if (!noteId || !chapterId) return { success: false, error: "Invalid arguments" };
+    if (!noteId || !chapterId) return { success: false, error: "Invalid arguments" };
 
     const [subjectId, subSubjectId, chapId] = chapterId.split('/');
     const subjectDocRef = doc(db, "subjects", subjectId);
 
-     try {
+    try {
         await runTransaction(db, async (transaction) => {
             const subjectDoc = await transaction.get(subjectDocRef);
             if (!subjectDoc.exists()) throw new Error("Subject not found!");
 
             const subjectData = subjectDoc.data() as Subject;
-            const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
-            if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
+            const subSubject = subjectData.subSubjects.find(ss => ss.id === subSubjectId);
+            if (!subSubject) throw new Error("Sub-subject not found!");
 
-            const chapterIndex = subjectData.subSubjects[subSubjectIndex].chapters.findIndex(c => c.id === chapId);
-            if (chapterIndex === -1) throw new Error("Chapter not found!");
-            
-            const chapter = subjectData.subSubjects[subSubjectIndex].chapters[chapterIndex];
-            if (!chapter.notes) throw new Error("Note not found in chapter.");
+            const chapter = subSubject.chapters.find(c => c.id === chapId);
+            if (!chapter) throw new Error("Chapter not found!");
 
             const noteIndex = chapter.notes.findIndex(n => n.id === noteId);
             if (noteIndex !== -1) {
                 chapter.notes.splice(noteIndex, 1);
+
+                // If the chapter is now empty, remove it.
+                if (chapter.notes.length === 0) {
+                    subSubject.chapters = subSubject.chapters.filter(c => c.id !== chapId);
+                }
             } else {
                 throw new Error("Note not found to delete.");
             }
@@ -503,13 +505,18 @@ export const deleteChapter = async (subjectId: string, subSubjectId: string, cha
         await runTransaction(db, async (transaction) => {
             const subjectDoc = await transaction.get(subjectDocRef);
             if (!subjectDoc.exists()) throw new Error("Subject not found!");
-            const subjectData = subjectDoc.data() as Subject;
-            const subSubjectIndex = subjectData.subSubjects.findIndex(ss => ss.id === subSubjectId);
-            if (subSubjectIndex === -1) throw new Error("Sub-subject not found!");
             
-            const subSubject = subjectData.subSubjects[subSubjectIndex];
+            const subjectData = subjectDoc.data() as Subject;
+            const subSubject = subjectData.subSubjects.find(ss => ss.id === subSubjectId);
+            if (!subSubject) throw new Error("Sub-subject not found!");
+            
             if(subSubject.chapters) {
                 subSubject.chapters = subSubject.chapters.filter(c => c.id !== chapterId);
+
+                // If sub-subject is now empty, remove it.
+                if (subSubject.chapters.length === 0) {
+                    subjectData.subSubjects = subjectData.subSubjects.filter(ss => ss.id !== subSubjectId);
+                }
             }
             
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
@@ -1114,4 +1121,5 @@ export const deleteMCQ = async (subjectId: string, subSubjectId: string, chapter
         return { success: false, error: e.message };
     }
 };
+
 
