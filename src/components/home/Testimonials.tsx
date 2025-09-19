@@ -17,13 +17,13 @@ const testimonials = [
     imgSrc: "/images/AryansImage.webp",
   },
   {
-    name: "Ishan",
+    name: "Ishan Jaiswal",
     achievement: "Manager",
     quote: "Being part of the Topper's Toolkit team is inspiring. Even with my PW batch, I find these notes incredibly useful.",
     imgSrc: "https://picsum.photos/seed/ishan/100/100",
   },
   {
-    name: "Gyan",
+    name: "Gyan Singh",
     achievement: "Student",
     quote: "I really like the notes provided. They are clear, concise, and have helped me a lot in my studies.",
     imgSrc: "https://picsum.photos/seed/gyan/100/100",
