@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Lightbulb, Code, BookCopy } from 'lucide-react';
+import { Users, Lightbulb, Code, BookCopy, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import { teachers } from '@/lib/teachers';
 import type { TeacherProfile } from '@/lib/teachers';
@@ -19,7 +19,7 @@ const features: { title: string; icon: keyof typeof iconMap, description: string
     { title: 'Mindmaps', icon: 'BrainCircuit', description: 'Visualize topics with mindmaps for better retention. A powerful tool to organize and revise complex concepts easily.' },
 ];
 
-const FeatureItem = ({ title, icon: Icon, description }: { title: string, icon: LucideIcon, description: string }) => (
+const FeatureItem = ({ title, icon: Icon, description }: { title: string, icon: LucideIcon, description:string }) => (
     <div className="flex items-start gap-4">
         <div className="bg-primary/10 text-primary rounded-lg p-3">
             <Icon className="h-6 w-6" />
@@ -71,6 +71,44 @@ const MissionCard = () => (
             <p className="text-lg text-foreground">
                 Our goal is to revolutionize education by blending high-quality, curated content with cutting-edge technology. We aim to empower students with the tools they need to study smarter, overcome challenges, and achieve academic excellence.
             </p>
+        </CardContent>
+    </Card>
+);
+
+const contributors: { name: string, subject: string, icon: keyof typeof iconMap }[] = [
+    { name: 'Kuldeep Singh', subject: 'SST', icon: 'Landmark' },
+    { name: 'Aryan Gupta', subject: 'Science', icon: 'FlaskConical' },
+    { name: 'Deepraj Pandey', subject: 'Maths', icon: 'Calculator' },
+];
+
+const StudentContributorsCard = () => (
+    <Card>
+        <CardHeader>
+            <div className="flex items-center gap-3">
+                <div className="bg-primary/10 text-primary p-3 rounded-full">
+                    <UserPlus className="h-6 w-6" />
+                </div>
+                <CardTitle className="text-2xl">Student Contributors</CardTitle>
+            </div>
+            <p className="text-muted-foreground pt-2">
+                We are grateful to these students for contributing their hard work and sharing their notes with the community.
+            </p>
+        </CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {contributors.map(contributor => {
+                    const Icon = iconMap[contributor.icon] || Users;
+                    return (
+                        <div key={contributor.name} className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border">
+                            <Icon className="h-6 w-6 text-primary" />
+                            <div>
+                                <h4 className="font-semibold">{contributor.name}</h4>
+                                <p className="text-sm text-muted-foreground">{contributor.subject}</p>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
         </CardContent>
     </Card>
 );
@@ -129,6 +167,10 @@ export default function AboutUsPage() {
         <section>
             <MissionCard />
         </section>
+        
+        <section>
+            <StudentContributorsCard />
+        </section>
 
         <section>
             <h2 className="text-3xl font-bold text-center mb-8">Our Creators</h2>
@@ -144,3 +186,5 @@ export default function AboutUsPage() {
 }
 
     
+
+  
