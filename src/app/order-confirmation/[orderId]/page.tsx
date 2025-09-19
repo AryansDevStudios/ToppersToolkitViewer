@@ -7,8 +7,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, ExternalLink, MessageSquare } from 'lucide-react';
-import { getPrintOrderById, getUserById } from '@/lib/data';
-import type { PrintOrder, User } from '@/lib/types';
+import { getPrintOrderById, getUserById, getNoteById } from '@/lib/data';
+import type { PrintOrder, User, Note } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 const SELLER_WHATSAPP_NUMBER = "917754000411"; // Replace with the actual seller's number
@@ -21,6 +21,7 @@ export default function OrderConfirmationPage() {
 
     const [order, setOrder] = useState<PrintOrder | null>(null);
     const [customer, setCustomer] = useState<User | null>(null);
+    const [note, setNote] = useState<Note | null>(null);
     const [loading, setLoading] = useState(true);
     const [countdown, setCountdown] = useState(10);
     const [whatsAppUrl, setWhatsAppUrl] = useState('');
@@ -42,13 +43,22 @@ export default function OrderConfirmationPage() {
                 }
                 setOrder(orderData);
                 
-                const customerData = await getUserById(orderData.userId);
+                const [customerData, noteData] = await Promise.all([
+                    getUserById(orderData.userId),
+                    getNoteById(orderData.noteId)
+                ]);
+
                 if (!customerData) {
                     toast({ title: "Error", description: "Customer data not found.", variant: "destructive" });
                     router.push('/');
                     return;
                 }
                 setCustomer(customerData);
+                
+                if (noteData) {
+                    setNote(noteData);
+                }
+
 
             } catch (error) {
                 toast({ title: "Error", description: "Failed to load order details.", variant: "destructive" });
@@ -84,16 +94,19 @@ export default function OrderConfirmationPage() {
                 const priceText = order.price ? `₹${order.price.toFixed(2)}` : 'To be confirmed';
 
                 const specialInstructions = order.instructions || 'None';
+                
+                const noteUrlText = note?.originalUrl ? `\nNote URL: ${note.originalUrl}` : '';
+
 
                 const messageTemplate = 
 `Hello Kuldeep! You have a new print order from Topper's Toolkit.
 *Customer Details:*
 Name: ${customerName}
 Class: ${customerClass}
-WhatsApp: wa.me/${customerWhatsapp}
+WhatsApp: ${customer.whatsappNumber || 'N/A'}
 
 *Order Details:*
-${itemsList}
+${itemsList}${noteUrlText}
 
 Estimated Price: *${priceText}*
 
@@ -107,7 +120,7 @@ Note: Please visit the admin panel to verify details and update the order status
             const message = generateWhatsAppMessage();
             setWhatsAppUrl(`https://wa.me/${SELLER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`);
         }
-    }, [order, customer]);
+    }, [order, customer, note]);
 
     useEffect(() => {
         if (loading || !whatsAppUrl) return;
