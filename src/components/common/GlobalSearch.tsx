@@ -76,22 +76,26 @@ export function GlobalSearch() {
       setResults([]);
     }
   }, [allNotes]);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newQuery = e.target.value;
+      setQuery(newQuery);
+      handleSearch(newQuery);
+  };
 
   return (
     <div className="w-full">
-        <form onSubmit={(e) => { e.preventDefault(); handleSearch(query); }}>
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search notes by title, chapter, subject..."
-                className="w-full pl-10 h-12 text-base"
-                disabled={loading}
-                />
-                {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
-            </div>
-        </form>
+        <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+            value={query}
+            onChange={handleInputChange}
+            placeholder="Search notes by title, chapter, subject..."
+            className="w-full pl-10 h-12 text-base"
+            disabled={loading}
+            />
+            {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
+        </div>
 
         <div className="mt-8">
             {hasSearched ? (
