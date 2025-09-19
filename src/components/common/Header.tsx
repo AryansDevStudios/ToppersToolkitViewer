@@ -81,9 +81,7 @@ export function AppHeader() {
             </Link>
           </Button>
          
-          <div className="hidden sm:block">
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
 
           <div className="pl-2">
             {loading ? (
