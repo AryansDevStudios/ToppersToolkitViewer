@@ -51,16 +51,20 @@ export default function PurchaseHistoryPage() {
 
     useEffect(() => {
         if (authLoading) {
+            console.log("Auth is loading...");
             return;
         }
         if (!user) {
+            console.log("No user found, finishing loading.");
             setIsLoading(false);
             return;
         }
 
         const fetchOrders = async () => {
             setIsLoading(true);
+            console.log("Fetching orders for user:", user.uid);
             const userOrders = await getUserPrintOrders(user.uid);
+            console.log("Fetched orders:", userOrders);
             setOrders(userOrders);
             setIsLoading(false);
         }
@@ -71,6 +75,7 @@ export default function PurchaseHistoryPage() {
     const pendingOrders = orders.filter(o => o.status === 'pending');
     const completedOrders = orders.filter(o => o.status === 'completed');
     const cancelledOrders = orders.filter(o => o.status === 'cancelled');
+    console.log("Filtered orders:", {pending: pendingOrders.length, completed: completedOrders.length, cancelled: cancelledOrders.length});
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -86,7 +91,7 @@ export default function PurchaseHistoryPage() {
         </p>
       </header>
       <main className="max-w-4xl mx-auto">
-        {authLoading || isLoading ? (
+        {isLoading ? (
             <div className="flex justify-center items-center py-20">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
