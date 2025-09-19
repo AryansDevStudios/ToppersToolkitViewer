@@ -193,7 +193,7 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
                     </p>
                     <Button asChild>
                         <a href="https://wa.me/917754000411" target="_blank" rel="noopener noreferrer">
-                            Contact for Prints
+                            Get it Printed
                         </a>
                     </Button>
                 </CardContent>
