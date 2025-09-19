@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -84,6 +85,7 @@ export default function OrderPrintPage() {
 
     const estimatedCost = useMemo(() => {
         if (!pageCount || !settings?.printCostPerPage) return null;
+        // Cost is per sheet (2 pages), so we divide page count by 2 and take the ceiling.
         const sheets = Math.ceil(pageCount / 2);
         return sheets * settings.printCostPerPage;
     }, [pageCount, settings]);
@@ -104,11 +106,12 @@ export default function OrderPrintPage() {
             noteChapter: note.chapterName,
             noteSubject: `${note.subSubjectName}, ${note.subjectName}`,
             instructions: instructions || undefined,
+            price: estimatedCost ?? undefined,
         });
         
-        if (result.success) {
+        if (result.success && result.orderId) {
             toast({ title: "Order Placed!", description: "Your print request has been sent to the admin." });
-            router.push(`/purchase-history`);
+            router.push(`/order-confirmation/${result.orderId}`);
         } else {
             toast({ title: "Order Failed", description: result.error, variant: "destructive" });
             setIsSubmitting(false);
@@ -120,7 +123,7 @@ export default function OrderPrintPage() {
              return (
                 <div>
                     <p className="font-bold text-lg">&#8377;{settings?.printCostPerPage || 'N/A'} per page</p>
-                    <p className="text-sm text-muted-foreground">(Printed back-to-back, final cost confirmed on WhatsApp)</p>
+                    <p className="text-sm text-muted-foreground">(Could not count pages automatically. Final cost to be confirmed on WhatsApp)</p>
                 </div>
             );
         }

@@ -42,6 +42,7 @@ export interface PrintOrder {
   noteChapter: string;
   noteSubject: string;
   instructions?: string;
+  price?: number;
   status: 'pending' | 'completed' | 'cancelled';
   createdAt: number;
 }

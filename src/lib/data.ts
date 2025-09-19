@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, PrintOrder, AppSettings } from "./types";
@@ -1138,7 +1139,7 @@ export const deleteMCQ = async (subjectId: string, subSubjectId: string, chapter
 };
 
 // --- Print Order Management ---
-export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'status' | 'createdAt'>): Promise<{ success: boolean; error?: string }> {
+export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'status' | 'createdAt'>): Promise<{ success: boolean; error?: string; orderId?: string; }> {
     const orderId = uuidv4();
     const orderDocRef = doc(db, "printOrders", orderId);
 
@@ -1153,7 +1154,7 @@ export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'statu
         await setDoc(orderDocRef, newOrder);
         revalidatePath('/admin/orders');
         revalidatePath('/purchase-history');
-        return { success: true };
+        return { success: true, orderId: orderId };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -1188,6 +1189,23 @@ export async function getAllPrintOrders(): Promise<PrintOrder[]> {
         return [];
     }
 }
+
+export async function getPrintOrderById(orderId: string): Promise<PrintOrder | null> {
+    noStore();
+    if (!orderId) return null;
+    const orderDocRef = doc(db, 'printOrders', orderId);
+    try {
+        const docSnap = await getDoc(orderDocRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as PrintOrder;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching print order by ID:", error);
+        return null;
+    }
+}
+
 
 export async function updatePrintOrderStatus(orderId: string, status: PrintOrder['status']): Promise<{ success: boolean; error?: string }> {
     if (!orderId || !status) {
@@ -1232,3 +1250,4 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         return { success: false, error: e.message };
     }
 }
+
