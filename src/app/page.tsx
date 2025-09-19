@@ -38,7 +38,7 @@ function ContactSection() {
                 <h2 className="text-3xl font-bold tracking-tight">Contact Us</h2>
                 <p className="mt-2 text-muted-foreground">Have questions? We're here to help.</p>
             </div>
-            <div className="mt-8 max-w-lg mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="mt-8 max-w-md mx-auto grid grid-cols-4 gap-3">
                 {contactMethods.map((method) => {
                     const Icon = method.icon;
                     return (
@@ -50,11 +50,11 @@ function ContactSection() {
                           className="block group"
                         >
                             <Card className="hover:bg-accent hover:border-primary/50 transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
-                                <CardContent className="p-4 flex flex-col items-center justify-center aspect-square">
-                                    <div className="bg-primary/10 text-primary p-4 rounded-lg mb-3">
-                                      <Icon className="h-8 w-8" />
+                                <CardContent className="p-3 flex flex-col items-center justify-center aspect-square">
+                                    <div className="bg-primary/10 text-primary p-3 rounded-lg mb-2">
+                                      <Icon className="h-6 w-6" />
                                     </div>
-                                    <p className="font-semibold text-base text-center">{method.name}</p>
+                                    <p className="font-semibold text-xs text-center">{method.name}</p>
                                 </CardContent>
                             </Card>
                         </a>
