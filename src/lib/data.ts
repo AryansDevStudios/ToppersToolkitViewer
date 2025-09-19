@@ -169,7 +169,7 @@ export const getAllNotes = async (): Promise<(Note & { subjectName: string; subS
     return allNotes;
 };
 
-export const getNoteById = async (id: string): Promise<(Note & { subjectId: string; subSubjectId: string; chapterId: string; chapterName: string; subjectName: string; subSubjectName: string; }) | null> => {
+export const getNoteById = async (id: string): Promise<(Note & { subjectId: string; subSubjectId: string; chapterId: string; chapterName: string; subjectName: string; subSubjectName: string; slug: string; }) | null> => {
     noStore();
     if (!id) return null;
     const allSubjects = await getSubjects();
@@ -189,6 +189,7 @@ export const getNoteById = async (id: string): Promise<(Note & { subjectId: stri
                                     chapterName: chapter.name,
                                     subjectName: subject.name,
                                     subSubjectName: subSubject.name,
+                                    slug: `/browse/${subject.id}/${subSubject.id}/${note.id}`
                                 };
                             }
                         }
@@ -747,6 +748,7 @@ export async function upsertQuestionOfTheDay(questionData: Omit<QuestionOfTheDay
 
   try {
     if (isNew) {
+      // Use Firestore serverTimestamp for reliable time, getNotices will convert it
       const docWithMeta = { ...data, id: docId, createdAt: Date.now() };
       await setDoc(qotdDocRef, docWithMeta);
     } else {
@@ -1259,5 +1261,6 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         return { success: false, error: e.message };
     }
 }
+
 
 

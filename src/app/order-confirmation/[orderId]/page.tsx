@@ -21,7 +21,7 @@ export default function OrderConfirmationPage() {
 
     const [order, setOrder] = useState<PrintOrder | null>(null);
     const [customer, setCustomer] = useState<User | null>(null);
-    const [note, setNote] = useState<Note | null>(null);
+    const [note, setNote] = useState<(Note & { slug: string }) | null>(null);
     const [loading, setLoading] = useState(true);
     const [countdown, setCountdown] = useState(10);
     const [whatsAppUrl, setWhatsAppUrl] = useState('');
@@ -72,7 +72,7 @@ export default function OrderConfirmationPage() {
     }, [orderId, router, toast]);
 
     useEffect(() => {
-        if (order && customer) {
+        if (order && customer && note) {
             const generateWhatsAppMessage = () => {
                 const customerName = customer.name || 'N/A';
                 const customerClass = customer.classAndSection || 'N/A';
@@ -86,7 +86,8 @@ export default function OrderConfirmationPage() {
 
                 const specialInstructions = order.instructions || 'None';
                 
-                const noteUrlText = note?.originalUrl ? `\nNote URL: ${note.originalUrl}` : '';
+                const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://topperstoolkitviewer.netlify.app';
+                const noteUrlText = note?.slug ? `\nNote URL: ${siteUrl}${note.slug}` : '';
 
 
                 const messageTemplate = 
