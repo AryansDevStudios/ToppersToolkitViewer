@@ -58,7 +58,7 @@ export function MobileBottomNav() {
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Compass, label: "Browse" },
-      { href: "/search", icon: Search, label: "Search" },
+      { href: "/solve-doubts", icon: Sparkles, label: "AI Help" },
       { href: "/mcqs", icon: BookCheck, label: "MCQs" },
     ];
     
