@@ -47,35 +47,34 @@ const OrderCard = ({ order }: { order: PrintOrder }) => {
 export default function PurchaseHistoryPage() {
     const { user, loading: authLoading } = useAuth();
     const [orders, setOrders] = useState<PrintOrder[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(true);
 
     useEffect(() => {
-        if (authLoading) {
-            console.log("Auth is loading...");
-            return;
+        // Only fetch orders if the user is logged in
+        if (user) {
+            setIsLoadingOrders(true);
+            getUserPrintOrders(user.uid)
+                .then(userOrders => {
+                    setOrders(userOrders);
+                })
+                .catch(error => {
+                    console.error("Failed to fetch orders:", error);
+                    setOrders([]); // Set to empty on error
+                })
+                .finally(() => {
+                    setIsLoadingOrders(false);
+                });
+        } else if (!authLoading) {
+            // If auth is done loading and there's no user, stop the loading spinner.
+            setIsLoadingOrders(false);
         }
-        if (!user) {
-            console.log("No user found, finishing loading.");
-            setIsLoading(false);
-            return;
-        }
-
-        const fetchOrders = async () => {
-            setIsLoading(true);
-            console.log("Fetching orders for user:", user.uid);
-            const userOrders = await getUserPrintOrders(user.uid);
-            console.log("Fetched orders:", userOrders);
-            setOrders(userOrders);
-            setIsLoading(false);
-        }
-
-        fetchOrders();
     }, [user, authLoading]);
 
     const pendingOrders = orders.filter(o => o.status === 'pending');
     const completedOrders = orders.filter(o => o.status === 'completed');
     const cancelledOrders = orders.filter(o => o.status === 'cancelled');
-    console.log("Filtered orders:", {pending: pendingOrders.length, completed: completedOrders.length, cancelled: cancelledOrders.length});
+
+    const isLoading = authLoading || isLoadingOrders;
 
   return (
     <div className="container mx-auto px-4 py-12">
