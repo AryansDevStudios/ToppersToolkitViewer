@@ -24,7 +24,7 @@ const testimonials = [
   },
   {
     name: "Gyan Singh",
-    achievement: "Student",
+    achievement: "School Topper in GS Olympiad",
     quote: "I really like the notes provided. They are clear, concise, and have helped me a lot in my studies.",
     imgSrc: "https://picsum.photos/seed/gyan/100/100",
   },
