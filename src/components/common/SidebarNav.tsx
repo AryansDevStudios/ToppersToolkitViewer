@@ -9,7 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, Compass, Home, BookUser } from "lucide-react";
+import { Menu, LogOut, Compass, Home, BookUser, History } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -37,9 +37,9 @@ const mainNavLinks = [
 const secondaryNavLinks = [
     { title: 'How to Use?', icon: 'BookUser', href: '/user-manual' },
     { title: 'Terms & Conditions', icon: 'Gavel', href: '/terms' },
+    { title: 'Order History', icon: 'History', href: '/purchase-history' },
     { title: 'Invite Friends', icon: 'Gift', href: '/invite-friends' },
     { title: 'Inquiry', icon: 'HelpCircle', href: '/inquiry' },
-    { title: 'Purchase and History', icon: 'History', href: '/purchase-history' },
 ];
 
 export function SidebarNav() {

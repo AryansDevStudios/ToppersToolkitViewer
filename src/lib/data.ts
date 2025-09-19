@@ -808,7 +808,7 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return await runTransaction(db, async (transaction) => {
       const qotdDoc = await transaction.get(qotdDocRef);
       const answerDoc = await transaction.get(answerDocRef);
-      const userDoc = await transaction.get(userDocRef);
+      const userDoc = await transaction.get(userDoc);
 
       if (!qotdDoc.exists()) throw new Error("Question not found.");
       
@@ -1153,6 +1153,22 @@ export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'statu
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };
+    }
+}
+
+export async function getUserPrintOrders(userId: string): Promise<PrintOrder[]> {
+    noStore();
+    if (!userId) return [];
+    
+    const ordersCollection = collection(db, 'printOrders');
+    const q = query(ordersCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => doc.data() as PrintOrder);
+    } catch (error) {
+        console.error("Error fetching user print orders:", error);
+        return [];
     }
 }
 
