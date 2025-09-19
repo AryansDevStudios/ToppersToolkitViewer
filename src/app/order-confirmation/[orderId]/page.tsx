@@ -77,15 +77,6 @@ export default function OrderConfirmationPage() {
                 const customerName = customer.name || 'N/A';
                 const customerClass = customer.classAndSection || 'N/A';
                 
-                let customerWhatsapp = (customer.whatsappNumber || '').replace(/\D/g, '');
-                if (customerWhatsapp.length > 10 && customerWhatsapp.startsWith('91')) {
-                    // Number already has country code, do nothing
-                } else if (customerWhatsapp.length === 10) {
-                    // Add country code
-                    customerWhatsapp = `91${customerWhatsapp}`;
-                }
-                // If number is invalid length, it will proceed as is.
-
                 const itemsList = 
                     `Note: ${order.noteType}\n` +
                     `Chapter: ${order.noteChapter}\n` +
@@ -103,7 +94,6 @@ export default function OrderConfirmationPage() {
 *Customer Details:*
 Name: ${customerName}
 Class: ${customerClass}
-WhatsApp: ${customer.whatsappNumber || 'N/A'}
 
 *Order Details:*
 ${itemsList}${noteUrlText}
