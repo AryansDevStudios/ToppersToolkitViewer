@@ -10,13 +10,21 @@ import { getUserById } from '@/lib/data';
 const setSessionCookie = async (user: FirebaseUser | null) => {
     if (user) {
         const idToken = await user.getIdToken();
-        await fetch('/api/auth/session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idToken }),
-        });
+        try {
+            await fetch('/api/auth/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken }),
+            });
+        } catch (error) {
+            console.error("Failed to set session cookie:", error);
+        }
     } else {
-        await fetch('/api/auth/session', { method: 'DELETE' });
+        try {
+            await fetch('/api/auth/session', { method: 'DELETE' });
+        } catch (error) {
+            console.error("Failed to delete session cookie:", error);
+        }
     }
 };
 
@@ -34,7 +42,6 @@ export function useAuth() {
         setUser(firebaseUser);
         await setSessionCookie(firebaseUser);
         
-        // No longer using API route, directly use server action
         try {
             const userData = await getUserById(firebaseUser.uid);
             if (userData) {
@@ -59,7 +66,6 @@ export function useAuth() {
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
