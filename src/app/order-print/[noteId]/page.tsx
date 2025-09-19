@@ -19,7 +19,7 @@ export default function OrderPrintPage() {
     const { user, dbUser, loading: authLoading } = useAuth();
     const { toast } = useToast();
 
-    const [note, setNote] = useState<(Note & { subjectName: string; chapterName: string; }) | null>(null);
+    const [note, setNote] = useState<(Note & { subjectName: string; subSubjectName: string; chapterName: string; }) | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [instructions, setInstructions] = useState('');
@@ -55,7 +55,7 @@ export default function OrderPrintPage() {
             noteId: note.id,
             noteType: note.type,
             noteChapter: note.chapterName,
-            noteSubject: note.subjectName,
+            noteSubject: `${note.subSubjectName}, ${note.subjectName}`,
             instructions: instructions || undefined,
         });
         setIsSubmitting(false);
@@ -101,7 +101,7 @@ export default function OrderPrintPage() {
                         </h3>
                         <p><strong>Note:</strong> {note.type}</p>
                         <p><strong>Chapter:</strong> {note.chapterName}</p>
-                        <p><strong>Subject:</strong> {note.subjectName}</p>
+                        <p><strong>Subject:</strong> {note.subSubjectName}, {note.subjectName}</p>
                     </div>
 
                     <div className="space-y-2">
@@ -133,4 +133,5 @@ export default function OrderPrintPage() {
         </div>
     );
 }
+
 

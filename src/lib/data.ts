@@ -169,7 +169,7 @@ export const getAllNotes = async (): Promise<(Note & { subjectName: string; subS
     return allNotes;
 };
 
-export const getNoteById = async (id: string): Promise<(Note & { subjectId: string; subSubjectId: string; chapterId: string; chapterName: string; subjectName: string; }) | null> => {
+export const getNoteById = async (id: string): Promise<(Note & { subjectId: string; subSubjectId: string; chapterId: string; chapterName: string; subjectName: string; subSubjectName: string; }) | null> => {
     noStore();
     if (!id) return null;
     const allSubjects = await getSubjects();
@@ -188,6 +188,7 @@ export const getNoteById = async (id: string): Promise<(Note & { subjectId: stri
                                     chapterId: chapter.id,
                                     chapterName: chapter.name,
                                     subjectName: subject.name,
+                                    subSubjectName: subSubject.name,
                                 };
                             }
                         }
