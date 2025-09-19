@@ -132,4 +132,8 @@ export interface Doubt {
     answeredBy?: string; // Admin's name
     answeredByAdminId?: string; // Admin's user ID
 }
+
+export interface AppSettings {
+  printCostPerPage: number;
+}
     

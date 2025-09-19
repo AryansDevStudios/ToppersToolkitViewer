@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle, ClipboardList, MessageSquare, BookCheck, Printer } from "lucide-react";
+import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle, ClipboardList, MessageSquare, BookCheck, Printer, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/notices", icon: ClipboardList, label: "Notices" },
   { href: "/admin/doubts", icon: MessageSquare, label: "Doubts" },
   { href: "/admin/orders", icon: Printer, label: "Print Orders"},
+  { href: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
 export function AdminMobileNav() {

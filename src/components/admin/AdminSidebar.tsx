@@ -13,7 +13,8 @@ import {
   ClipboardList,
   MessageSquare,
   BookCheck,
-  Printer
+  Printer,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/admin/notices", icon: ClipboardList, label: "Notices" },
   { href: "/admin/doubts", icon: MessageSquare, label: "Doubts" },
   { href: "/admin/orders", icon: Printer, label: "Print Orders"},
+  { href: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
 export function AdminSidebar() {

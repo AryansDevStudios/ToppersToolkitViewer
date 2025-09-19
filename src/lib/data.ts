@@ -1,8 +1,7 @@
 
-
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, PrintOrder } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, PrintOrder, AppSettings } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp } from "firebase/firestore";
@@ -1162,30 +1161,16 @@ export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'statu
 
 export async function getUserPrintOrders(userId: string): Promise<PrintOrder[]> {
     noStore();
-    if (!userId) {
-        console.log("[DEBUG] getUserPrintOrders: No userId provided.");
-        return [];
-    }
-
+    if (!userId) return [];
+    
+    const ordersCollection = collection(db, 'printOrders');
+    const q = query(ordersCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    
     try {
-        const ordersCollection = collection(db, 'printOrders');
-        // Temporarily remove the filter to fetch all orders for debugging.
-        const q = query(ordersCollection, orderBy('createdAt', 'desc'));
-        
-        console.log("[DEBUG] getUserPrintOrders: Fetching all orders for debugging.");
         const querySnapshot = await getDocs(q);
-        
-        const allOrders = querySnapshot.docs.map(doc => doc.data() as PrintOrder);
-        console.log(`[DEBUG] getUserPrintOrders: Fetched ${allOrders.length} total orders from collection.`);
-
-        // Filter on the client-side for debugging.
-        const userOrders = allOrders.filter(order => order.userId === userId);
-        console.log(`[DEBUG] getUserPrintOrders: Found ${userOrders.length} orders for userId: ${userId}.`);
-
-        return userOrders;
-
+        return querySnapshot.docs.map(doc => doc.data() as PrintOrder);
     } catch (error) {
-        console.error("[DEBUG] Error in getUserPrintOrders:", error);
+        console.error("Error fetching user print orders:", error);
         return [];
     }
 }
@@ -1219,9 +1204,31 @@ export async function updatePrintOrderStatus(orderId: string, status: PrintOrder
     }
 }
 
+// --- Settings Management ---
+export async function getSettings(): Promise<AppSettings> {
+    noStore();
+    const settingsDocRef = doc(db, 'settings', 'global');
+    try {
+        const docSnap = await getDoc(settingsDocRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as AppSettings;
+        }
+        // Return default settings if document doesn't exist
+        return { printCostPerPage: 1 };
+    } catch (error) {
+        console.error("Error fetching settings:", error);
+        return { printCostPerPage: 1 };
+    }
+}
 
-
-    
-
-
-
+export async function updateSettings(settings: Partial<AppSettings>): Promise<{ success: boolean; error?: string }> {
+    const settingsDocRef = doc(db, 'settings', 'global');
+    try {
+        await setDoc(settingsDocRef, settings, { merge: true });
+        revalidatePath('/admin/settings');
+        revalidatePath('/order-print', 'layout');
+        return { success: true, message: "Settings updated successfully." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
