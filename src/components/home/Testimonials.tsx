@@ -1,12 +1,5 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 import Image from "next/image";
 import { Star } from 'lucide-react';
 
@@ -78,18 +71,9 @@ export function Testimonials() {
           </p>
         </div>
 
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full max-w-4xl mx-auto"
-        >
-          <CarouselContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                <div className="p-1 h-full">
-                  <Card className="h-full flex flex-col">
+                <Card key={index} className="h-full flex flex-col">
                     <CardContent className="flex flex-col p-6 flex-1">
                       <div className="flex items-center mb-4">
                          <Image
@@ -109,14 +93,9 @@ export function Testimonials() {
                         &ldquo;{testimonial.quote}&rdquo;
                       </blockquote>
                     </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
+                </Card>
             ))}
-          </CarouselContent>
-          <CarouselPrevious className="absolute left-[-50px] top-1/2 -translate-y-1/2 hidden md:inline-flex" />
-          <CarouselNext className="absolute right-[-50px] top-1/2 -translate-y-1/2 hidden md:inline-flex" />
-        </Carousel>
+        </div>
       </div>
     </section>
   );
