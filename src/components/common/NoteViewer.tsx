@@ -188,9 +188,6 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-foreground mb-4">
-                       We understand that some students prefer studying from physical copies. If you need these notes printed and delivered, please get in touch with us.
-                    </p>
                     <Button asChild>
                         <a href="https://wa.me/917754000411" target="_blank" rel="noopener noreferrer">
                             Get it Printed
