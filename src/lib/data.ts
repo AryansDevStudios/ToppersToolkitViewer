@@ -1162,14 +1162,23 @@ export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'statu
 
 export async function getUserPrintOrders(userId: string): Promise<PrintOrder[]> {
     noStore();
-    if (!userId) return [];
-    
-    const ordersCollection = collection(db, 'printOrders');
-    const q = query(ordersCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
-    
+    if (!userId) {
+        return [];
+    }
+
     try {
+        const ordersCollection = collection(db, 'printOrders');
+        const q = query(ordersCollection, orderBy('createdAt', 'desc'));
+        
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => doc.data() as PrintOrder);
+        
+        const allOrders = querySnapshot.docs.map(doc => doc.data() as PrintOrder);
+
+        // Filter on the client-side for debugging.
+        const userOrders = allOrders.filter(order => order.userId === userId);
+
+        return userOrders;
+
     } catch (error) {
         console.error("Error fetching user print orders:", error);
         return [];
@@ -1250,4 +1259,5 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         return { success: false, error: e.message };
     }
 }
+
 
