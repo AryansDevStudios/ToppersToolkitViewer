@@ -29,13 +29,13 @@ const testimonials = [
     imgSrc: "https://picsum.photos/seed/gyan/100/100",
   },
     {
-    name: "Divyansh",
+    name: "Divyansh Pathak",
     achievement: "Student",
     quote: "I'm very satisfied with the quality of the material. It's well-organized and covers everything I need.",
     imgSrc: "https://picsum.photos/seed/divyansh/100/100",
   },
     {
-    name: "Aditi",
+    name: "Aditi Tripathi",
     achievement: "Student",
     quote: "These notes have been very useful to me. They make difficult topics much easier to understand.",
     imgSrc: "https://picsum.photos/seed/aditi/100/100",
