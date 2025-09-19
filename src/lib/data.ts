@@ -1159,16 +1159,30 @@ export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'statu
 
 export async function getUserPrintOrders(userId: string): Promise<PrintOrder[]> {
     noStore();
-    if (!userId) return [];
-    
-    const ordersCollection = collection(db, 'printOrders');
-    const q = query(ordersCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
-    
+    if (!userId) {
+        console.log("[DEBUG] getUserPrintOrders: No userId provided.");
+        return [];
+    }
+
     try {
+        const ordersCollection = collection(db, 'printOrders');
+        // Temporarily remove the filter to fetch all orders for debugging.
+        const q = query(ordersCollection, orderBy('createdAt', 'desc'));
+        
+        console.log("[DEBUG] getUserPrintOrders: Fetching all orders for debugging.");
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => doc.data() as PrintOrder);
+        
+        const allOrders = querySnapshot.docs.map(doc => doc.data() as PrintOrder);
+        console.log(`[DEBUG] getUserPrintOrders: Fetched ${allOrders.length} total orders from collection.`);
+
+        // Filter on the client-side for debugging.
+        const userOrders = allOrders.filter(order => order.userId === userId);
+        console.log(`[DEBUG] getUserPrintOrders: Found ${userOrders.length} orders for userId: ${userId}.`);
+
+        return userOrders;
+
     } catch (error) {
-        console.error("Error fetching user print orders:", error);
+        console.error("[DEBUG] Error in getUserPrintOrders:", error);
         return [];
     }
 }
@@ -1205,4 +1219,5 @@ export async function updatePrintOrderStatus(orderId: string, status: PrintOrder
 
 
     
+
 
