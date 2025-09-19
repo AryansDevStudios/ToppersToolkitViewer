@@ -20,7 +20,7 @@ export default function OrderPrintPage() {
     const { user, dbUser, loading: authLoading } = useAuth();
     const { toast } = useToast();
 
-    const [note, setNote] = useState<(Note & { subjectName: string; subSubjectName: string; chapterName: string; }) | null>(null);
+    const [note, setNote] = useState<(Note & { subjectName: string; subSubjectName: string; chapterName: string; subjectId: string; subSubjectId: string; }) | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [instructions, setInstructions] = useState('');
@@ -59,13 +59,13 @@ export default function OrderPrintPage() {
             noteSubject: `${note.subSubjectName}, ${note.subjectName}`,
             instructions: instructions || undefined,
         });
-        setIsSubmitting(false);
-
+        
         if (result.success) {
             toast({ title: "Order Placed!", description: "Your print request has been sent to the admin." });
-            router.push(`/browse/${note.subjectId}/${note.subSubjectId}/${note.id}`);
+            router.push(`/purchase-history`);
         } else {
             toast({ title: "Order Failed", description: result.error, variant: "destructive" });
+            setIsSubmitting(false);
         }
     };
 
