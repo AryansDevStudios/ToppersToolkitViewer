@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Mail, Send, Smartphone } from "lucide-react";
+import { Testimonials } from "@/components/home/Testimonials";
 
 const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -85,6 +86,8 @@ export default function Home() {
         <Suspense>
             <FeatureGrid />
         </Suspense>
+
+        <Testimonials />
 
         <ContactSection />
       </main>
