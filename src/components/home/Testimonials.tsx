@@ -54,17 +54,21 @@ export function Testimonials() {
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                 <div className="p-1 h-full">
                   <Card className="h-full flex flex-col">
-                    <CardContent className="flex flex-col items-center text-center p-6 flex-1">
-                       <Image
-                        src={testimonial.imgSrc}
-                        alt={`Photo of ${testimonial.name}`}
-                        width={80}
-                        height={80}
-                        className="rounded-full mb-4 border-4 border-primary/20"
-                        data-ai-hint="student portrait"
-                      />
-                      <h3 className="font-bold text-lg">{testimonial.name}</h3>
-                      <p className="text-sm font-semibold text-primary mb-3">{testimonial.achievement}</p>
+                    <CardContent className="flex flex-col p-6 flex-1">
+                      <div className="flex items-center mb-4">
+                         <Image
+                          src={testimonial.imgSrc}
+                          alt={`Photo of ${testimonial.name}`}
+                          width={48}
+                          height={48}
+                          className="rounded-full mr-4 border-2 border-primary/20"
+                          data-ai-hint="student portrait"
+                        />
+                        <div>
+                          <h3 className="font-bold text-base">{testimonial.name}</h3>
+                          <p className="text-xs font-semibold text-primary">{testimonial.achievement}</p>
+                        </div>
+                      </div>
                       <blockquote className="text-muted-foreground text-sm flex-1">
                         &ldquo;{testimonial.quote}&rdquo;
                       </blockquote>
