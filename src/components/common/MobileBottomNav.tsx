@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck, Puzzle } from "lucide-react";
+import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck, Puzzle, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -58,7 +58,7 @@ export function MobileBottomNav() {
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
       { href: "/browse", icon: Compass, label: "Browse" },
-      { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-400" },
+      { href: "/search", icon: Search, label: "Search" },
       { href: "/mcqs", icon: BookCheck, label: "MCQs" },
     ];
     
@@ -112,4 +112,3 @@ export function MobileBottomNav() {
         </nav>
     );
 }
-

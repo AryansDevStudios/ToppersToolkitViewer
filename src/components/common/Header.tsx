@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, Sun, Moon } from "lucide-react";
+import { LogIn, Sun, Moon, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -67,18 +67,19 @@ export function AppHeader() {
             </Link>
         </div>
         
-        <div className="flex-1 flex justify-start items-center md:justify-center px-4">
-            <div className="w-full max-w-sm">
-                <GlobalSearch />
-            </div>
-        </div>
-        
-        <div className="flex flex-none items-center justify-end">
+        <div className="flex flex-1 items-center justify-end">
            {mounted && user && role === 'Admin' && (
               <Button variant="ghost" asChild className="hidden md:flex">
                   <Link href="/admin">Admin Panel</Link>
               </Button>
             )}
+
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/search">
+              <Search className="h-5 w-5" />
+              <span className="sr-only">Search</span>
+            </Link>
+          </Button>
          
           <div className="hidden sm:block">
             <ThemeToggle />
