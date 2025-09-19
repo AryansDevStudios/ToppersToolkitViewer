@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -65,7 +66,15 @@ export default function OrderConfirmationPage() {
             const generateWhatsAppMessage = () => {
                 const customerName = customer.name || 'N/A';
                 const customerClass = customer.classAndSection || 'N/A';
-                const customerWhatsapp = (customer.whatsappNumber || '').replace(/\D/g, '');
+                
+                let customerWhatsapp = (customer.whatsappNumber || '').replace(/\D/g, '');
+                if (customerWhatsapp.length > 10 && customerWhatsapp.startsWith('91')) {
+                    // Number already has country code, do nothing
+                } else if (customerWhatsapp.length === 10) {
+                    // Add country code
+                    customerWhatsapp = `91${customerWhatsapp}`;
+                }
+                // If number is invalid length, it will proceed as is.
 
                 const itemsList = 
                     `Note: ${order.noteType}\n` +
