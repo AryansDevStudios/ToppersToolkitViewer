@@ -263,7 +263,20 @@ export const teachers: TeacherProfile[] = [
       "His work on this library and the associated tools ensures that the valuable content created by educators is delivered in a secure, efficient, and engaging way, empowering the entire school community."
     ],
   },
+  {
+    id: 'ishan-jaiswal',
+    name: 'Ishan Jaiswal',
+    subject: 'Manager',
+    photoUrl: 'https://picsum.photos/seed/ishan/400/400',
+    quote: "Being part of the Topper's Toolkit team is inspiring. Even with my PW batch, I find these notes incredibly useful.",
+    about: [
+      "As the manager for Topper's Toolkit, Ishan Jaiswal plays a crucial role in coordinating operations and ensuring everything runs smoothly. His organizational skills and dedication are key to the platform's success.",
+      'He is also a student himself, which gives him a unique perspective on what learners need. His feedback and insights are invaluable in shaping the content and features of the toolkit, making it a more effective resource for everyone.',
+    ],
+  },
 ];
+
+    
 
     
 
