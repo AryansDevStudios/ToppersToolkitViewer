@@ -117,7 +117,11 @@ export default function OrderPrintPage() {
 
     const renderCostInfo = () => {
         if (note?.renderAs !== 'pdf') {
-            return <p className="text-sm text-muted-foreground">The final cost will be confirmed via WhatsApp.</p>;
+             return (
+                <p className="text-sm text-muted-foreground">
+                    Printing price is &#8377;{settings?.printCostPerPage || 'N/A'} per page (back-to-back). Final cost will be confirmed via WhatsApp.
+                </p>
+            );
         }
         if (isCountingPages) {
             return (
@@ -136,7 +140,11 @@ export default function OrderPrintPage() {
                  </div>
             );
         }
-        return <p className="text-sm text-muted-foreground">Could not calculate price. Final cost will be confirmed via WhatsApp.</p>;
+        return (
+            <p className="text-sm text-muted-foreground">
+                Could not calculate price. Printing is &#8377;{settings?.printCostPerPage || 'N/A'} per page (back-to-back). Final cost will be confirmed via WhatsApp.
+            </p>
+        );
     }
 
 
