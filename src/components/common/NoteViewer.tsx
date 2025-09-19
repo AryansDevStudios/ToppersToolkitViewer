@@ -5,13 +5,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Loader2, Image as ImageIcon, FileText, Maximize, Minimize } from "lucide-react";
+import { ShieldAlert, Loader2, Image as ImageIcon, FileText, Maximize, Minimize, Printer } from "lucide-react";
 import { getUserById, getNoteById as fetchNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo, useRef, useCallback } from "react";
 import dynamic from 'next/dynamic';
 import type { Note } from "@/lib/types";
 import Image from 'next/image';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
 const PdfViewerWrapper = dynamic(() => import('@/components/common/PdfViewerWrapper').then(mod => mod.PdfViewerWrapper), {
     ssr: false,
@@ -126,54 +127,79 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
     const contentType = note?.renderAs || 'pdf';
     const contentUrl = note?.url || note?.pdfUrl || "";
 
-    // For iframes, we can render optimistically while checking permissions.
-    // For PDFs, we need to wait for the URL from the permission check.
-    if (contentType === 'iframe' && contentUrl) {
-         if (hasAccess === false) return <AccessDenied />;
-         return (
-            <div ref={containerRef} className="relative w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
-                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute bottom-2 right-2 z-10 bg-background/50 hover:bg-background/80"
-                    onClick={handleFullscreen}
-                    title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                >
-                    {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
-                </Button>
-                <iframe
-                    src={contentUrl}
-                    className="w-full h-full border-0"
-                    title="Embedded Content"
-                    allowFullScreen
-                ></iframe>
-            </div>
-        );
-    }
-    
-    // For other types, wait for access check to complete.
-    if (hasAccess === null || isLoadingNote) {
-        return <LoadingState />;
-    }
-
-    if (hasAccess === false) {
-        return <AccessDenied />;
-    }
-    
-    if (hasAccess && contentUrl) {
-        switch(contentType) {
-            case 'pdf':
-                return (
-                    <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
-                        <PdfViewerWrapper url={contentUrl} />
-                    </div>
-                );
-            default:
-                 return <p>Unsupported content type.</p>
+    const renderContent = () => {
+        if (hasAccess === null || isLoadingNote) {
+            return <LoadingState />;
         }
-    }
+
+        if (hasAccess === false) {
+            return <AccessDenied />;
+        }
+        
+        if (hasAccess && contentUrl) {
+            switch(contentType) {
+                case 'pdf':
+                    return (
+                        <div className="w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+                            <PdfViewerWrapper url={contentUrl} />
+                        </div>
+                    );
+                case 'iframe':
+                    return (
+                        <div ref={containerRef} className="relative w-full h-[calc(100vh-12rem)] border rounded-lg overflow-hidden bg-background">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute bottom-2 right-2 z-10 bg-background/50 hover:bg-background/80"
+                                onClick={handleFullscreen}
+                                title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                            >
+                                {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                            </Button>
+                            <iframe
+                                src={contentUrl}
+                                className="w-full h-full border-0"
+                                title="Embedded Content"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                    );
+                default:
+                    return <p>Unsupported content type.</p>
+            }
+        }
+        
+        return <AccessDenied />;
+    };
     
-    return <AccessDenied />;
+    return (
+        <div className="space-y-6">
+            {renderContent()}
+            <Card className="bg-primary/5 border-primary/20 shadow-lg">
+                <CardHeader className="flex flex-row items-center gap-4">
+                    <div className="bg-primary/10 text-primary p-3 rounded-full">
+                        <Printer className="h-6 w-6" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-xl text-primary">Need a Printed Copy?</CardTitle>
+                        <CardDescription>
+                            If you like our notes and would like a printed version, we can help.
+                        </CardDescription>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-foreground mb-4">
+                       We understand that some students prefer studying from physical copies. If you need these notes printed and delivered, please get in touch with us.
+                    </p>
+                    <Button asChild>
+                        <a href="https://wa.me/917754000411" target="_blank" rel="noopener noreferrer">
+                            Contact for Prints
+                        </a>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+    );
 };
 
 export const NoteViewer = memo(NoteViewerComponent);
