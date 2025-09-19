@@ -6,13 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, FileText, BookCopy } from "lucide-react";
+import { Users, FileText, BookCopy, Printer } from "lucide-react";
 import { getDashboardStats } from "@/lib/data";
 
 export const revalidate = 0;
 
 export default async function AdminDashboardPage() {
-  const { totalNotes, totalSubjects, totalUsers } = await getDashboardStats();
+  const { totalNotes, totalSubjects, totalUsers, totalPendingOrders } = await getDashboardStats();
 
   const stats = [
     {
@@ -30,6 +30,11 @@ export default async function AdminDashboardPage() {
       value: totalUsers,
       icon: Users,
     },
+    {
+      title: "Pending Orders",
+      value: totalPendingOrders,
+      icon: Printer,
+    }
   ];
 
   return (
@@ -41,7 +46,7 @@ export default async function AdminDashboardPage() {
         </p>
       </header>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

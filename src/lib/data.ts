@@ -205,11 +205,14 @@ export const getDashboardStats = async () => {
     const notes = await getAllNotes();
     const subjects = await getSubjects();
     const users = await getUsers();
+    const allOrders = await getAllPrintOrders();
+    const pendingOrders = allOrders.filter(o => o.status === 'pending');
     
     return {
         totalNotes: notes.length,
         totalSubjects: subjects.length,
         totalUsers: users.length,
+        totalPendingOrders: pendingOrders.length,
     };
 };
 
@@ -808,7 +811,7 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return await runTransaction(db, async (transaction) => {
       const qotdDoc = await transaction.get(qotdDocRef);
       const answerDoc = await transaction.get(answerDocRef);
-      const userDoc = await transaction.get(userDoc);
+      const userDoc = await transaction.get(userDocRef);
 
       if (!qotdDoc.exists()) throw new Error("Question not found.");
       
@@ -1219,5 +1222,6 @@ export async function updatePrintOrderStatus(orderId: string, status: PrintOrder
 
 
     
+
 
 
