@@ -37,29 +37,24 @@ export function useAuth() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
       if (firebaseUser) {
-        // Set Firebase user immediately
         setUser(firebaseUser);
-        
-        // Asynchronously fetch user data from Firestore and set session cookie
         try {
-          const [userData] = await Promise.all([
-            getUserById(firebaseUser.uid),
-            setSessionCookie(firebaseUser)
-          ]);
+          const userData = await getUserById(firebaseUser.uid);
           setDbUser(userData);
         } catch (error) {
-          console.error("Auth Error:", error);
+          console.error("Auth Error fetching dbUser:", error);
           setDbUser(null);
+        } finally {
+          await setSessionCookie(firebaseUser);
+          setLoading(false);
         }
-
       } else {
         setUser(null);
         setDbUser(null);
         await setSessionCookie(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();

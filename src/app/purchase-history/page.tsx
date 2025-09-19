@@ -50,7 +50,10 @@ export default function PurchaseHistoryPage() {
     const [isLoadingOrders, setIsLoadingOrders] = useState(true);
 
     useEffect(() => {
-        // Only fetch orders if the user is logged in
+        if (authLoading) {
+            return;
+        }
+        
         if (user) {
             setIsLoadingOrders(true);
             getUserPrintOrders(user.uid)
@@ -59,13 +62,12 @@ export default function PurchaseHistoryPage() {
                 })
                 .catch(error => {
                     console.error("Failed to fetch orders:", error);
-                    setOrders([]); // Set to empty on error
+                    setOrders([]);
                 })
                 .finally(() => {
                     setIsLoadingOrders(false);
                 });
-        } else if (!authLoading) {
-            // If auth is done loading and there's no user, stop the loading spinner.
+        } else {
             setIsLoadingOrders(false);
         }
     }, [user, authLoading]);
