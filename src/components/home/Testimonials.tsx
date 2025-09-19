@@ -12,6 +12,48 @@ import { Star } from 'lucide-react';
 
 const testimonials = [
   {
+    name: "Kuldeep Singh",
+    achievement: "Owner & Founder",
+    quote: "I'm delighted to see our high-quality notes helping so many students achieve their goals. It's what Topper's Toolkit is all about!",
+    imgSrc: "https://picsum.photos/seed/kuldeep/100/100",
+  },
+  {
+    name: "Aryan Gupta",
+    achievement: "Developer",
+    quote: "It's rewarding to build a platform that supports and delivers such valuable educational content to students everywhere.",
+    imgSrc: "/images/AryansImage.webp",
+  },
+  {
+    name: "Ishan",
+    achievement: "Manager",
+    quote: "Being part of the Topper's Toolkit team is inspiring. Even with my PW batch, I find these notes incredibly useful.",
+    imgSrc: "https://picsum.photos/seed/ishan/100/100",
+  },
+  {
+    name: "Gyan",
+    achievement: "Student",
+    quote: "I really like the notes provided. They are clear, concise, and have helped me a lot in my studies.",
+    imgSrc: "https://picsum.photos/seed/gyan/100/100",
+  },
+    {
+    name: "Divyansh",
+    achievement: "Student",
+    quote: "I'm very satisfied with the quality of the material. It's well-organized and covers everything I need.",
+    imgSrc: "https://picsum.photos/seed/divyansh/100/100",
+  },
+    {
+    name: "Aditi",
+    achievement: "Student",
+    quote: "These notes have been very useful to me. They make difficult topics much easier to understand.",
+    imgSrc: "https://picsum.photos/seed/aditi/100/100",
+  },
+  {
+    name: "Priya",
+    achievement: "Student",
+    quote: "I just love these notes! They are my go-to resource for exam preparation. Highly recommended!",
+    imgSrc: "https://picsum.photos/seed/priya/100/100",
+  },
+  {
     name: "Anjali Singh",
     achievement: "Class 10 Topper",
     quote: "Topper's Toolkit was a game-changer for my board exams. The notes are concise, easy to understand, and cover all the important topics. I couldn't have done it without these resources!",
@@ -22,12 +64,6 @@ const testimonials = [
     achievement: "Scored 98% in Science",
     quote: "The mind maps and MCQs on this platform are fantastic for revision. They helped me visualize complex concepts and test my knowledge effectively.",
     imgSrc: "https://picsum.photos/seed/topper2/100/100",
-  },
-  {
-    name: "Priya Sharma",
-    achievement: "JEE Main Qualifier",
-    quote: "The detailed notes for Physics and Chemistry were incredibly helpful for my competitive exam preparation. A must-have for any serious student.",
-    imgSrc: "https://picsum.photos/seed/topper3/100/100",
   },
 ];
 
