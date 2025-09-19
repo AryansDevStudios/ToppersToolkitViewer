@@ -2,7 +2,7 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, PrintOrder } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp } from "firebase/firestore";
@@ -169,7 +169,7 @@ export const getAllNotes = async (): Promise<(Note & { subjectName: string; subS
     return allNotes;
 };
 
-export const getNoteById = async (id: string): Promise<(Note & { subjectId: string; subSubjectId: string; chapterId: string; chapterName: string; }) | null> => {
+export const getNoteById = async (id: string): Promise<(Note & { subjectId: string; subSubjectId: string; chapterId: string; chapterName: string; subjectName: string; }) | null> => {
     noStore();
     if (!id) return null;
     const allSubjects = await getSubjects();
@@ -186,7 +186,8 @@ export const getNoteById = async (id: string): Promise<(Note & { subjectId: stri
                                     subjectId: subject.id,
                                     subSubjectId: subSubject.id,
                                     chapterId: chapter.id,
-                                    chapterName: chapter.name
+                                    chapterName: chapter.name,
+                                    subjectName: subject.name,
                                 };
                             }
                         }
@@ -1133,6 +1134,54 @@ export const deleteMCQ = async (subjectId: string, subSubjectId: string, chapter
     }
 };
 
+// --- Print Order Management ---
+export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'status' | 'createdAt'>): Promise<{ success: boolean; error?: string }> {
+    const orderId = uuidv4();
+    const orderDocRef = doc(db, "printOrders", orderId);
+
+    const newOrder: PrintOrder = {
+        ...orderData,
+        id: orderId,
+        status: 'pending',
+        createdAt: Date.now(),
+    };
+
+    try {
+        await setDoc(orderDocRef, newOrder);
+        revalidatePath('/admin/orders');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function getAllPrintOrders(): Promise<PrintOrder[]> {
+    noStore();
+    const ordersCollection = collection(db, 'printOrders');
+    const q = query(ordersCollection, orderBy('createdAt', 'desc'));
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => doc.data() as PrintOrder);
+    } catch (error) {
+        console.error("Error fetching print orders:", error);
+        return [];
+    }
+}
+
+export async function updatePrintOrderStatus(orderId: string, status: PrintOrder['status']): Promise<{ success: boolean; error?: string }> {
+    if (!orderId || !status) {
+        return { success: false, error: "Order ID and status are required." };
+    }
+    const orderDocRef = doc(db, 'printOrders', orderId);
+    try {
+        await updateDoc(orderDocRef, { status });
+        revalidatePath('/admin/orders');
+        return { success: true, message: "Order status updated." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
 
 
 

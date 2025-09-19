@@ -32,6 +32,20 @@ export interface Note {
   isPublic?: boolean;
 }
 
+export interface PrintOrder {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  noteId: string;
+  noteType: string;
+  noteChapter: string;
+  noteSubject: string;
+  instructions?: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  createdAt: number;
+}
+
 export interface MCQ {
   id: string;
   question: string;
