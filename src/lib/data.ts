@@ -1150,6 +1150,7 @@ export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'statu
     try {
         await setDoc(orderDocRef, newOrder);
         revalidatePath('/admin/orders');
+        revalidatePath('/purchase-history');
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -1194,6 +1195,7 @@ export async function updatePrintOrderStatus(orderId: string, status: PrintOrder
     try {
         await updateDoc(orderDocRef, { status });
         revalidatePath('/admin/orders');
+        revalidatePath('/purchase-history');
         return { success: true, message: "Order status updated." };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -1203,3 +1205,4 @@ export async function updatePrintOrderStatus(orderId: string, status: PrintOrder
 
 
     
+
