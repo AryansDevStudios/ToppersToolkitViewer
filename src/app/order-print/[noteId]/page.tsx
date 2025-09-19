@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { getNoteById, createPrintOrder } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,8 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import type { Note } from '@/lib/types';
 
-export default function OrderPrintPage() {
-    const { noteId } = useParams();
+export default function OrderPrintPage({ params }: { params: { noteId: string } }) {
+    const { noteId } = params;
     const router = useRouter();
     const { user, dbUser, loading: authLoading } = useAuth();
     const { toast } = useToast();
@@ -133,5 +133,3 @@ export default function OrderPrintPage() {
         </div>
     );
 }
-
-
