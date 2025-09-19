@@ -50,15 +50,21 @@ export default function PurchaseHistoryPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (authLoading) return;
+        if (authLoading) {
+            console.log("Auth is loading...");
+            return;
+        }
         if (!user) {
+            console.log("No user found, stopping fetch.");
             setIsLoading(false);
             return;
         }
 
         const fetchOrders = async () => {
+            console.log("Fetching orders for user:", user.uid);
             setIsLoading(true);
             const userOrders = await getUserPrintOrders(user.uid);
+            console.log("Fetched orders:", userOrders);
             setOrders(userOrders);
             setIsLoading(false);
         }
@@ -69,6 +75,13 @@ export default function PurchaseHistoryPage() {
     const pendingOrders = orders.filter(o => o.status === 'pending');
     const completedOrders = orders.filter(o => o.status === 'completed');
     const cancelledOrders = orders.filter(o => o.status === 'cancelled');
+
+    console.log("Filtered orders:", {
+        pending: pendingOrders.length,
+        completed: completedOrders.length,
+        cancelled: cancelledOrders.length
+    });
+
 
   return (
     <div className="container mx-auto px-4 py-12">
