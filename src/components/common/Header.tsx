@@ -61,7 +61,7 @@ export function AppHeader() {
             <SidebarNav />
             <Link href="/" className="flex items-center space-x-2 ml-2">
                 <Image src="https://topperstoolkit.netlify.app/icon/icon_main.png" alt="Topper's Toolkit Logo" width={32} height={32} />
-                <span className="font-bold hidden sm:inline-block text-base sm:text-lg">
+                <span className="font-bold text-base sm:text-lg">
                 Topper's Toolkit
                 </span>
             </Link>
@@ -81,7 +81,9 @@ export function AppHeader() {
             </Link>
           </Button>
          
-          <ThemeToggle />
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
 
           <div className="pl-2">
             {loading ? (
