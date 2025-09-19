@@ -53,7 +53,7 @@ const features = [
     isExternal: true,
   },
   {
-    title: 'MCQs',
+    title: 'GS MCQs',
     icon: 'BookCheck',
     href: '/mcqs',
   },

@@ -15,8 +15,8 @@ const features: { title: string; icon: keyof typeof iconMap, description: string
     { title: 'Doubt Box', icon: 'MessageSquare', description: 'Ask your questions directly and get reliable answers from admins or mentors. A safe space to clear academic doubts.' },
     { title: 'About Us', icon: 'Users', description: 'Learn about our mission to simplify learning and provide quality study materials for every student.' },
     { title: 'Telegram Chat', icon: 'Send', description: 'Join the student community on Telegram. Discuss topics, share knowledge, and stay connected with peers.' },
-    { title: 'MCQs', icon: 'BookCheck', description: 'Practice multiple-choice questions across subjects. Build accuracy and confidence for exams with instant feedback.' },
-    { title: 'Mindmaps', icon: 'BrainCircuit', description: 'Visualize topics with mindmaps for better retention. A powerful tool to organize and revise complex concepts easily.' },
+    { title: 'GS MCQs', icon: 'BookCheck', description: 'Practice multiple-choice questions across subjects. Build accuracy and confidence for exams with instant feedback.' },
+    { title: 'Mindmaps', icon: 'BrainCircuit', description: 'Visualize topics with better retention. A powerful tool to organize and revise complex concepts easily.' },
 ];
 
 const FeatureItem = ({ title, icon: Icon, description }: { title: string, icon: LucideIcon, description:string }) => (
@@ -184,7 +184,3 @@ export default function AboutUsPage() {
     </div>
   );
 }
-
-    
-
-  
