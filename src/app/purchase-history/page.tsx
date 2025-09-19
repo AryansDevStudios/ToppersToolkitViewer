@@ -9,9 +9,30 @@ import { useAuth } from '@/hooks/use-auth';
 import type { PrintOrder } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 const OrderCard = ({ order }: { order: PrintOrder }) => {
+    const statusConfig = {
+        pending: {
+            variant: "secondary",
+            icon: Clock,
+            className: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-800"
+        },
+        completed: {
+            variant: "default",
+            icon: CheckCircle,
+            className: "bg-green-100 text-green-800 border-green-200 hover:bg-green-100 dark:bg-green-900/50 dark:text-green-200 dark:border-green-800"
+        },
+        cancelled: {
+            variant: "destructive",
+            icon: XCircle,
+            className: "bg-red-100 text-red-800 border-red-200 hover:bg-red-100 dark:bg-red-900/50 dark:text-red-200 dark:border-red-800"
+        }
+    };
+    
+    const config = statusConfig[order.status] || statusConfig.pending;
+    const Icon = config.icon;
+
     return (
         <Card>
             <CardHeader>
@@ -22,7 +43,8 @@ const OrderCard = ({ order }: { order: PrintOrder }) => {
                         </CardTitle>
                         <CardDescription>{order.noteSubject} &gt; {order.noteChapter}</CardDescription>
                     </div>
-                     <Badge variant={order.status === 'completed' ? 'default' : order.status === 'cancelled' ? 'destructive' : 'secondary'}>
+                     <Badge className={cn("capitalize", config.className)}>
+                        <Icon className="mr-1.5 h-3 w-3" />
                         {order.status}
                     </Badge>
                 </div>
@@ -71,11 +93,7 @@ export default function PurchaseHistoryPage() {
             setIsLoadingOrders(false);
         }
     }, [user, authLoading]);
-
-    const pendingOrders = orders.filter(o => o.status === 'pending');
-    const completedOrders = orders.filter(o => o.status === 'completed');
-    const cancelledOrders = orders.filter(o => o.status === 'cancelled');
-
+    
     const isLoading = authLoading || isLoadingOrders;
 
   return (
@@ -108,40 +126,9 @@ export default function PurchaseHistoryPage() {
                 </CardContent>
             </Card>
         ) : orders.length > 0 ? (
-           <Tabs defaultValue="pending">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="pending">
-                        <Clock className="mr-2 h-4 w-4"/> Pending ({pendingOrders.length})
-                    </TabsTrigger>
-                    <TabsTrigger value="completed">
-                        <CheckCircle className="mr-2 h-4 w-4"/> Completed ({completedOrders.length})
-                    </TabsTrigger>
-                    <TabsTrigger value="cancelled">
-                        <XCircle className="mr-2 h-4 w-4"/> Cancelled ({cancelledOrders.length})
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="pending" className="mt-6">
-                    {pendingOrders.length > 0 ? (
-                        <div className="space-y-4">
-                            {pendingOrders.map(order => <OrderCard key={order.id} order={order} />)}
-                        </div>
-                    ) : <p className="text-center text-muted-foreground py-16">You have no pending orders.</p>}
-                </TabsContent>
-                <TabsContent value="completed" className="mt-6">
-                    {completedOrders.length > 0 ? (
-                        <div className="space-y-4">
-                            {completedOrders.map(order => <OrderCard key={order.id} order={order} />)}
-                        </div>
-                    ) : <p className="text-center text-muted-foreground py-16">You have no completed orders.</p>}
-                </TabsContent>
-                <TabsContent value="cancelled" className="mt-6">
-                    {cancelledOrders.length > 0 ? (
-                        <div className="space-y-4">
-                            {cancelledOrders.map(order => <OrderCard key={order.id} order={order} />)}
-                        </div>
-                    ) : <p className="text-center text-muted-foreground py-16">You have no cancelled orders.</p>}
-                </TabsContent>
-            </Tabs>
+           <div className="space-y-6">
+             {orders.map(order => <OrderCard key={order.id} order={order} />)}
+           </div>
         ) : (
           <Card>
             <CardHeader>
