@@ -46,18 +46,6 @@ const testimonials = [
     quote: "I just love these notes! They are my go-to resource for exam preparation. Highly recommended!",
     imgSrc: "https://picsum.photos/seed/priya/100/100",
   },
-  {
-    name: "Anjali Singh",
-    achievement: "Class 10 Topper",
-    quote: "Topper's Toolkit was a game-changer for my board exams. The notes are concise, easy to understand, and cover all the important topics. I couldn't have done it without these resources!",
-    imgSrc: "https://picsum.photos/seed/topper1/100/100",
-  },
-  {
-    name: "Rohan Verma",
-    achievement: "Scored 98% in Science",
-    quote: "The mind maps and MCQs on this platform are fantastic for revision. They helped me visualize complex concepts and test my knowledge effectively.",
-    imgSrc: "https://picsum.photos/seed/topper2/100/100",
-  },
 ];
 
 export function Testimonials() {
