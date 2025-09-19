@@ -65,7 +65,7 @@ export default function OrderConfirmationPage() {
             const generateWhatsAppMessage = () => {
                 const customerName = customer.name || 'N/A';
                 const customerClass = customer.classAndSection || 'N/A';
-                const customerWhatsapp = customer.whatsappNumber.replace(/\D/g, '');
+                const customerWhatsapp = (customer.whatsappNumber || '').replace(/\D/g, '');
 
                 const itemsList = 
                     `Note: ${order.noteType}\n` +
@@ -159,4 +159,3 @@ Note: Please visit the admin panel to verify details and update the order status
         </div>
     );
 }
-
