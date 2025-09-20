@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm, useFieldArray, useFormContext } from "react-hook-form";
@@ -15,11 +16,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast"; // Assuming this is your custom hook
+import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useTransition, useState, useEffect } from "react";
-import { upsertMCQs, updateMCQ } from "@/lib/data"; // Assuming you create an `updateMCQ` function
-import type { MCQ } from "@/lib/types"; // Assuming this is your type definition
+import { upsertMCQs, updateMCQ } from "@/lib/data";
+import type { MCQ } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle, Trash2, Copy } from "lucide-react";
@@ -34,15 +35,71 @@ const singleMcqObjectSchema = z.object({
   correctOptionIndex: z.number().min(0, "You must select a correct answer by clicking 'Mark'.").nonnegative(),
 });
 
-// Schema for the EDIT form (a single MCQ)
-const editMcqSchema = singleMcqObjectSchema;
-
-// Schema for the CREATE form (tabs for manual array or JSON)
-const createMcqFormSchema = z.object({
-  mcqs: z.array(singleMcqObjectSchema),
+// Base schema for the form
+const baseCreateMcqSchema = z.object({
+  mcqs: z.array(singleMcqObjectSchema).optional(),
   jsonInput: z.string().optional(),
   activeTab: z.string().default("manual"),
 });
+
+// Conditional validation based on the active tab
+const createMcqFormSchema = baseCreateMcqSchema.superRefine((data, ctx) => {
+  if (data.activeTab === 'manual') {
+    if (!data.mcqs || data.mcqs.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['mcqs'],
+        message: 'Please add at least one question.',
+      });
+    } else {
+        data.mcqs.forEach((mcq, index) => {
+            if (mcq.question.length < 3) {
+                 ctx.addIssue({ code: z.ZodIssueCode.custom, path: [`mcqs.${index}.question`], message: 'Question must be at least 3 characters long.' });
+            }
+            if (mcq.options.length < 2) {
+                 ctx.addIssue({ code: z.ZodIssueCode.custom, path: [`mcqs.${index}.options`], message: 'At least two options are required.' });
+            }
+            if (mcq.options.some(o => o.trim().length === 0)) {
+                 ctx.addIssue({ code: z.ZodIssueCode.custom, path: [`mcqs.${index}.options`], message: 'All options must have text.' });
+            }
+            if (mcq.correctOptionIndex < 0) {
+                 ctx.addIssue({ code: z.ZodIssueCode.custom, path: [`mcqs.${index}.correctOptionIndex`], message: "You must select a correct answer by clicking 'Mark'." });
+            }
+        })
+    }
+  } else if (data.activeTab === 'json') {
+    if (!data.jsonInput || data.jsonInput.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['jsonInput'],
+        message: 'JSON input cannot be empty.',
+      });
+    } else {
+        try {
+            const parsed = JSON.parse(data.jsonInput);
+            const arraySchema = z.array(singleMcqObjectSchema);
+            const result = arraySchema.safeParse(parsed);
+            if (!result.success) {
+                 ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ['jsonInput'],
+                    message: `Invalid JSON structure: ${result.error.errors.map(e => `${e.path.join('.')} - ${e.message}`).join(', ')}`,
+                 });
+            }
+        } catch (e) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['jsonInput'],
+                message: 'Invalid JSON format.',
+            });
+        }
+    }
+  }
+});
+
+
+// Schema for the EDIT form (a single MCQ)
+const editMcqSchema = singleMcqObjectSchema;
 
 const jsonPlaceholder = `[
   {
@@ -81,7 +138,8 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
       mcqs: [defaultMcqValue],
       jsonInput: "",
       activeTab: "manual",
-    }
+    },
+    mode: "onSubmit",
   });
 
   // Form for EDITING a single MCQ
@@ -128,6 +186,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
         if (values.activeTab === 'json' && values.jsonInput) {
             try {
                 const parsedJson = JSON.parse(values.jsonInput);
+                // We re-validate here just in case, but superRefine should have caught it.
                 const validationResult = z.array(singleMcqObjectSchema).safeParse(parsedJson);
                 if (!validationResult.success) {
                     toast({
@@ -143,7 +202,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
                 toast({ title: "Invalid JSON", description: "The provided text is not valid JSON.", variant: "destructive" });
                 return;
             }
-        } else {
+        } else if (values.mcqs) {
              mcqsToUpsert = values.mcqs;
         }
 
@@ -174,7 +233,6 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
       if (!mcq?.id) return;
       
       startTransition(async () => {
-          // NOTE: You'll need to create a server action `updateMCQ` that handles a single MCQ update
           const result = await updateMCQ({
               id: mcq.id,
               subjectId,
@@ -199,7 +257,9 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
   }
 
   const handleTabChange = (value: string) => {
-      createForm.setValue("activeTab", value, { shouldValidate: true });
+      createForm.setValue("activeTab", value);
+      // Clear errors when switching tabs
+      createForm.clearErrors();
   }
 
   return (
