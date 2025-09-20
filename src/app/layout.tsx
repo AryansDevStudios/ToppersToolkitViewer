@@ -20,7 +20,7 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-const publicPaths = ['/login', '/register', '/terms', '/user-manual'];
+const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results'];
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
