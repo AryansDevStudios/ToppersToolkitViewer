@@ -8,10 +8,11 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Check, X, ChevronsRight, RefreshCcw, Lightbulb } from 'lucide-react';
+import { Check, X, ChevronsRight, RefreshCcw, Lightbulb, Share2 } from 'lucide-react';
 import { markQuizAsAttempted } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '../ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 interface MCQPlayerProps {
   mcqs: MCQ[];
@@ -22,12 +23,21 @@ interface MCQPlayerProps {
 
 export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [incorrectAnswers, setIncorrectAnswers] = useState<{ mcq: MCQ, selectedOption: number }[]>([]);
+  const [isShareSupported, setIsShareSupported] = useState(false);
+
+  useEffect(() => {
+    // Check for Web Share API support on the client
+    if (navigator.share) {
+      setIsShareSupported(true);
+    }
+  }, []);
 
   const currentQuestion = mcqs[currentQuestionIndex];
   
@@ -71,6 +81,36 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
       setIncorrectAnswers([]);
   }
 
+  const handleShare = async () => {
+    const shareText = `I scored ${score} out of ${mcqs.length} on the "${chapterName}" quiz on Topper's Toolkit! Can you beat my score?`;
+    
+    if (isShareSupported) {
+      try {
+        await navigator.share({
+          title: 'My Quiz Result!',
+          text: shareText,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        toast({
+          title: 'Copied to Clipboard!',
+          description: 'Quiz results copied. You can now paste it to share.',
+        });
+      } catch (error) {
+        toast({
+          title: 'Failed to Copy',
+          description: 'Could not copy results to clipboard.',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
   if (showResults) {
     return (
       <Card className="w-full max-w-2xl mx-auto">
@@ -108,10 +148,14 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
                     </div>
                 </div>
            )}
-          <div className="flex justify-center gap-4 pt-6">
+          <div className="flex justify-center flex-wrap gap-4 pt-6">
              <Button onClick={handleRestart}>
                 <RefreshCcw className="mr-2 h-4 w-4" />
                 Try Again
+            </Button>
+            <Button variant="secondary" onClick={handleShare}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share Results
             </Button>
             <Button variant="outline" onClick={onFinish}>
               Choose Another Chapter
