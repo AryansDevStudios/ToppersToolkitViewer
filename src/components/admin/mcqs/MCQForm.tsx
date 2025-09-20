@@ -48,6 +48,20 @@ interface MCQFormProps {
 
 const defaultMcqValue: Omit<MCQ, 'id'> = { question: "", options: ["", "", "", ""], correctOptionIndex: -1 };
 
+const demoJson = JSON.stringify([
+  {
+    "question": "What is the capital of France?",
+    "options": ["Berlin", "Madrid", "Paris", "Rome"],
+    "correctOptionIndex": 2
+  },
+  {
+    "question": "Which planet is known as the Red Planet?",
+    "options": ["Earth", "Mars", "Jupiter", "Venus"],
+    "correctOptionIndex": 1
+  }
+], null, 2);
+
+
 export function MCQForm({ subjectId, subSubjectId, chapterId, mcqSet, children }: MCQFormProps) {
   const { toast } = useToast();
   const router = useRouter();
@@ -115,6 +129,14 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcqSet, children }
     }
   }, [isOpen, mcqSet, isEditing, form]);
 
+  const handleCopyDemo = () => {
+    navigator.clipboard.writeText(demoJson).then(() => {
+        toast({ title: "Copied!", description: "Demo JSON copied to clipboard." });
+    }, () => {
+        toast({ title: "Failed to copy", variant: "destructive" });
+    });
+  };
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("Submitting values:", values);
     startTransition(async () => {
@@ -143,7 +165,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcqSet, children }
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit MCQ Set' : 'Add New MCQ Set'}</DialogTitle>
           <DialogDescription>
-             Add or edit the MCQ set name and its questions. Use the manual editor or paste JSON. Both views are synchronized.
+             Add questions manually or paste valid JSON. Both views are synchronized.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -206,7 +228,12 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcqSet, children }
 
                     {/* JSON Entry Column */}
                     <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-semibold">JSON Editor for Questions</h3>
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-semibold">JSON Editor for Questions</h3>
+                             <Button type="button" variant="outline" size="sm" onClick={handleCopyDemo}>
+                                <Copy className="mr-2 h-4 w-4" /> Copy Demo
+                            </Button>
+                        </div>
                         <div className="flex-1 flex flex-col relative min-h-[400px]">
                             <Textarea 
                                 value={jsonText}
