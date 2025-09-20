@@ -2,7 +2,7 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp } from "firebase/firestore";
@@ -1150,19 +1150,52 @@ export const deleteMCQSet = async (subjectId: string, subSubjectId: string, chap
 };
 
 
-export async function markQuizAsAttempted(userId: string, chapterId: string) {
-    if (!userId || !chapterId) {
-        return { success: false, error: "User ID and Chapter ID are required." };
+export async function markQuizAsAttempted(userId: string, mcqSetId: string) {
+    if (!userId || !mcqSetId) {
+        return { success: false, error: "User ID and MCQ Set ID are required." };
     }
     const userDocRef = doc(db, "users", userId);
     try {
         await updateDoc(userDocRef, {
-            attemptedQuizzes: arrayUnion(chapterId)
+            attemptedQuizzes: arrayUnion(mcqSetId)
         });
         revalidatePath('/mcqs');
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };
+    }
+}
+
+export async function saveQuizAttempt(attemptData: Omit<QuizAttempt, 'id'>): Promise<{ success: boolean, error?: string, attemptId?: string }> {
+    const attemptId = uuidv4();
+    const attemptDocRef = doc(db, "quizAttempts", attemptId);
+
+    const newAttempt: QuizAttempt = {
+        ...attemptData,
+        id: attemptId
+    };
+
+    try {
+        await setDoc(attemptDocRef, newAttempt);
+        return { success: true, attemptId: attemptId };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function getQuizAttemptById(attemptId: string): Promise<QuizAttempt | null> {
+    noStore();
+    if (!attemptId) return null;
+    const attemptDocRef = doc(db, 'quizAttempts', attemptId);
+    try {
+        const docSnap = await getDoc(attemptDocRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as QuizAttempt;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching quiz attempt by ID:", error);
+        return null;
     }
 }
 
@@ -1288,3 +1321,4 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         return { success: false, error: e.message };
     }
 }
+

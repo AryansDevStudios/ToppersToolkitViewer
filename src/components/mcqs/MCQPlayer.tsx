@@ -2,26 +2,27 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { MCQ } from '@/lib/types';
+import type { MCQ, QuizAttempt } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Check, X, ChevronsRight, RefreshCcw, Lightbulb, Share2 } from 'lucide-react';
-import { markQuizAsAttempted } from '@/lib/data';
+import { markQuizAsAttempted, saveQuizAttempt } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import { Separator } from '../ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 interface MCQPlayerProps {
   mcqs: MCQ[];
-  chapterId: string;
-  chapterName: string;
+  chapterId: string; // This is now mcqSetId
+  chapterName: string; // This is now mcqSetName
   onFinish: () => void;
 }
 
-export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerProps) {
-  const { user } = useAuth();
+export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, onFinish }: MCQPlayerProps) {
+  const { user, dbUser } = useAuth();
   const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -30,6 +31,8 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
   const [showResults, setShowResults] = useState(false);
   const [incorrectAnswers, setIncorrectAnswers] = useState<{ mcq: MCQ, selectedOption: number }[]>([]);
   const [isShareSupported, setIsShareSupported] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for Web Share API support on the client
@@ -40,11 +43,42 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
 
   const currentQuestion = mcqs[currentQuestionIndex];
   
-  useEffect(() => {
-    if (showResults && user) {
-        markQuizAsAttempted(user.uid, chapterId);
+  const handleFinishQuiz = async () => {
+    if (!user || !dbUser) return;
+    setIsSaving(true);
+    
+    await markQuizAsAttempted(user.uid, mcqSetId);
+
+    const result: Omit<QuizAttempt, 'id'> = {
+        userId: user.uid,
+        userName: dbUser.name,
+        mcqSetId: mcqSetId,
+        mcqSetName: mcqSetName,
+        score: score,
+        totalQuestions: mcqs.length,
+        incorrectAnswers: incorrectAnswers.map(ia => ({
+            question: ia.mcq.question,
+            selectedAnswer: ia.mcq.options[ia.selectedOption],
+            correctAnswer: ia.mcq.options[ia.mcq.correctOptionIndex]
+        })),
+        createdAt: Date.now()
+    };
+
+    const { success, attemptId: newAttemptId, error } = await saveQuizAttempt(result);
+
+    if (success && newAttemptId) {
+        setAttemptId(newAttemptId);
+    } else {
+        toast({
+            title: "Failed to Save Results",
+            description: error || "Could not save your quiz attempt. Your results will not be shareable.",
+            variant: "destructive"
+        });
     }
-  }, [showResults, user, chapterId]);
+
+    setIsSaving(false);
+    setShowResults(true);
+  }
 
   const handleOptionSelect = (index: number) => {
     if (isAnswered) return;
@@ -67,7 +101,7 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
       setSelectedOption(null);
       setIsAnswered(false);
     } else {
-      setShowResults(true);
+      handleFinishQuiz();
     }
   };
 
@@ -78,17 +112,25 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
       setScore(0);
       setShowResults(false);
       setIncorrectAnswers([]);
+      setAttemptId(null);
+      setIsSaving(false);
   }
 
   const handleShare = async () => {
-    const shareText = `I scored ${score} out of ${mcqs.length} on the "${chapterName}" quiz on Topper's Toolkit! Can you beat my score?`;
+    if (!attemptId) {
+        toast({ title: "Cannot Share", description: "Your results could not be saved, so a shareable link is not available.", variant: "destructive" });
+        return;
+    }
+    
+    const shareUrl = `${window.location.origin}/quiz-results/${attemptId}`;
+    const shareText = `I scored ${score} out of ${mcqs.length} on the "${mcqSetName}" quiz on Topper's Toolkit! Can you beat my score? Check out my results!`;
     
     const copyToClipboard = async () => {
       try {
-        await navigator.clipboard.writeText(shareText);
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
         toast({
           title: 'Copied to Clipboard!',
-          description: 'Quiz results copied. You can now paste it to share.',
+          description: 'Quiz results link copied. You can now paste it to share.',
         });
       } catch (error) {
         toast({
@@ -104,11 +146,9 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
         await navigator.share({
           title: 'My Quiz Result!',
           text: shareText,
-          url: window.location.href,
+          url: shareUrl,
         });
       } catch (error) {
-        // If sharing fails (e.g., user cancels, or permission is denied),
-        // fall back to copying to the clipboard as a secondary option.
         console.error('Error sharing, falling back to clipboard:', error);
         await copyToClipboard();
       }
@@ -117,6 +157,16 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
     }
   };
 
+  if (isSaving) {
+    return (
+        <Card className="w-full max-w-2xl mx-auto flex flex-col items-center justify-center p-8 space-y-4 h-96">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <CardTitle className="text-2xl">Saving Your Results...</CardTitle>
+            <p className="text-muted-foreground">Please wait a moment.</p>
+        </Card>
+    );
+  }
+
   if (showResults) {
     return (
       <Card className="w-full max-w-2xl mx-auto">
@@ -124,7 +174,7 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
           <CardTitle className="text-center text-2xl">Quiz Results</CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <p className="text-lg text-muted-foreground">You completed the quiz for <strong>{chapterName}</strong>.</p>
+          <p className="text-lg text-muted-foreground">You completed the quiz for <strong>{mcqSetName}</strong>.</p>
           <p className="text-4xl font-bold">
             You scored {score} out of {mcqs.length}
           </p>
@@ -176,7 +226,7 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <div className="flex justify-between items-center mb-2">
-            <h2 className="text-sm font-medium text-primary">{chapterName}</h2>
+            <h2 className="text-sm font-medium text-primary">{mcqSetName}</h2>
             <p className="text-sm font-semibold">
                 {currentQuestionIndex + 1} / {mcqs.length}
             </p>

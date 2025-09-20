@@ -60,6 +60,24 @@ export interface MCQSet {
   mcqs: MCQ[];
 }
 
+export interface IncorrectAnswer {
+    question: string;
+    selectedAnswer: string;
+    correctAnswer: string;
+}
+
+export interface QuizAttempt {
+    id: string;
+    userId: string;
+    userName: string;
+    mcqSetId: string;
+    mcqSetName: string;
+    score: number;
+    totalQuestions: number;
+    incorrectAnswers: IncorrectAnswer[];
+    createdAt: number;
+}
+
 export interface Chapter {
   id:string;
   name: string;
