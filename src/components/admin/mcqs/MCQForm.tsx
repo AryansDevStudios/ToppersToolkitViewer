@@ -152,12 +152,11 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-           <form id="mcq-form" onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-0 py-4">
+           <form id="mcq-form" onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-y-auto -mx-6 px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
                     {/* Manual Entry Column */}
                     <div className="flex flex-col gap-4">
                         <h3 className="text-lg font-semibold">Manual Editor</h3>
-                        <ScrollArea className="flex-1 h-0 pr-4">
                            <div className="space-y-6">
                                 {mcqFields.map((mcqField, mcqIndex) => (
                                     <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative bg-card">
@@ -197,13 +196,12 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
                                     </Button>
                                 )}
                            </div>
-                        </ScrollArea>
                     </div>
 
                     {/* JSON Entry Column */}
                     <div className="flex flex-col gap-4">
                         <h3 className="text-lg font-semibold">JSON Editor</h3>
-                        <div className="flex-1 flex flex-col relative">
+                        <div className="flex-1 flex flex-col relative min-h-[400px]">
                             <Textarea 
                                 value={jsonText}
                                 onChange={handleJsonChange}
@@ -221,14 +219,13 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
                         </div>
                     </div>
                 </div>
-
-                <DialogFooter className="pt-6 border-t">
-                    <Button type="submit" form="mcq-form" disabled={isPending || !!jsonError}>
-                        {isPending ? "Saving..." : isEditing ? "Save Changes" : `Create ${mcqFields.length} MCQ(s)`}
-                    </Button>
-                </DialogFooter>
            </form>
         </Form>
+        <DialogFooter className="pt-6 border-t">
+            <Button type="submit" form="mcq-form" disabled={isPending || !!jsonError}>
+                {isPending ? "Saving..." : isEditing ? "Save Changes" : `Create ${mcqFields.length} MCQ(s)`}
+            </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
@@ -277,11 +274,9 @@ function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
             />
         ))}
         {optionsError && <FormMessage>{optionsError.message}</FormMessage>}
-        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append("")}>
+        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append({text: ""})}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Option
         </Button>
     </div>
   )
 }
-
-    
