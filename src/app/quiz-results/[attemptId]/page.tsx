@@ -66,7 +66,7 @@ export default async function QuizResultPage({ params }: { params: { attemptId: 
                     </AccordionTrigger>
                     <AccordionContent>
                         <div className="space-y-6 pt-4">
-                            {attempt.answers.map((answer, index) => {
+                            {attempt.answers && attempt.answers.map((answer, index) => {
                                 const isCorrect = answer.selectedOptionIndex === answer.correctOptionIndex;
                                 return (
                                     <div key={answer.mcqId} className="p-4 border rounded-lg bg-muted/30">
