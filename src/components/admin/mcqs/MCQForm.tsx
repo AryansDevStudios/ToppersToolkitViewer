@@ -50,22 +50,21 @@ const jsonPlaceholder = `[
 const formSchema = z.object({
   mcqs: z.array(singleMCQSchema),
   jsonInput: z.string().optional(),
+  activeTab: z.string().default("manual"),
 }).refine(data => {
-    // This validation ensures that if we are using JSON, it's valid.
-    // We do the actual parsing and more detailed validation in the submit handler.
-    if (data.jsonInput) {
-        try {
-            const parsed = JSON.parse(data.jsonInput);
-            return Array.isArray(parsed);
-        } catch (e) {
-            return false;
-        }
+    if (data.activeTab === 'json') {
+      if (!data.jsonInput) return false;
+      try {
+        const parsed = JSON.parse(data.jsonInput);
+        return Array.isArray(parsed) && parsed.length > 0;
+      } catch (e) {
+        return false;
+      }
     }
-    // If not using JSON, the `mcqs` array must have at least one item.
     return data.mcqs.length > 0;
 }, {
-    message: "Either provide valid JSON or fill out at least one question manually.",
-    path: ['jsonInput'] // Show error on the JSON input field
+    message: "Please provide valid data for the selected tab.",
+    path: ['jsonInput']
 });
 
 
@@ -84,7 +83,6 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("manual");
   const isEditing = !!mcq;
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -92,6 +90,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
     defaultValues: {
       mcqs: [defaultMcqValue],
       jsonInput: "",
+      activeTab: "manual",
     }
   });
 
@@ -99,6 +98,8 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
     control: form.control,
     name: "mcqs",
   });
+
+  const activeTab = form.watch("activeTab");
   
   useEffect(() => {
     if (isOpen) {
@@ -109,13 +110,14 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
             options: mcq.options.length >= 4 ? mcq.options : [...mcq.options, ...Array(4 - mcq.options.length).fill('')],
             correctOptionIndex: mcq.correctOptionIndex,
           }],
-          jsonInput: ""
+          jsonInput: "",
+          activeTab: "manual"
         });
-        setActiveTab("manual");
       } else {
         form.reset({
           mcqs: [defaultMcqValue],
-          jsonInput: ""
+          jsonInput: "",
+          activeTab: "manual"
         });
       }
     }
@@ -183,6 +185,10 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
     });
   }
 
+  const handleTabChange = (value: string) => {
+      form.setValue("activeTab", value, { shouldValidate: true });
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -194,7 +200,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
         </DialogHeader>
         <Form {...form}>
            <form id="mcq-form" onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0">
                     {!isEditing && (
                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="manual">Manual Entry</TabsTrigger>
@@ -338,3 +344,5 @@ function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
     </div>
   )
 }
+
+    
