@@ -244,7 +244,7 @@ export const teachers: TeacherProfile[] = [
     id: "kuldeep-singh",
     name: "Kuldeep Singh",
     subject: "Owner and Founder",
-    photoUrl: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
+    photoUrl: "/images/KuldeepsImage.png",
     quote: "The beautiful thing about learning is that no one can take it away from you.",
     about: [
       "As the Owner and Founder of Topper's Toolkit, Kuldeep Singh is the visionary behind the platform. He is passionate about creating high-quality educational content that is accessible and exciting for all students.",
