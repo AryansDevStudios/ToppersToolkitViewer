@@ -1,11 +1,19 @@
 
 import { getQuizAttemptById } from '@/lib/data';
 import { notFound } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Trophy, Check, X, Lightbulb } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Trophy, Check, X, Circle, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
 
 export const revalidate = 0;
 
@@ -46,40 +54,65 @@ export default async function QuizResultPage({ params }: { params: { attemptId: 
           <p className="text-sm text-muted-foreground">
             Completed on: {new Date(attempt.createdAt).toLocaleString()}
           </p>
-
-           {attempt.incorrectAnswers.length > 0 && (
-                <div className="text-left pt-6">
-                    <Separator />
-                    <h3 className="text-lg font-semibold my-4 flex items-center gap-2">
-                        <Lightbulb className="text-amber-500"/>
-                        Review of Incorrect Answers
-                    </h3>
-                    <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-                        {attempt.incorrectAnswers.map((answer, index) => (
-                            <div key={index} className="p-4 border rounded-lg bg-muted/30 text-sm">
-                                <p className="font-semibold mb-3">{answer.question}</p>
-                                <div className="space-y-2">
-                                    <p className="flex items-start gap-2 bg-red-100 dark:bg-red-900/50 p-2 rounded">
-                                        <X className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" /> 
-                                        <span>Your answer: {answer.selectedAnswer}</span>
-                                    </p>
-                                     <p className="flex items-start gap-2 bg-green-100 dark:bg-green-900/50 p-2 rounded">
-                                        <Check className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                                        <span>Correct answer: {answer.correctAnswer}</span>
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-           )}
-
-            <div className="pt-8">
+        </CardContent>
+         <CardFooter className="flex-col p-6">
+             <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1">
+                    <AccordionTrigger>
+                        <span className="flex items-center gap-2 text-lg font-semibold">
+                           <HelpCircle className="h-5 w-5 text-primary" />
+                           Full Quiz Review
+                        </span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <div className="space-y-6 pt-4">
+                            {attempt.answers.map((answer, index) => {
+                                const isCorrect = answer.selectedOptionIndex === answer.correctOptionIndex;
+                                return (
+                                    <div key={answer.mcqId} className="p-4 border rounded-lg bg-muted/30">
+                                        <p className="font-semibold mb-4">{index + 1}. {answer.question}</p>
+                                        <div className="space-y-2">
+                                            {answer.options.map((option, optIndex) => {
+                                                const isSelected = optIndex === answer.selectedOptionIndex;
+                                                const isActualCorrect = optIndex === answer.correctOptionIndex;
+                                                
+                                                return (
+                                                     <div
+                                                        key={optIndex}
+                                                        className={cn("flex items-center gap-3 p-2 rounded-md border",
+                                                            isSelected && !isCorrect && "bg-red-100 dark:bg-red-900/50 border-red-300 dark:border-red-700",
+                                                            isActualCorrect && "bg-green-100 dark:bg-green-900/50 border-green-300 dark:border-green-700",
+                                                        )}
+                                                     >
+                                                        {isSelected ? (
+                                                            isCorrect ? (
+                                                                <Check className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                                            ) : (
+                                                                <X className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                                                            )
+                                                        ) : isActualCorrect ? (
+                                                            <Check className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                                        ) : (
+                                                            <Circle className="h-5 w-5 text-muted-foreground/50 flex-shrink-0" />
+                                                        )}
+                                                        <span className="text-sm">{option}</span>
+                                                     </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+            </Accordion>
+            <div className="pt-8 w-full text-center">
                  <Button asChild>
                     <Link href="/mcqs">Try a Quiz Yourself!</Link>
                  </Button>
             </div>
-        </CardContent>
+        </CardFooter>
       </Card>
     </div>
   );

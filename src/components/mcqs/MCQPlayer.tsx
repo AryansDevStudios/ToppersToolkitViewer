@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { MCQ, QuizAttempt } from '@/lib/types';
+import type { MCQ, QuizAttempt, AnswerRecord } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -29,7 +29,7 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
-  const [incorrectAnswers, setIncorrectAnswers] = useState<{ mcq: MCQ, selectedOption: number }[]>([]);
+  const [answers, setAnswers] = useState<AnswerRecord[]>([]);
   const [isShareSupported, setIsShareSupported] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [attemptId, setAttemptId] = useState<string | null>(null);
@@ -49,18 +49,22 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
     
     await markQuizAsAttempted(user.uid, mcqSetId);
 
+    const finalAnswers = [...answers, {
+        mcqId: currentQuestion.id,
+        question: currentQuestion.question,
+        options: currentQuestion.options,
+        correctOptionIndex: currentQuestion.correctOptionIndex,
+        selectedOptionIndex: selectedOption
+    }];
+
     const result: Omit<QuizAttempt, 'id'> = {
         userId: user.uid,
         userName: dbUser.name,
         mcqSetId: mcqSetId,
         mcqSetName: mcqSetName,
-        score: score,
+        score: score + (selectedOption === currentQuestion.correctOptionIndex ? 1 : 0),
         totalQuestions: mcqs.length,
-        incorrectAnswers: incorrectAnswers.map(ia => ({
-            question: ia.mcq.question,
-            selectedAnswer: ia.mcq.options[ia.selectedOption],
-            correctAnswer: ia.mcq.options[ia.mcq.correctOptionIndex]
-        })),
+        answers: finalAnswers,
         createdAt: Date.now()
     };
 
@@ -90,9 +94,15 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
     setIsAnswered(true);
     if (selectedOption === currentQuestion.correctOptionIndex) {
       setScore(score + 1);
-    } else {
-        setIncorrectAnswers([...incorrectAnswers, { mcq: currentQuestion, selectedOption }]);
     }
+    
+     setAnswers([...answers, {
+        mcqId: currentQuestion.id,
+        question: currentQuestion.question,
+        options: currentQuestion.options,
+        correctOptionIndex: currentQuestion.correctOptionIndex,
+        selectedOptionIndex: selectedOption
+    }]);
   };
 
   const handleNextQuestion = () => {
@@ -111,7 +121,7 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
       setIsAnswered(false);
       setScore(0);
       setShowResults(false);
-      setIncorrectAnswers([]);
+      setAnswers([]);
       setAttemptId(null);
       setIsSaving(false);
   }
@@ -168,6 +178,7 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
   }
 
   if (showResults) {
+     const incorrectCount = answers.filter(a => a.selectedOptionIndex !== a.correctOptionIndex).length;
     return (
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
@@ -178,7 +189,7 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
           <p className="text-4xl font-bold">
             You scored {score} out of {mcqs.length}
           </p>
-           {incorrectAnswers.length > 0 && (
+           {incorrectCount > 0 && (
                 <div className="text-left pt-4">
                     <Separator />
                     <h3 className="text-lg font-semibold my-4 flex items-center gap-2">
@@ -186,17 +197,17 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
                         Review Your Mistakes
                     </h3>
                     <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
-                        {incorrectAnswers.map(({ mcq, selectedOption }, index) => (
+                        {answers.filter(a => a.selectedOptionIndex !== a.correctOptionIndex).map((answer, index) => (
                             <div key={index} className="p-3 border rounded-md bg-muted/30">
-                                <p className="font-semibold mb-2">{mcq.question}</p>
+                                <p className="font-semibold mb-2">{answer.question}</p>
                                 <div className="space-y-2 text-sm">
                                     <p className="flex items-center gap-2 bg-red-100 dark:bg-red-900/50 p-2 rounded">
                                         <X className="h-4 w-4 text-red-600 dark:text-red-400" /> 
-                                        Your answer: {mcq.options[selectedOption]}
+                                        Your answer: {answer.options[answer.selectedOptionIndex!]}
                                     </p>
                                      <p className="flex items-center gap-2 bg-green-100 dark:bg-green-900/50 p-2 rounded">
                                         <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                        Correct answer: {mcq.options[mcq.correctOptionIndex]}
+                                        Correct answer: {answer.options[answer.correctOptionIndex]}
                                     </p>
                                 </div>
                             </div>

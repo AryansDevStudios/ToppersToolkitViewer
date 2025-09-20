@@ -60,10 +60,12 @@ export interface MCQSet {
   mcqs: MCQ[];
 }
 
-export interface IncorrectAnswer {
-    question: string;
-    selectedAnswer: string;
-    correctAnswer: string;
+export interface AnswerRecord {
+  mcqId: string;
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+  selectedOptionIndex: number | null; // null if not answered
 }
 
 export interface QuizAttempt {
@@ -74,7 +76,7 @@ export interface QuizAttempt {
     mcqSetName: string;
     score: number;
     totalQuestions: number;
-    incorrectAnswers: IncorrectAnswer[];
+    answers: AnswerRecord[];
     createdAt: number;
 }
 
