@@ -1107,11 +1107,17 @@ export async function getUserComplaints(userId: string): Promise<Complaint[]> {
     if (!userId) return [];
     
     const complaintsCollection = collection(db, 'complaints');
-    const q = query(complaintsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    const q = query(complaintsCollection, where('userId', '==', userId));
     
     try {
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Complaint));
+        const complaints = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        } as Complaint));
+        // Sort by the 'createdAt' number in descending order
+        complaints.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        return complaints;
     } catch (error) {
         console.error("Error fetching user complaints:", error);
         return [];
