@@ -36,7 +36,7 @@ export default async function QuizResultPage({ params }: { params: { attemptId: 
           Quiz Results
         </h1>
         <p className="text-muted-foreground text-lg">
-          Here's how <strong>{attempt.userName}</strong> performed on the quiz.
+          Here's how <strong className="text-primary">{attempt.userName}</strong> performed on the quiz.
         </p>
       </header>
 
