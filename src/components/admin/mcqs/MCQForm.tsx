@@ -227,7 +227,7 @@ function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
                 )}
             />
         ))}
-        {errors?.mcqs?.[mcqIndex]?.options && <FormMessage>{errors.mcqs[mcqIndex]?.options?.message}</FormMessage>}
+        {errors?.mcqs?.[mcqIndex]?.options?.root && <FormMessage>{errors.mcqs[mcqIndex]?.options?.root?.message}</FormMessage>}
         <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append("")}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Option
         </Button>
