@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { PlusCircle, Trash2, Copy, AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { debounce } from "lodash";
+import { cn } from "@/lib/utils";
 
 const singleMcqObjectSchema = z.object({
   question: z.string().min(1, "Question cannot be empty."),
@@ -282,3 +283,5 @@ function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
     </div>
   )
 }
+
+    
