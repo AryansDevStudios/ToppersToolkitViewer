@@ -18,87 +18,29 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useTransition, useState, useEffect } from "react";
+import { useTransition, useState, useEffect, useCallback } from "react";
 import { upsertMCQs, updateMCQ } from "@/lib/data";
 import type { MCQ } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Trash2, Copy } from "lucide-react";
+import { PlusCircle, Trash2, Copy, AlertTriangle } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { debounce } from "lodash";
 
-// Schema for a single MCQ object, used for both creation and editing validation
 const singleMcqObjectSchema = z.object({
-  question: z.string().min(3, "Question must be at least 3 characters long."),
+  question: z.string().min(1, "Question cannot be empty."),
   options: z.array(z.string().min(1, "Option text cannot be empty.")).min(2, "At least two options are required."),
-  correctOptionIndex: z.number().min(0, "You must select a correct answer by clicking 'Mark'.").nonnegative(),
+  correctOptionIndex: z.number().min(0, "You must select a correct answer.").nonnegative("A correct option must be selected."),
 });
 
-// Advanced schema for the CREATE form using superRefine for conditional validation
-const createMcqFormSchema = z.object({
-    activeTab: z.literal("manual").or(z.literal("json")),
-    mcqs: z.array(singleMcqObjectSchema).optional(),
-    jsonInput: z.string().optional(),
-}).superRefine((data, ctx) => {
-    if (data.activeTab === 'manual') {
-        const mcqsResult = z.array(singleMcqObjectSchema).min(1, "Please add at least one question.").safeParse(data.mcqs);
-        if (!mcqsResult.success) {
-             mcqsResult.error.errors.forEach(err => {
-                ctx.addIssue({
-                    ...err,
-                    path: ["mcqs", ...err.path],
-                });
-             });
-        }
-    } else if (data.activeTab === 'json') {
-        if (!data.jsonInput || data.jsonInput.trim() === '') {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "JSON input cannot be empty.",
-                path: ["jsonInput"],
-            });
-            return;
-        }
-        try {
-            const parsed = JSON.parse(data.jsonInput);
-            const validationResult = z.array(singleMcqObjectSchema).safeParse(parsed);
-            if (!validationResult.success) {
-                 ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: "Input must be a valid JSON array of MCQs.",
-                    path: ["jsonInput"],
-                });
-            }
-        } catch (e) {
-             ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "The provided text is not valid JSON.",
-                path: ["jsonInput"],
-            });
-        }
-    }
+const formSchema = z.object({
+    mcqs: z.array(singleMcqObjectSchema),
 });
-
-
-// Schema for the EDIT form (a single MCQ)
-const editMcqSchema = singleMcqObjectSchema;
-
-const jsonPlaceholder = `[
-  {
-    "question": "What is the capital of France?",
-    "options": ["Paris", "London", "Berlin", "Madrid"],
-    "correctOptionIndex": 0
-  },
-  {
-    "question": "What is 2 + 2?",
-    "options": ["3", "4", "5", "6"],
-    "correctOptionIndex": 1
-  }
-]`;
 
 interface MCQFormProps {
   subjectId: string;
   subSubjectId: string;
   chapterId: string;
-  mcq?: MCQ; // If mcq is provided, we are in edit mode
+  mcq?: MCQ; 
   children: React.ReactNode;
 }
 
@@ -109,78 +51,84 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditingJson, setIsEditingJson] = useState(false);
+  const [jsonError, setJsonError] = useState<string | null>(null);
   const isEditing = !!mcq;
 
-  // Form for CREATING new MCQs
-  const createForm = useForm<z.infer<typeof createMcqFormSchema>>({
-    resolver: zodResolver(createMcqFormSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      activeTab: "manual",
-      mcqs: [defaultMcqValue],
-      jsonInput: "",
+      mcqs: isEditing && mcq ? [mcq] : [defaultMcqValue],
     },
-    mode: "onSubmit",
+    mode: "onChange",
   });
 
-  // Form for EDITING a single MCQ
-  const editForm = useForm<z.infer<typeof editMcqSchema>>({
-    resolver: zodResolver(editMcqSchema),
-  });
-
-  // Get the correct form instance based on the mode
-  const form = isEditing ? editForm : createForm;
-
-  const { fields: mcqFields, append: appendMcq, remove: removeMcq } = useFieldArray({
-    control: createForm.control,
+  const { fields: mcqFields, append: appendMcq, remove: removeMcq, replace: replaceMcqs } = useFieldArray({
+    control: form.control,
     name: "mcqs",
   });
 
-  const activeTab = createForm.watch("activeTab");
+  const mcqsValue = form.watch('mcqs');
+  const [jsonText, setJsonText] = useState(() => JSON.stringify(mcqsValue, null, 2));
+
+  // Debounced function to update form from JSON
+  const debouncedUpdateForm = useCallback(debounce((newJson: string) => {
+    try {
+        const parsed = JSON.parse(newJson);
+        const validationResult = z.array(singleMcqObjectSchema).safeParse(parsed);
+        if(validationResult.success) {
+            replaceMcqs(validationResult.data);
+            setJsonError(null);
+        } else {
+            setJsonError("JSON does not match the required format.");
+        }
+    } catch (e) {
+      setJsonError("Invalid JSON syntax.");
+    }
+  }, 500), [replaceMcqs]);
+  
+  const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newJson = e.target.value;
+      setJsonText(newJson);
+      debouncedUpdateForm(newJson);
+  }
+
+  // Effect to sync Form state -> JSON state
+  useEffect(() => {
+    // Only update JSON text if the user is not currently editing it.
+    if (!isEditingJson) {
+        setJsonText(JSON.stringify(mcqsValue, null, 2));
+    }
+  }, [mcqsValue, isEditingJson]);
 
   useEffect(() => {
     if (isOpen) {
-      if (isEditing && mcq) {
-        // Reset the EDIT form with the MCQ data
-        editForm.reset({
-          question: mcq.question,
-          options: mcq.options.length >= 4 ? mcq.options : [...mcq.options, ...Array(4 - mcq.options.length).fill('')],
-          correctOptionIndex: mcq.correctOptionIndex,
-        });
-      } else {
-        // Reset the CREATE form to its default state
-        createForm.reset({
-          activeTab: "manual",
-          mcqs: [defaultMcqValue],
-          jsonInput: "",
-        });
-      }
+      const initialValues = isEditing && mcq ? [mcq] : [defaultMcqValue];
+      form.reset({ mcqs: initialValues });
+      setJsonText(JSON.stringify(initialValues, null, 2));
+      setJsonError(null);
     }
-  }, [isOpen, mcq, isEditing, createForm, editForm]);
+  }, [isOpen, mcq, isEditing, form]);
 
-
-  // Handler for CREATING new MCQs
-  function onCreateSubmit(values: z.infer<typeof createMcqFormSchema>) {
+  function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-        let mcqsToUpsert: Omit<MCQ, 'id'>[] = [];
-
-        if (values.activeTab === 'json' && values.jsonInput) {
-            const parsedJson = JSON.parse(values.jsonInput);
-            mcqsToUpsert = parsedJson;
-        } else if (values.activeTab === 'manual' && values.mcqs) {
-             mcqsToUpsert = values.mcqs;
+        let result;
+        if (isEditing) {
+            result = await updateMCQ({
+                id: mcq!.id,
+                subjectId,
+                subSubjectId,
+                chapterId,
+                ...values.mcqs[0],
+            });
+        } else {
+             result = await upsertMCQs({
+                subjectId,
+                subSubjectId,
+                chapterId,
+                mcqs: values.mcqs,
+            });
         }
-
-        if (mcqsToUpsert.length === 0) {
-            toast({ title: "No questions to submit", description: "Please add at least one question.", variant: "destructive" });
-            return;
-        }
-
-      const result = await upsertMCQs({
-        subjectId,
-        subSubjectId,
-        chapterId,
-        mcqs: mcqsToUpsert,
-      });
 
       if (result.success) {
         toast({ title: "Success", description: result.message });
@@ -192,99 +140,33 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
     });
   }
 
-  // Handler for EDITING an existing MCQ
-  function onEditSubmit(values: z.infer<typeof editMcqSchema>) {
-      if (!mcq?.id) return;
-      
-      startTransition(async () => {
-          const result = await updateMCQ({
-              id: mcq.id,
-              subjectId,
-              subSubjectId,
-              chapterId,
-              ...values,
-          });
-
-          if (result.success) {
-              toast({ title: "Success", description: result.message });
-              setIsOpen(false);
-              router.refresh();
-          } else {
-              toast({ title: "Update Failed", description: result.error || "Could not update the MCQ.", variant: "destructive" });
-          }
-      });
-  }
-
-  const handleCopyDemo = () => {
-    navigator.clipboard.writeText(jsonPlaceholder);
-    toast({ title: "Copied!", description: "Demo JSON copied to clipboard." });
-  }
-
-  const handleTabChange = (value: string) => {
-      if (value === 'manual' || value === 'json') {
-          createForm.setValue("activeTab", value, { shouldValidate: true });
-      }
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit MCQ' : 'Add New MCQs'}</DialogTitle>
-           <DialogDescription>
-            {isEditing ? 'Modify the question and its options below.' : 'Use manual entry or bulk JSON upload to add questions.'}
+          <DialogDescription>
+             {isEditing ? 'Modify the question and its options below.' : 'Add questions manually or paste valid JSON. Both views are synchronized.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-           <form id="mcq-form" onSubmit={isEditing ? editForm.handleSubmit(onEditSubmit) : createForm.handleSubmit(onCreateSubmit)} className="flex-1 flex flex-col min-h-0">
-                {isEditing ? (
-                    // EDITING UI
-                    <div className="overflow-y-auto -mx-6 px-6 py-4 border-y flex-1">
-                        <div className="space-y-4">
-                             <FormField
-                                control={editForm.control}
-                                name="question"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Question</FormLabel>
-                                    <FormControl>
-                                        <Textarea placeholder="What is the powerhouse of the cell?" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div>
-                                <FormLabel>Options</FormLabel>
-                                <FormDescription className="text-xs mb-2">
-                                    Click on an option to mark it as the correct answer.
-                                </FormDescription>
-                                <MCQOptionsArray mcqIndex={0} isEditing={true} />
-                                {editForm.formState.errors?.correctOptionIndex && (
-                                    <p className="text-sm font-medium text-destructive mt-2">{editForm.formState.errors.correctOptionIndex?.message}</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    // CREATING UI
-                    <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-                            <TabsTrigger value="json">JSON Upload</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="manual" className="flex-1 overflow-y-auto -mx-6 px-6 py-4 border-y">
+           <form id="mcq-form" onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-0 py-4">
+                    {/* Manual Entry Column */}
+                    <div className="flex flex-col gap-4">
+                        <h3 className="text-lg font-semibold">Manual Editor</h3>
+                        <ScrollArea className="flex-1 h-0 pr-4">
                            <div className="space-y-6">
                                 {mcqFields.map((mcqField, mcqIndex) => (
                                     <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative bg-card">
-                                    {mcqFields.length > 1 && (
+                                    {!isEditing && mcqFields.length > 1 && (
                                         <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeMcq(mcqIndex)}>
                                         <Trash2 className="h-4 w-4" />
                                         </Button>
                                     )}
                                     <FormField
-                                        control={createForm.control}
+                                        control={form.control}
                                         name={`mcqs.${mcqIndex}.question`}
                                         render={({ field }) => (
                                             <FormItem>
@@ -301,50 +183,47 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
                                         <FormDescription className="text-xs mb-2">
                                             Click on an option to mark it as the correct answer.
                                         </FormDescription>
-                                        <MCQOptionsArray mcqIndex={mcqIndex} isEditing={false} />
-                                         {createForm.formState.errors?.mcqs?.[mcqIndex]?.correctOptionIndex && (
-                                            <p className="text-sm font-medium text-destructive mt-2">{createForm.formState.errors.mcqs[mcqIndex]?.correctOptionIndex?.message}</p>
+                                        <MCQOptionsArray mcqIndex={mcqIndex} />
+                                         {form.formState.errors?.mcqs?.[mcqIndex]?.correctOptionIndex && (
+                                            <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.mcqs[mcqIndex]?.correctOptionIndex?.message}</p>
                                         )}
                                     </div>
                                     </div>
                                 ))}
-                                <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendMcq(defaultMcqValue)}>
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Add Another Question
-                                </Button>
-                           </div>
-                        </TabsContent>
-                        <TabsContent value="json" className="flex-1 flex flex-col min-h-0 -mx-6 px-6 py-4 border-y">
-                             <FormField
-                                control={createForm.control}
-                                name="jsonInput"
-                                render={({ field }) => (
-                                    <FormItem className="flex-1 flex flex-col">
-                                        <div className="flex justify-between items-center">
-                                            <div>
-                                                <FormLabel>MCQ JSON</FormLabel>
-                                                <FormDescription>Paste an array of MCQ objects.</FormDescription>
-                                            </div>
-                                            <Button type="button" variant="outline" size="sm" onClick={handleCopyDemo}>
-                                                <Copy className="mr-2 h-4 w-4" /> Copy Demo
-                                            </Button>
-                                        </div>
-                                    <FormControl className="flex-1 mt-2">
-                                        <Textarea placeholder={jsonPlaceholder} className="h-full resize-none font-mono text-xs" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
+                                {!isEditing && (
+                                    <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendMcq(defaultMcqValue)}>
+                                        <PlusCircle className="mr-2 h-4 w-4" /> Add Another Question
+                                    </Button>
                                 )}
+                           </div>
+                        </ScrollArea>
+                    </div>
+
+                    {/* JSON Entry Column */}
+                    <div className="flex flex-col gap-4">
+                        <h3 className="text-lg font-semibold">JSON Editor</h3>
+                        <div className="flex-1 flex flex-col relative">
+                            <Textarea 
+                                value={jsonText}
+                                onChange={handleJsonChange}
+                                onFocus={() => setIsEditingJson(true)}
+                                onBlur={() => setIsEditingJson(false)}
+                                placeholder='[ { "question": "...", "options": [...], "correctOptionIndex": 0 } ]'
+                                className={cn("h-full resize-none font-mono text-xs flex-1", jsonError && "border-destructive focus-visible:ring-destructive")}
                             />
-                        </TabsContent>
-                    </Tabs>
-                )}
-                <DialogFooter className="pt-4">
-                    <Button type="submit" form="mcq-form" disabled={isPending}>
-                        {isPending ? "Saving..." : 
-                         isEditing ? "Save Changes" :
-                         activeTab === 'json' ? "Upload from JSON" :
-                         `Create ${mcqFields.length} MCQ(s)`
-                        }
+                            {jsonError && (
+                                <div className="absolute bottom-2 left-2 right-2 p-2 bg-destructive/10 border border-destructive/50 text-destructive text-xs rounded-md flex items-center gap-2">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    {jsonError}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <DialogFooter className="pt-6 border-t">
+                    <Button type="submit" form="mcq-form" disabled={isPending || !!jsonError}>
+                        {isPending ? "Saving..." : isEditing ? "Save Changes" : `Create ${mcqFields.length} MCQ(s)`}
                     </Button>
                 </DialogFooter>
            </form>
@@ -354,20 +233,17 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
   );
 }
 
-// Reusable component for handling the options array
-function MCQOptionsArray({ mcqIndex, isEditing }: { mcqIndex: number, isEditing: boolean }) {
-  const { control, watch, setValue, formState: { errors } } = useFormContext(); // Gets context from the parent <Form>
+function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
+  const { control, watch, setValue, formState: { errors } } = useFormContext<z.infer<typeof formSchema>>();
   
-  const fieldNamePrefix = isEditing ? '' : `mcqs.${mcqIndex}.`;
+  const fieldNamePrefix = `mcqs.${mcqIndex}`;
   
   const { fields, append, remove } = useFieldArray({
     control: control,
-    name: `${fieldNamePrefix}options`,
+    name: `${fieldNamePrefix}.options`,
   });
 
-  const optionsError = isEditing 
-    ? errors?.options?.root 
-    : errors?.mcqs?.[mcqIndex]?.options?.root;
+  const optionsError = errors?.mcqs?.[mcqIndex]?.options?.root;
 
   return (
     <div className="space-y-3">
@@ -375,17 +251,17 @@ function MCQOptionsArray({ mcqIndex, isEditing }: { mcqIndex: number, isEditing:
             <FormField
                 key={field.id}
                 control={control}
-                name={`${fieldNamePrefix}options.${optionIndex}`}
+                name={`${fieldNamePrefix}.options.${optionIndex}`}
                 render={({ field: optionField }) => (
                     <FormItem>
                     <div className="flex items-center gap-2">
                         <Button
                             type="button"
-                            variant={watch(`${fieldNamePrefix}correctOptionIndex`) === optionIndex ? 'default' : 'outline'}
-                            onClick={() => setValue(`${fieldNamePrefix}correctOptionIndex`, optionIndex, { shouldValidate: true })}
+                            variant={watch(`${fieldNamePrefix}.correctOptionIndex`) === optionIndex ? 'default' : 'outline'}
+                            onClick={() => setValue(`${fieldNamePrefix}.correctOptionIndex`, optionIndex, { shouldValidate: true })}
                             className="h-10 w-24 shrink-0"
                         >
-                            {watch(`${fieldNamePrefix}correctOptionIndex`) === optionIndex ? 'Correct' : 'Mark'}
+                            {watch(`${fieldNamePrefix}.correctOptionIndex`) === optionIndex ? 'Correct' : 'Mark'}
                         </Button>
                         <FormControl>
                             <Input {...optionField} placeholder={`Option ${optionIndex + 1}`} />
