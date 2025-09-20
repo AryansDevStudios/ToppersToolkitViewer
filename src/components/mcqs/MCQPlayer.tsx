@@ -8,9 +8,10 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Check, X, ChevronsRight, RefreshCcw } from 'lucide-react';
+import { Check, X, ChevronsRight, RefreshCcw, Lightbulb } from 'lucide-react';
 import { markQuizAsAttempted } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
+import { Separator } from '../ui/separator';
 
 interface MCQPlayerProps {
   mcqs: MCQ[];
@@ -26,6 +27,7 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [incorrectAnswers, setIncorrectAnswers] = useState<{ mcq: MCQ, selectedOption: number }[]>([]);
 
   const currentQuestion = mcqs[currentQuestionIndex];
   
@@ -45,6 +47,8 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
     setIsAnswered(true);
     if (selectedOption === currentQuestion.correctOptionIndex) {
       setScore(score + 1);
+    } else {
+        setIncorrectAnswers([...incorrectAnswers, { mcq: currentQuestion, selectedOption }]);
     }
   };
 
@@ -64,6 +68,7 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
       setIsAnswered(false);
       setScore(0);
       setShowResults(false);
+      setIncorrectAnswers([]);
   }
 
   if (showResults) {
@@ -77,7 +82,33 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
           <p className="text-4xl font-bold">
             You scored {score} out of {mcqs.length}
           </p>
-          <div className="flex justify-center gap-4 pt-4">
+           {incorrectAnswers.length > 0 && (
+                <div className="text-left pt-4">
+                    <Separator />
+                    <h3 className="text-lg font-semibold my-4 flex items-center gap-2">
+                        <Lightbulb className="text-amber-500"/>
+                        Review Your Mistakes
+                    </h3>
+                    <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+                        {incorrectAnswers.map(({ mcq, selectedOption }, index) => (
+                            <div key={index} className="p-3 border rounded-md bg-muted/30">
+                                <p className="font-semibold mb-2">{mcq.question}</p>
+                                <div className="space-y-2 text-sm">
+                                    <p className="flex items-center gap-2 bg-red-100 dark:bg-red-900/50 p-2 rounded">
+                                        <X className="h-4 w-4 text-red-600 dark:text-red-400" /> 
+                                        Your answer: {mcq.options[selectedOption]}
+                                    </p>
+                                     <p className="flex items-center gap-2 bg-green-100 dark:bg-green-900/50 p-2 rounded">
+                                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                        Correct answer: {mcq.options[mcq.correctOptionIndex]}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+           )}
+          <div className="flex justify-center gap-4 pt-6">
              <Button onClick={handleRestart}>
                 <RefreshCcw className="mr-2 h-4 w-4" />
                 Try Again
