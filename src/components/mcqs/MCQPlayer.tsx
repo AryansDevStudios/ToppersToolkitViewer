@@ -1,21 +1,26 @@
 
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { MCQ } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Check, X, ChevronsRight, RefreshCcw } from 'lucide-react';
+import { markQuizAsAttempted } from '@/lib/data';
+import { useAuth } from '@/hooks/use-auth';
 
 interface MCQPlayerProps {
   mcqs: MCQ[];
+  chapterId: string;
   chapterName: string;
   onFinish: () => void;
 }
 
-export function MCQPlayer({ mcqs, chapterName, onFinish }: MCQPlayerProps) {
+export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerProps) {
+  const { user } = useAuth();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -23,6 +28,12 @@ export function MCQPlayer({ mcqs, chapterName, onFinish }: MCQPlayerProps) {
   const [showResults, setShowResults] = useState(false);
 
   const currentQuestion = mcqs[currentQuestionIndex];
+  
+  useEffect(() => {
+    if (showResults && user) {
+        markQuizAsAttempted(user.uid, chapterId);
+    }
+  }, [showResults, user, chapterId]);
 
   const handleOptionSelect = (index: number) => {
     if (isAnswered) return;

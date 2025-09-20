@@ -1,9 +1,10 @@
 
+
 "use client";
 
 import { useState, useTransition, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Library, Folder, FileText, Sparkles, ShieldCheck, BadgeCheck } from "lucide-react";
+import { Loader2, Library, Folder, FileText, Sparkles, ShieldCheck, BadgeCheck, CheckCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
@@ -52,6 +53,7 @@ export function ManageAccessForm({ user }: ManageAccessFormProps) {
     const [noteAccess, setNoteAccess] = useState<Set<string>>(new Set(user.noteAccess || []));
     const [hasAiAccess, setHasAiAccess] = useState(user.hasAiAccess !== false);
     const [hasFullNotesAccess, setHasFullNotesAccess] = useState(user.hasFullNotesAccess || false);
+    const [attemptedQuizzes, setAttemptedQuizzes] = useState<Set<string>>(new Set(user.attemptedQuizzes || []));
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
     const router = useRouter();
@@ -93,6 +95,7 @@ export function ManageAccessForm({ user }: ManageAccessFormProps) {
                 noteAccess: Array.from(noteAccess),
                 hasAiAccess,
                 hasFullNotesAccess,
+                attemptedQuizzes: Array.from(attemptedQuizzes),
             };
             const result = await updateUserPermissions(user.id, permissions);
 
@@ -195,48 +198,67 @@ export function ManageAccessForm({ user }: ManageAccessFormProps) {
                                                     </div>
                                                 </AccordionTrigger>
                                                 <AccordionContent className="pl-6">
-                                                    <Accordion type="multiple" className="w-full">
-                                                        {Object.entries(chapters).map(([chapter, notesInChapter]) => (
-                                                            <AccordionItem value={chapter} key={chapter}>
-                                                                <AccordionTrigger>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <FileText className="h-5 w-5 text-primary/70" />
-                                                                        {chapter}
-                                                                    </div>
-                                                                </AccordionTrigger>
-                                                                <AccordionContent className="pl-6">
-                                                                    <ul className="space-y-3 py-2">
-                                                                        {notesInChapter.map(note => {
-                                                                            const isPublic = note.isPublic || false;
-                                                                            const hasAccess = isPublic || noteAccess.has(note.id);
+                                                     <Accordion type="multiple" className="w-full">
+                                                        {Object.entries(chapters).map(([chapterName, notesInChapter]) => {
+                                                            const firstNote = notesInChapter[0];
+                                                            if(!firstNote) return null;
+                                                            const chapterId = notesInChapter[0].chapterId.split('/')[2];
+                                                            const hasAttemptedQuiz = user.attemptedQuizzes?.includes(chapterId);
 
-                                                                            const switchControl = (
-                                                                                <Switch
-                                                                                    id={`access-${note.id}`}
-                                                                                    checked={hasAccess}
-                                                                                    onCheckedChange={(checked) => handleNoteAccessChange(note.id, checked)}
-                                                                                    disabled={isPending || isPublic}
-                                                                                />
-                                                                            );
-                                                                            
-                                                                            return (
-                                                                                <li key={note.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
-                                                                                    <Label htmlFor={`access-${note.id}`} className={cn("font-normal", isPublic && "text-muted-foreground")}>{note.type}</Label>
-                                                                                    {isPublic ? (
-                                                                                        <Tooltip>
-                                                                                            <TooltipTrigger asChild>{switchControl}</TooltipTrigger>
-                                                                                            <TooltipContent>
-                                                                                                <p>This note is public and accessible by all users.</p>
-                                                                                            </TooltipContent>
-                                                                                        </Tooltip>
-                                                                                    ) : switchControl}
-                                                                                </li>
-                                                                            )
-                                                                        })}
-                                                                    </ul>
-                                                                </AccordionContent>
-                                                            </AccordionItem>
-                                                        ))}
+                                                            return (
+                                                                <AccordionItem value={chapterName} key={chapterName}>
+                                                                    <AccordionTrigger>
+                                                                        <div className="flex items-center justify-between w-full">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <FileText className="h-5 w-5 text-primary/70" />
+                                                                                {chapterName}
+                                                                            </div>
+                                                                            {hasAttemptedQuiz && (
+                                                                                 <Tooltip>
+                                                                                    <TooltipTrigger asChild>
+                                                                                        <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                                                                                    </TooltipTrigger>
+                                                                                    <TooltipContent>
+                                                                                        <p>Quiz Attempted</p>
+                                                                                    </TooltipContent>
+                                                                                </Tooltip>
+                                                                            )}
+                                                                        </div>
+                                                                    </AccordionTrigger>
+                                                                    <AccordionContent className="pl-6">
+                                                                        <ul className="space-y-3 py-2">
+                                                                            {notesInChapter.map(note => {
+                                                                                const isPublic = note.isPublic || false;
+                                                                                const hasAccess = isPublic || noteAccess.has(note.id);
+
+                                                                                const switchControl = (
+                                                                                    <Switch
+                                                                                        id={`access-${note.id}`}
+                                                                                        checked={hasAccess}
+                                                                                        onCheckedChange={(checked) => handleNoteAccessChange(note.id, checked)}
+                                                                                        disabled={isPending || isPublic}
+                                                                                    />
+                                                                                );
+                                                                                
+                                                                                return (
+                                                                                    <li key={note.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
+                                                                                        <Label htmlFor={`access-${note.id}`} className={cn("font-normal", isPublic && "text-muted-foreground")}>{note.type}</Label>
+                                                                                        {isPublic ? (
+                                                                                            <Tooltip>
+                                                                                                <TooltipTrigger asChild>{switchControl}</TooltipTrigger>
+                                                                                                <TooltipContent>
+                                                                                                    <p>This note is public and accessible by all users.</p>
+                                                                                                </TooltipContent>
+                                                                                            </Tooltip>
+                                                                                        ) : switchControl}
+                                                                                    </li>
+                                                                                )
+                                                                            })}
+                                                                        </ul>
+                                                                    </AccordionContent>
+                                                                </AccordionItem>
+                                                            )
+                                                        })}
                                                     </Accordion>
                                                 </AccordionContent>
                                         </AccordionItem>

@@ -579,7 +579,7 @@ export const getUsers = async (): Promise<User[]> => {
 };
 
 export const upsertUser = async (userData: Partial<User> & { id: string }) => {
-    const { id, score, showOnLeaderboard, ...profileData } = userData;
+    const { id, score, showOnLeaderboard, attemptedQuizzes, ...profileData } = userData;
     if (!id) {
         return { success: false, error: "User ID is required for updates." };
     }
@@ -590,14 +590,16 @@ export const upsertUser = async (userData: Partial<User> & { id: string }) => {
         const dataToUpdate: { [key: string]: any } = { ...profileData };
         if (score !== undefined) dataToUpdate.score = score;
         if (showOnLeaderboard !== undefined) dataToUpdate.showOnLeaderboard = showOnLeaderboard;
+        if (attemptedQuizzes !== undefined) dataToUpdate.attemptedQuizzes = attemptedQuizzes;
 
         if (Object.keys(dataToUpdate).length > 0) {
             await setDoc(userDocRef, dataToUpdate, { merge: true });
         }
         
-        revalidatePath('/admin/users');
+        revalidatePath('/admin/users', 'layout');
         revalidatePath('/admin/leaderboard');
         revalidatePath('/leaderboard');
+        revalidatePath('/mcqs');
 
         return { success: true, message: "User updated successfully." };
     } catch (e: any) {
@@ -625,6 +627,7 @@ export const updateUserPermissions = async (
         noteAccess?: string[];
         hasAiAccess?: boolean;
         hasFullNotesAccess?: boolean;
+        attemptedQuizzes?: string[];
     }
 ) => {
     if (!userId) {
@@ -643,6 +646,9 @@ export const updateUserPermissions = async (
         if (permissions.hasFullNotesAccess !== undefined) {
             dataToUpdate.hasFullNotesAccess = permissions.hasFullNotesAccess;
         }
+         if (permissions.attemptedQuizzes !== undefined) {
+            dataToUpdate.attemptedQuizzes = permissions.attemptedQuizzes;
+        }
         
         if (Object.keys(dataToUpdate).length === 0) {
             return { success: true, message: "No permissions were changed." };
@@ -650,8 +656,9 @@ export const updateUserPermissions = async (
 
         await updateDoc(userDocRef, dataToUpdate);
         
-        revalidatePath('/admin/users');
+        revalidatePath('/admin/users', 'layout');
         revalidatePath('/browse', "layout");
+        revalidatePath('/mcqs');
         return { success: true, message: "User permissions updated successfully." };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -1140,6 +1147,24 @@ export const deleteMCQ = async (subjectId: string, subSubjectId: string, chapter
     }
 };
 
+
+export async function markQuizAsAttempted(userId: string, chapterId: string) {
+    if (!userId || !chapterId) {
+        return { success: false, error: "User ID and Chapter ID are required." };
+    }
+    const userDocRef = doc(db, "users", userId);
+    try {
+        await updateDoc(userDocRef, {
+            attemptedQuizzes: arrayUnion(chapterId)
+        });
+        revalidatePath('/mcqs');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+
 // --- Print Order Management ---
 export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'status' | 'createdAt'>): Promise<{ success: boolean; error?: string; orderId?: string; }> {
     const orderId = uuidv4();
@@ -1261,6 +1286,7 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         return { success: false, error: e.message };
     }
 }
+
 
 
 

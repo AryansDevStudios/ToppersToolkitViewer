@@ -113,6 +113,7 @@ export interface User {
   hasFullNotesAccess?: boolean;
   score?: number;
   showOnLeaderboard?: boolean;
+  attemptedQuizzes?: string[];
 }
 
 export interface Notice {
