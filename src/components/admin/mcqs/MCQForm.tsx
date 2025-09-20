@@ -180,15 +180,18 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
 
   // Handler for CREATING new MCQs
   function onCreateSubmit(values: z.infer<typeof createMcqFormSchema>) {
+    console.log("onCreateSubmit called with values:", values);
     startTransition(async () => {
         let mcqsToUpsert: Omit<MCQ, 'id'>[] = [];
 
         if (values.activeTab === 'json' && values.jsonInput) {
+             console.log("Processing JSON input.");
             try {
                 const parsedJson = JSON.parse(values.jsonInput);
                 // We re-validate here just in case, but superRefine should have caught it.
                 const validationResult = z.array(singleMcqObjectSchema).safeParse(parsedJson);
                 if (!validationResult.success) {
+                    console.error("JSON validation failed on submit:", validationResult.error);
                     toast({
                         title: "JSON Validation Failed",
                         description: validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('\n'),
@@ -199,24 +202,29 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
                 }
                 mcqsToUpsert = validationResult.data;
             } catch (e) {
+                console.error("JSON parsing failed on submit:", e);
                 toast({ title: "Invalid JSON", description: "The provided text is not valid JSON.", variant: "destructive" });
                 return;
             }
         } else if (values.mcqs) {
+             console.log("Processing manual MCQ input.");
              mcqsToUpsert = values.mcqs;
         }
 
         if (mcqsToUpsert.length === 0) {
+            console.log("No questions to submit.");
             toast({ title: "No questions to submit", description: "Please add at least one question.", variant: "destructive" });
             return;
         }
 
+      console.log("Submitting MCQs to backend:", mcqsToUpsert);
       const result = await upsertMCQs({
         subjectId,
         subSubjectId,
         chapterId,
         mcqs: mcqsToUpsert,
       });
+      console.log("Backend response:", result);
 
       if (result.success) {
         toast({ title: "Success", description: result.message });
@@ -270,7 +278,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
           <DialogTitle>{isEditing ? 'Edit MCQ' : 'Add New MCQs'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-           <form id="mcq-form" onSubmit={isEditing ? editForm.handleSubmit(onEditSubmit) : createForm.handleSubmit(onCreateSubmit)} className="flex-1 flex flex-col min-h-0">
+           <form id="mcq-form" onSubmit={isEditing ? editForm.handleSubmit(onEditSubmit) : createForm.handleSubmit(onCreateSubmit, (errors) => console.log("Form validation errors:", errors))} className="flex-1 flex flex-col min-h-0">
                 {isEditing ? (
                     // EDITING UI
                     <div className="overflow-y-auto -mx-6 px-6 py-4 border-y flex-1">
