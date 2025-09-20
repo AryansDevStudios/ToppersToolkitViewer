@@ -51,20 +51,6 @@ const formSchema = z.object({
   mcqs: z.array(singleMCQSchema),
   jsonInput: z.string().optional(),
   activeTab: z.string().default("manual"),
-}).refine(data => {
-    if (data.activeTab === 'json') {
-      if (!data.jsonInput) return false;
-      try {
-        const parsed = JSON.parse(data.jsonInput);
-        return Array.isArray(parsed) && parsed.length > 0;
-      } catch (e) {
-        return false;
-      }
-    }
-    return data.mcqs.length > 0;
-}, {
-    message: "Please provide valid data for the selected tab.",
-    path: ['jsonInput']
 });
 
 
@@ -147,7 +133,22 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
                 return;
             }
         } else {
+             const manualValidationResult = z.array(singleMCQSchema).min(1).safeParse(values.mcqs);
+              if (!manualValidationResult.success) {
+                    toast({
+                        title: "Form Validation Failed",
+                        description: manualValidationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('\n'),
+                        variant: "destructive",
+                        duration: 10000,
+                    });
+                    return;
+                }
             mcqsToUpsert = values.mcqs;
+        }
+        
+        if (mcqsToUpsert.length === 0) {
+            toast({ title: "No questions to submit", description: "Please add at least one question.", variant: "destructive" });
+            return;
         }
 
       const result = await upsertMCQs({
@@ -344,5 +345,3 @@ function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
     </div>
   )
 }
-
-    
