@@ -15,7 +15,8 @@ import {
   BookCheck,
   Printer,
   Settings,
-  ClipboardCheck
+  ClipboardCheck,
+  FileQuestion
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
   { href: "/admin/notices", icon: ClipboardList, label: "Notices" },
   { href: "/admin/doubts", icon: MessageSquare, label: "Doubts" },
+  { href: "/admin/complaints", icon: FileQuestion, label: "Complaints" },
   { href: "/admin/orders", icon: Printer, label: "Print Orders"},
   { href: "/admin/settings", icon: Settings, label: "Settings" },
 ];

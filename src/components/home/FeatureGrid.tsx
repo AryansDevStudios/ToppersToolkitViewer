@@ -62,6 +62,21 @@ const features = [
     icon: 'BrainCircuit',
     href: '/mindmap',
   },
+    {
+    title: 'GS Preparation',
+    icon: 'BookCheck',
+    href: '/mcqs',
+  },
+  {
+    title: 'Complaints',
+    icon: 'FileQuestion',
+    href: '/complaints',
+  },
+  {
+    title: 'Reasoning',
+    icon: 'BrainCircuit',
+    href: '/reasoning',
+  },
 ];
 
 export function FeatureGrid() {

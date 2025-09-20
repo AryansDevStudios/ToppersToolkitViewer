@@ -2,7 +2,7 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp } from "firebase/firestore";
@@ -1074,6 +1074,114 @@ export async function deleteDoubt(doubtId: string): Promise<{ success: boolean; 
     }
 }
 
+// --- Complaint Box Management ---
+
+export async function createComplaint(userId: string, userName: string, userClassAndSection: string | undefined, content: string): Promise<{ success: boolean, error?: string }> {
+    if (!userId || !content) {
+        return { success: false, error: "User ID and complaint content are required." };
+    }
+    const complaintId = uuidv4();
+    const complaintDocRef = doc(db, "complaints", complaintId);
+
+    const newComplaint: Omit<Complaint, 'id'> = {
+        userId,
+        userName,
+        userClassAndSection,
+        content,
+        status: 'pending',
+        createdAt: Date.now(),
+    };
+
+    try {
+        await setDoc(complaintDocRef, newComplaint);
+        revalidatePath('/complaints');
+        revalidatePath('/admin/complaints');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function getUserComplaints(userId: string): Promise<Complaint[]> {
+    noStore();
+    if (!userId) return [];
+    
+    const complaintsCollection = collection(db, 'complaints');
+    const q = query(complaintsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Complaint));
+    } catch (error) {
+        console.error("Error fetching user complaints:", error);
+        return [];
+    }
+}
+
+export async function getAllComplaints(): Promise<Complaint[]> {
+    noStore();
+    const complaintsCollection = collection(db, 'complaints');
+    const q = query(complaintsCollection, orderBy('createdAt', 'desc'));
+    
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Complaint));
+    } catch (error) {
+        console.error("Error fetching all complaints:", error);
+        return [];
+    }
+}
+
+export async function resolveComplaint(complaintId: string, response: string, adminName: string, adminId: string): Promise<{ success: boolean; error?: string }> {
+    if (!complaintId || !response || !adminName || !adminId) {
+        return { success: false, error: "Missing required fields." };
+    }
+    const complaintDocRef = doc(db, 'complaints', complaintId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const complaintDoc = await transaction.get(complaintDocRef);
+            if (!complaintDoc.exists()) {
+                throw new Error("Complaint not found.");
+            }
+
+            const dataToUpdate: { [key: string]: any } = {
+                response: response,
+                resolvedBy: adminName,
+                resolvedByAdminId: adminId,
+            };
+
+            if (complaintDoc.data().status !== 'resolved') {
+                dataToUpdate.status = 'resolved';
+                dataToUpdate.resolvedAt = Date.now();
+            }
+
+            transaction.update(complaintDocRef, dataToUpdate);
+        });
+
+        revalidatePath('/admin/complaints');
+        revalidatePath('/complaints');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteComplaint(complaintId: string): Promise<{ success: boolean; error?: string }> {
+    if (!complaintId) {
+        return { success: false, error: "Complaint ID is required." };
+    }
+    const complaintDocRef = doc(db, 'complaints', complaintId);
+    try {
+        await deleteDoc(complaintDocRef);
+        revalidatePath('/admin/complaints');
+        revalidatePath('/complaints');
+        return { success: true, message: "Complaint deleted successfully." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
 // --- MCQ Management ---
 export const upsertMCQSet = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterId: string; name: string; mcqs: Omit<MCQ, 'id'>[] }) => {
     const { id, subjectId, subSubjectId, chapterId, name, mcqs } = data;
@@ -1334,4 +1442,3 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         return { success: false, error: e.message };
     }
 }
-

@@ -161,6 +161,21 @@ export interface Doubt {
     answeredByAdminId?: string; // Admin's user ID
 }
 
+export interface Complaint {
+    id: string;
+    userId: string;
+    userName: string;
+    userClassAndSection?: string;
+    content: string;
+    response?: string;
+    status: 'pending' | 'resolved';
+    resolvedBy?: string; // Admin's name
+    resolvedByAdminId?: string; // Admin's user ID
+    createdAt: number;
+    resolvedAt?: number;
+}
+
+
 export interface AppSettings {
   printCostPerPage: number;
 }
