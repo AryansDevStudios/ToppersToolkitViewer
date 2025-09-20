@@ -46,6 +46,8 @@ interface MCQFormProps {
   children: React.ReactNode;
 }
 
+const defaultMcqValue = { question: "", options: ["", "", "", ""], correctOptionIndex: -1 };
+
 export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: MCQFormProps) {
   const { toast } = useToast();
   const router = useRouter();
@@ -56,7 +58,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      mcqs: [{ question: "", options: ["", ""], correctOptionIndex: -1 }],
+      mcqs: [defaultMcqValue],
     }
   });
 
@@ -71,13 +73,13 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
         form.reset({
           mcqs: [{
             question: mcq.question,
-            options: mcq.options.length > 0 ? mcq.options : ["", ""],
+            options: mcq.options.length >= 2 ? mcq.options : ["", "", "", ""],
             correctOptionIndex: mcq.correctOptionIndex,
           }]
         });
       } else {
         form.reset({
-          mcqs: [{ question: "", options: ["", ""], correctOptionIndex: -1 }],
+          mcqs: [defaultMcqValue],
         });
       }
     }
@@ -170,7 +172,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
             ))}
             
             {!isEditing && (
-              <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendMcq({ question: "", options: ["", ""], correctOptionIndex: -1 })}>
+              <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendMcq(defaultMcqValue)}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Another Question
               </Button>
             )}
