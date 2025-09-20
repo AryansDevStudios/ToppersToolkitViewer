@@ -32,31 +32,50 @@ const singleMcqObjectSchema = z.object({
   correctOptionIndex: z.number().min(0, "You must select a correct answer by clicking 'Mark'.").nonnegative(),
 });
 
-// Base schema for the form, using discriminated union for conditional validation
-const createMcqFormSchema = z.discriminatedUnion("activeTab", [
-    z.object({
-        activeTab: z.literal("manual"),
-        mcqs: z.array(singleMcqObjectSchema).min(1, "Please add at least one question."),
-        jsonInput: z.string().optional(),
-    }),
-    z.object({
-        activeTab: z.literal("json"),
-        jsonInput: z.string().min(1, "JSON input cannot be empty.").refine(
-            (val) => {
-                try {
-                    const parsed = JSON.parse(val);
-                    // This parse will throw an error if the structure is wrong, which the refine catches.
-                    z.array(singleMcqObjectSchema).parse(parsed);
-                    return true;
-                } catch (e) {
-                    return false;
-                }
-            },
-            { message: "Input must be a valid JSON array of MCQs." }
-        ),
-        mcqs: z.array(singleMcqObjectSchema).optional(),
-    }),
-]);
+// Advanced schema for the CREATE form using superRefine for conditional validation
+const createMcqFormSchema = z.object({
+    activeTab: z.literal("manual").or(z.literal("json")),
+    mcqs: z.array(singleMcqObjectSchema).optional(),
+    jsonInput: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.activeTab === 'manual') {
+        const mcqsResult = z.array(singleMcqObjectSchema).min(1, "Please add at least one question.").safeParse(data.mcqs);
+        if (!mcqsResult.success) {
+             mcqsResult.error.errors.forEach(err => {
+                ctx.addIssue({
+                    ...err,
+                    path: ["mcqs", ...err.path],
+                });
+             });
+        }
+    } else if (data.activeTab === 'json') {
+        if (!data.jsonInput || data.jsonInput.trim() === '') {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "JSON input cannot be empty.",
+                path: ["jsonInput"],
+            });
+            return;
+        }
+        try {
+            const parsed = JSON.parse(data.jsonInput);
+            const validationResult = z.array(singleMcqObjectSchema).safeParse(parsed);
+            if (!validationResult.success) {
+                 ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Input must be a valid JSON array of MCQs.",
+                    path: ["jsonInput"],
+                });
+            }
+        } catch (e) {
+             ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "The provided text is not valid JSON.",
+                path: ["jsonInput"],
+            });
+        }
+    }
+});
 
 
 // Schema for the EDIT form (a single MCQ)
@@ -145,23 +164,8 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
         let mcqsToUpsert: Omit<MCQ, 'id'>[] = [];
 
         if (values.activeTab === 'json' && values.jsonInput) {
-            try {
-                const parsedJson = JSON.parse(values.jsonInput);
-                const validationResult = z.array(singleMcqObjectSchema).safeParse(parsedJson);
-                if (!validationResult.success) {
-                    toast({
-                        title: "JSON Validation Failed",
-                        description: validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('\n'),
-                        variant: "destructive",
-                        duration: 10000,
-                    });
-                    return;
-                }
-                mcqsToUpsert = validationResult.data;
-            } catch (e) {
-                toast({ title: "Invalid JSON", description: "The provided text is not valid JSON.", variant: "destructive" });
-                return;
-            }
+            const parsedJson = JSON.parse(values.jsonInput);
+            mcqsToUpsert = parsedJson;
         } else if (values.activeTab === 'manual' && values.mcqs) {
              mcqsToUpsert = values.mcqs;
         }
@@ -218,9 +222,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
 
   const handleTabChange = (value: string) => {
       if (value === 'manual' || value === 'json') {
-          createForm.setValue("activeTab", value);
-          // Clear errors when switching tabs
-          createForm.clearErrors();
+          createForm.setValue("activeTab", value, { shouldValidate: true });
       }
   }
 
@@ -231,11 +233,11 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit MCQ' : 'Add New MCQs'}</DialogTitle>
            <DialogDescription>
-            {isEditing ? 'Modify the question and its options below.' : 'Use manual entry to add questions one-by-one, or use JSON upload for bulk creation.'}
+            {isEditing ? 'Modify the question and its options below.' : 'Use manual entry or bulk JSON upload to add questions.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-           <form id="mcq-form" onSubmit={isEditing ? editForm.handleSubmit(onEditSubmit) : createForm.handleSubmit(onCreateSubmit, (errors) => console.log("Form validation errors:", errors))} className="flex-1 flex flex-col min-h-0">
+           <form id="mcq-form" onSubmit={isEditing ? editForm.handleSubmit(onEditSubmit) : createForm.handleSubmit(onCreateSubmit)} className="flex-1 flex flex-col min-h-0">
                 {isEditing ? (
                     // EDITING UI
                     <div className="overflow-y-auto -mx-6 px-6 py-4 border-y flex-1">
