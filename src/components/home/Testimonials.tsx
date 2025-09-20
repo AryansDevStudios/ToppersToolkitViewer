@@ -1,4 +1,5 @@
 
+
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { Star } from 'lucide-react';
@@ -20,7 +21,7 @@ const testimonials = [
     name: "Ishan Jaiswal",
     achievement: "Manager",
     quote: "Being part of the Topper's Toolkit team is inspiring. Even with my PW batch, I find these notes incredibly useful.",
-    imgSrc: "https://picsum.photos/seed/ishan/100/100",
+    imgSrc: "/images/IshansImage.png",
   },
   {
     name: "Gyan Singh",
@@ -88,3 +89,6 @@ export function Testimonials() {
     </section>
   );
 }
+
+
+    

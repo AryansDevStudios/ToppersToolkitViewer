@@ -1,4 +1,5 @@
 
+
 // A dedicated file to store teacher profile data.
 // This makes it easy to manage teacher information without changing the page code.
 
@@ -267,7 +268,7 @@ export const teachers: TeacherProfile[] = [
     id: 'ishan-jaiswal',
     name: 'Ishan Jaiswal',
     subject: 'Manager',
-    photoUrl: 'https://picsum.photos/seed/ishan/400/400',
+    photoUrl: '/images/IshansImage.png',
     quote: "Being part of the Topper's Toolkit team is inspiring. Even with my PW batch, I find these notes incredibly useful.",
     about: [
       "As the manager for Topper's Toolkit, Ishan Jaiswal plays a crucial role in coordinating operations and ensuring everything runs smoothly. His organizational skills and dedication are key to the platform's success.",
@@ -275,6 +276,8 @@ export const teachers: TeacherProfile[] = [
     ],
   },
 ];
+
+    
 
     
 
