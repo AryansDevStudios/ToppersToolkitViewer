@@ -30,10 +30,10 @@ const testimonials = [
     imgSrc: "https://picsum.photos/seed/gyan/100/100",
   },
     {
-    name: "Divyansh Pathak",
+    name: "Vatsal Upadhaya",
     achievement: "Student",
     quote: "I'm very satisfied with the quality of the material. It's well-organized and covers everything I need.",
-    imgSrc: "https://picsum.photos/seed/divyansh/100/100",
+    imgSrc: "https://picsum.photos/seed/vatsal/100/100",
   },
     {
     name: "Aditi Tripathi",
@@ -92,5 +92,6 @@ export function Testimonials() {
 
 
     
+
 
 
