@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, PrintOrder, AppSettings } from "./types";
@@ -819,7 +820,7 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return await runTransaction(db, async (transaction) => {
       const qotdDoc = await transaction.get(qotdDocRef);
       const answerDoc = await transaction.get(answerDocRef);
-      const userDoc = await transaction.get(userDocRef);
+      const userDoc = await transaction.get(userDoc);
 
       if (!qotdDoc.exists()) throw new Error("Question not found.");
       
@@ -1126,6 +1127,39 @@ export const upsertMCQs = async (data: { subjectId: string, subSubjectId: string
     }
 };
 
+export const updateMCQ = async (data: { id: string; subjectId: string; subSubjectId: string; chapterId: string; question: string; options: string[]; correctOptionIndex: number; }) => {
+    const { id: mcqId, subjectId, subSubjectId, chapterId, ...mcqData } = data;
+    const subjectDocRef = doc(db, "subjects", subjectId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const subjectDoc = await transaction.get(subjectDocRef);
+            if (!subjectDoc.exists()) throw new Error("Subject not found!");
+            const subjectData = subjectDoc.data() as Subject;
+
+            const subSubject = subjectData.subSubjects?.find(ss => ss.id === subSubjectId);
+            if (!subSubject) throw new Error("Sub-subject not found!");
+
+            const chapter = subSubject.chapters?.find(c => c.id === chapterId);
+            if (!chapter || !chapter.mcqs) throw new Error("Chapter or MCQs not found!");
+            
+            const mcqIndex = chapter.mcqs.findIndex(m => m.id === mcqId);
+            if (mcqIndex === -1) throw new Error("MCQ not found!");
+
+            chapter.mcqs[mcqIndex] = { ...chapter.mcqs[mcqIndex], ...mcqData };
+
+            transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
+        });
+
+        revalidatePath('/admin/mcqs');
+        revalidatePath('/mcqs');
+        return { success: true, message: "MCQ successfully updated." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+};
+
+
 export const deleteMCQ = async (subjectId: string, subSubjectId: string, chapterId: string, mcqId: string) => {
     const subjectDocRef = doc(db, "subjects", subjectId);
 
@@ -1293,6 +1327,8 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         return { success: false, error: e.message };
     }
 }
+
+
 
 
 
