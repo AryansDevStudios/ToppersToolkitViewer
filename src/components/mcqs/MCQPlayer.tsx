@@ -29,14 +29,14 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
-  const [answers, setAnswers] = useState<AnswerRecord[]>([]);
+  const [answers, setAnswers] = useState<(Omit<AnswerRecord, 'mcqId'> & {mcqId?: string})[]>([]);
   const [isShareSupported, setIsShareSupported] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [attemptId, setAttemptId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for Web Share API support on the client
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && navigator.share) {
       setIsShareSupported(true);
     }
   }, []);
@@ -49,22 +49,30 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
     
     await markQuizAsAttempted(user.uid, mcqSetId);
 
-    const finalAnswers = [...answers, {
-        mcqId: currentQuestion.id,
-        question: currentQuestion.question,
-        options: currentQuestion.options,
-        correctOptionIndex: currentQuestion.correctOptionIndex,
-        selectedOptionIndex: selectedOption
-    }];
+    const allAnswers: AnswerRecord[] = mcqs.map((mcq, index) => {
+      const answered = answers[index];
+      return {
+          mcqId: mcq.id,
+          question: mcq.question,
+          options: mcq.options,
+          correctOptionIndex: mcq.correctOptionIndex,
+          selectedOptionIndex: answered ? answered.selectedOptionIndex : null
+      }
+    });
+
+    const finalScore = allAnswers.reduce((acc, ans) => {
+        return ans.selectedOptionIndex === ans.correctOptionIndex ? acc + 1 : acc;
+    }, 0);
+
 
     const result: Omit<QuizAttempt, 'id'> = {
         userId: user.uid,
         userName: dbUser.name,
         mcqSetId: mcqSetId,
         mcqSetName: mcqSetName,
-        score: score + (selectedOption === currentQuestion.correctOptionIndex ? 1 : 0),
+        score: finalScore,
         totalQuestions: mcqs.length,
-        answers: finalAnswers,
+        answers: allAnswers,
         createdAt: Date.now()
     };
 
@@ -91,18 +99,22 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
 
   const handleCheckAnswer = () => {
     if (selectedOption === null) return;
+    
+    setAnswers(prev => {
+        const newAnswers = [...prev];
+        newAnswers[currentQuestionIndex] = {
+            question: currentQuestion.question,
+            options: currentQuestion.options,
+            correctOptionIndex: currentQuestion.correctOptionIndex,
+            selectedOptionIndex: selectedOption
+        };
+        return newAnswers;
+    });
+
     setIsAnswered(true);
     if (selectedOption === currentQuestion.correctOptionIndex) {
       setScore(score + 1);
     }
-    
-     setAnswers([...answers, {
-        mcqId: currentQuestion.id,
-        question: currentQuestion.question,
-        options: currentQuestion.options,
-        correctOptionIndex: currentQuestion.correctOptionIndex,
-        selectedOptionIndex: selectedOption
-    }]);
   };
 
   const handleNextQuestion = () => {
@@ -132,8 +144,12 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
         return;
     }
     
+    const finalScore = answers.reduce((acc, ans, index) => {
+        return ans.selectedOptionIndex === mcqs[index].correctOptionIndex ? acc + 1 : acc;
+    }, 0);
+    
     const shareUrl = `${window.location.origin}/quiz-results/${attemptId}`;
-    const shareText = `I scored ${score} out of ${mcqs.length} on the "${mcqSetName}" quiz on Topper's Toolkit! Can you beat my score? Check out my results!`;
+    const shareText = `I scored ${finalScore} out of ${mcqs.length} on the "${mcqSetName}" quiz on Topper's Toolkit! Can you beat my score? Check out my results!`;
     
     const copyToClipboard = async () => {
       try {
@@ -178,7 +194,11 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
   }
 
   if (showResults) {
-     const incorrectCount = answers.filter(a => a.selectedOptionIndex !== a.correctOptionIndex).length;
+     const finalScore = answers.reduce((acc, ans, index) => {
+        return ans.selectedOptionIndex === mcqs[index].correctOptionIndex ? acc + 1 : acc;
+    }, 0);
+     const incorrectCount = mcqs.length - finalScore;
+
     return (
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
@@ -187,7 +207,7 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
         <CardContent className="text-center space-y-4">
           <p className="text-lg text-muted-foreground">You completed the quiz for <strong>{mcqSetName}</strong>.</p>
           <p className="text-4xl font-bold">
-            You scored {score} out of {mcqs.length}
+            You scored {finalScore} out of {mcqs.length}
           </p>
            {incorrectCount > 0 && (
                 <div className="text-left pt-4">
@@ -197,21 +217,27 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
                         Review Your Mistakes
                     </h3>
                     <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
-                        {answers.filter(a => a.selectedOptionIndex !== a.correctOptionIndex).map((answer, index) => (
-                            <div key={index} className="p-3 border rounded-md bg-muted/30">
-                                <p className="font-semibold mb-2">{answer.question}</p>
-                                <div className="space-y-2 text-sm">
-                                    <p className="flex items-center gap-2 bg-red-100 dark:bg-red-900/50 p-2 rounded">
-                                        <X className="h-4 w-4 text-red-600 dark:text-red-400" /> 
-                                        Your answer: {answer.options[answer.selectedOptionIndex!]}
-                                    </p>
-                                     <p className="flex items-center gap-2 bg-green-100 dark:bg-green-900/50 p-2 rounded">
-                                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                                        Correct answer: {answer.options[answer.correctOptionIndex]}
-                                    </p>
+                        {mcqs.map((mcq, index) => {
+                            const userAnswer = answers[index];
+                            if (!userAnswer || userAnswer.selectedOptionIndex === mcq.correctOptionIndex) {
+                                return null;
+                            }
+                            return (
+                                <div key={index} className="p-3 border rounded-md bg-muted/30">
+                                    <p className="font-semibold mb-2">{mcq.question}</p>
+                                    <div className="space-y-2 text-sm">
+                                        <p className="flex items-center gap-2 bg-red-100 dark:bg-red-900/50 p-2 rounded">
+                                            <X className="h-4 w-4 text-red-600 dark:text-red-400" /> 
+                                            Your answer: {mcq.options[userAnswer.selectedOptionIndex!]}
+                                        </p>
+                                         <p className="flex items-center gap-2 bg-green-100 dark:bg-green-900/50 p-2 rounded">
+                                            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                            Correct answer: {mcq.options[mcq.correctOptionIndex]}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </div>
            )}
@@ -220,7 +246,7 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
                 <RefreshCcw className="mr-2 h-4 w-4" />
                 Try Again
             </Button>
-            <Button variant="secondary" onClick={handleShare}>
+             <Button variant="secondary" onClick={handleShare}>
                 <Share2 className="mr-2 h-4 w-4" />
                 Share Results
             </Button>
