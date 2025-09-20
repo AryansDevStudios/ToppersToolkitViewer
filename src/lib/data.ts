@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, PrintOrder, AppSettings } from "./types";
@@ -1075,10 +1074,8 @@ export async function deleteDoubt(doubtId: string): Promise<{ success: boolean; 
 }
 
 // --- MCQ Management ---
-export const upsertMCQ = async (data: { subjectId: string, subSubjectId: string, chapterId: string, mcqId?: string, question: string, options: string[], correctOptionIndex: number }) => {
-    const { subjectId, subSubjectId, chapterId, mcqId, ...mcqData } = data;
-    const isNew = !mcqId;
-    const newMcqId = isNew ? uuidv4() : mcqId;
+export const upsertMCQs = async (data: { subjectId: string, subSubjectId: string, chapterId: string, mcqs: (Omit<MCQ, 'id'> & { id?: string })[] }) => {
+    const { subjectId, subSubjectId, chapterId, mcqs } = data;
     const subjectDocRef = doc(db, "subjects", subjectId);
 
     try {
@@ -1094,26 +1091,36 @@ export const upsertMCQ = async (data: { subjectId: string, subSubjectId: string,
             if (!chapter) throw new Error("Chapter not found!");
 
             if (!chapter.mcqs) chapter.mcqs = [];
+            
+            mcqs.forEach(mcqData => {
+                const isEditing = !!mcqData.id;
+                const mcqId = isEditing ? mcqData.id : uuidv4();
+                
+                const newMCQ: MCQ = {
+                    id: mcqId!,
+                    question: mcqData.question,
+                    options: mcqData.options,
+                    correctOptionIndex: mcqData.correctOptionIndex,
+                };
 
-            const newMCQ: MCQ = { id: newMcqId, ...mcqData };
-
-            if (isNew) {
-                chapter.mcqs.push(newMCQ);
-            } else {
-                const mcqIndex = chapter.mcqs.findIndex(m => m.id === newMcqId);
-                if (mcqIndex > -1) {
-                    chapter.mcqs[mcqIndex] = newMCQ;
+                if (isEditing) {
+                    const mcqIndex = chapter.mcqs!.findIndex(m => m.id === mcqId);
+                    if (mcqIndex > -1) {
+                        chapter.mcqs![mcqIndex] = newMCQ;
+                    } else {
+                        chapter.mcqs!.push(newMCQ); // If editing but not found, add it.
+                    }
                 } else {
-                    // If editing but not found, add it.
-                    chapter.mcqs.push(newMCQ);
+                    chapter.mcqs!.push(newMCQ);
                 }
-            }
+            });
+
             transaction.update(subjectDocRef, { subSubjects: subjectData.subSubjects });
         });
 
         revalidatePath('/admin/mcqs');
         revalidatePath('/mcqs');
-        return { success: true, message: `MCQ successfully ${isNew ? 'created' : 'updated'}.` };
+        return { success: true, message: `MCQs successfully saved.` };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -1286,6 +1293,7 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         return { success: false, error: e.message };
     }
 }
+
 
 
 

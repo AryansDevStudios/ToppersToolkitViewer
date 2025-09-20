@@ -19,16 +19,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useTransition, useState, useEffect } from "react";
-import { upsertMCQ } from "@/lib/data";
+import { upsertMCQs } from "@/lib/data";
 import type { MCQ } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { PlusCircle, Trash2 } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
-const optionSchema = z.object({
-  text: z.string().min(1, "Option text cannot be empty"),
-});
-
-const formSchema = z.object({
+const singleMCQSchema = z.object({
   question: z.string().min(3, "Question must be at least 3 characters."),
   options: z.array(z.string()).min(2, "At least two options are required.").refine(
     (options) => options.every(opt => opt.trim().length > 0),
@@ -37,11 +34,15 @@ const formSchema = z.object({
   correctOptionIndex: z.number().min(0, "You must select a correct answer."),
 });
 
+const formSchema = z.object({
+  mcqs: z.array(singleMCQSchema).min(1, "At least one question is required."),
+});
+
 interface MCQFormProps {
   subjectId: string;
   subSubjectId: string;
   chapterId: string;
-  mcq?: MCQ;
+  mcq?: MCQ; // Editing is now for a single MCQ, not multiple
   children: React.ReactNode;
 }
 
@@ -55,37 +56,48 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      question: "",
-      options: ["", ""],
-      correctOptionIndex: -1,
+      mcqs: [{ question: "", options: ["", ""], correctOptionIndex: -1 }],
     }
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields: mcqFields, append: appendMcq, remove: removeMcq } = useFieldArray({
     control: form.control,
-    name: "options",
+    name: "mcqs",
   });
   
   useEffect(() => {
     if (isOpen) {
-        const defaultValues = {
-            question: mcq?.question || "",
-            options: mcq?.options && mcq.options.length > 0 ? mcq.options : ["", ""],
-            correctOptionIndex: mcq?.correctOptionIndex ?? -1,
-        };
-        form.reset(defaultValues);
+      if (isEditing && mcq) {
+        form.reset({
+          mcqs: [{
+            question: mcq.question,
+            options: mcq.options.length > 0 ? mcq.options : ["", ""],
+            correctOptionIndex: mcq.correctOptionIndex,
+          }]
+        });
+      } else {
+        form.reset({
+          mcqs: [{ question: "", options: ["", ""], correctOptionIndex: -1 }],
+        });
+      }
     }
-  }, [isOpen, mcq, form]);
+  }, [isOpen, mcq, form, isEditing]);
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      const result = await upsertMCQ({
+      const mcqsToUpsert = values.mcqs.map((m, index) => ({
+        // If we are editing, we pass the ID. For multiple new questions, the first one might get an ID if we were to support that.
+        // For simplicity, editing only works on a single question.
+        id: isEditing ? mcq?.id : undefined, 
+        ...m
+      }));
+
+      const result = await upsertMCQs({
         subjectId,
         subSubjectId,
         chapterId,
-        mcqId: mcq?.id,
-        ...values,
+        mcqs: mcqsToUpsert,
       });
 
       if (result.success) {
@@ -98,7 +110,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
       } else {
         toast({
           title: "Operation Failed",
-          description: result.error || "Could not save the MCQ.",
+          description: result.error || "Could not save the MCQs.",
           variant: "destructive",
         });
       }
@@ -110,77 +122,113 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit MCQ' : 'Add New MCQ'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit MCQ' : 'Add New MCQs'}</DialogTitle>
         </DialogHeader>
+        <div className="overflow-y-auto p-1 pr-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-             <FormField
-                control={form.control}
-                name="question"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Question Text</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="What is the powerhouse of the cell?" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+            {mcqFields.map((mcqField, mcqIndex) => (
+              <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative">
+                {!isEditing && mcqFields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-7 w-7"
+                    onClick={() => removeMcq(mcqIndex)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 )}
-              />
+                 <FormField
+                    control={form.control}
+                    name={`mcqs.${mcqIndex}.question`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Question {mcqIndex + 1}</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="What is the powerhouse of the cell?" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <div>
-                <FormLabel>Options</FormLabel>
-                <FormDescription className="text-xs mb-2">
-                    Click on an option to mark it as the correct answer.
-                </FormDescription>
-                 <div className="space-y-3">
-                    {fields.map((field, index) => (
-                        <FormField
-                            key={field.id}
-                            control={form.control}
-                            name={`options.${index}`}
-                            render={({ field: optionField }) => (
-                                <FormItem>
-                                <div className="flex items-center gap-2">
-                                    <Button 
-                                        type="button"
-                                        variant={form.watch('correctOptionIndex') === index ? 'default' : 'outline'}
-                                        onClick={() => form.setValue('correctOptionIndex', index, { shouldValidate: true })}
-                                        className="h-10 w-24 shrink-0"
-                                    >
-                                        {form.watch('correctOptionIndex') === index ? 'Correct' : 'Mark'}
-                                    </Button>
-                                    <FormControl>
-                                        <Input {...optionField} placeholder={`Option ${index + 1}`} />
-                                    </FormControl>
-                                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} disabled={fields.length <= 2}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    ))}
-                 </div>
-                  {form.formState.errors.options && <FormMessage>{form.formState.errors.options.message}</FormMessage>}
-                  {form.formState.errors.correctOptionIndex && <FormMessage className="mt-2">{form.formState.errors.correctOptionIndex.message}</FormMessage>}
+                <div>
+                    <FormLabel>Options</FormLabel>
+                    <FormDescription className="text-xs mb-2">
+                        Click on an option to mark it as the correct answer.
+                    </FormDescription>
+                    <MCQOptionsArray mcqIndex={mcqIndex} />
+                    {form.formState.errors?.mcqs?.[mcqIndex]?.correctOptionIndex && (
+                      <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.mcqs[mcqIndex]?.correctOptionIndex?.message}</p>
+                    )}
+                </div>
+              </div>
+            ))}
+            
+            {!isEditing && (
+              <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendMcq({ question: "", options: ["", ""], correctOptionIndex: -1 })}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Another Question
+              </Button>
+            )}
 
-                <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append("")}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Option
-                </Button>
-            </div>
-
-            <DialogFooter>
+            <DialogFooter className="mt-6">
                 <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : isEditing ? "Save Changes" : "Create MCQ"}
+                {isPending ? "Saving..." : isEditing ? "Save Changes" : `Create ${mcqFields.length} MCQ(s)`}
                 </Button>
             </DialogFooter>
           </form>
         </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );
+}
+
+function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
+  const { control, watch, setValue, formState: { errors } } = useFormContext<z.infer<typeof formSchema>>();
+  const { fields, append, remove } = useFieldArray({
+    control: control,
+    name: `mcqs.${mcqIndex}.options`,
+  });
+
+  return (
+    <div className="space-y-3">
+        {fields.map((field, optionIndex) => (
+            <FormField
+                key={field.id}
+                control={control}
+                name={`mcqs.${mcqIndex}.options.${optionIndex}`}
+                render={({ field: optionField }) => (
+                    <FormItem>
+                    <div className="flex items-center gap-2">
+                        <Button 
+                            type="button"
+                            variant={watch(`mcqs.${mcqIndex}.correctOptionIndex`) === optionIndex ? 'default' : 'outline'}
+                            onClick={() => setValue(`mcqs.${mcqIndex}.correctOptionIndex`, optionIndex, { shouldValidate: true })}
+                            className="h-10 w-24 shrink-0"
+                        >
+                            {watch(`mcqs.${mcqIndex}.correctOptionIndex`) === optionIndex ? 'Correct' : 'Mark'}
+                        </Button>
+                        <FormControl>
+                            <Input {...optionField} placeholder={`Option ${optionIndex + 1}`} />
+                        </FormControl>
+                        <Button type="button" variant="destructive" size="icon" onClick={() => remove(optionIndex)} disabled={fields.length <= 2}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+        ))}
+        {errors?.mcqs?.[mcqIndex]?.options && <FormMessage>{errors.mcqs[mcqIndex]?.options?.message}</FormMessage>}
+        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append("")}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Option
+        </Button>
+    </div>
+  )
 }
