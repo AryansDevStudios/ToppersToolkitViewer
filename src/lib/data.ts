@@ -1199,6 +1199,19 @@ export async function getQuizAttemptById(attemptId: string): Promise<QuizAttempt
     }
 }
 
+export async function getAllQuizAttempts(): Promise<QuizAttempt[]> {
+    noStore();
+    const attemptsCollection = collection(db, 'quizAttempts');
+    const q = query(attemptsCollection, orderBy('createdAt', 'desc'));
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => doc.data() as QuizAttempt);
+    } catch (error) {
+        console.error("Error fetching all quiz attempts:", error);
+        return [];
+    }
+}
+
 
 // --- Print Order Management ---
 export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'status' | 'createdAt'>): Promise<{ success: boolean; error?: string; orderId?: string; }> {

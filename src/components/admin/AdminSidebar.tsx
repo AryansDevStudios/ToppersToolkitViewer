@@ -14,7 +14,8 @@ import {
   MessageSquare,
   BookCheck,
   Printer,
-  Settings
+  Settings,
+  ClipboardCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/admin/subjects", icon: Library, label: "Subjects" },
   { href: "/admin/notes", icon: FileText, label: "Notes" },
   { href: "/admin/mcqs", icon: BookCheck, label: "MCQs" },
+  { href: "/admin/mcq-attempts", icon: ClipboardCheck, label: "MCQ Attempts" },
   { href: "/admin/users", icon: Users, label: "Users" },
   { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
   { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
