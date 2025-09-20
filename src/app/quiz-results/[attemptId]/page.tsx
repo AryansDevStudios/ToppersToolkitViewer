@@ -1,4 +1,5 @@
 
+
 import { getQuizAttemptById } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
@@ -13,6 +14,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 
 export const revalidate = 0;
@@ -25,6 +28,8 @@ export default async function QuizResultPage({ params }: { params: { attemptId: 
   }
 
   const percentage = Math.round((attempt.score / attempt.totalQuestions) * 100);
+  const timeZone = 'Asia/Kolkata';
+  const completedDate = toZonedTime(new Date(attempt.createdAt), timeZone);
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-3xl">
@@ -52,7 +57,7 @@ export default async function QuizResultPage({ params }: { params: { attemptId: 
             {attempt.score} / {attempt.totalQuestions}
           </p>
           <p className="text-sm text-muted-foreground">
-            Completed on: {new Date(attempt.createdAt).toLocaleString()}
+            Completed on: {format(completedDate, 'PPP p', { timeZone })}
           </p>
         </CardContent>
          <CardFooter className="flex-col p-6">
