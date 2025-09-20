@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -84,17 +83,7 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
   const handleShare = async () => {
     const shareText = `I scored ${score} out of ${mcqs.length} on the "${chapterName}" quiz on Topper's Toolkit! Can you beat my score?`;
     
-    if (isShareSupported) {
-      try {
-        await navigator.share({
-          title: 'My Quiz Result!',
-          text: shareText,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.error('Error sharing:', error);
-      }
-    } else {
+    const copyToClipboard = async () => {
       try {
         await navigator.clipboard.writeText(shareText);
         toast({
@@ -108,6 +97,23 @@ export function MCQPlayer({ mcqs, chapterId, chapterName, onFinish }: MCQPlayerP
           variant: 'destructive',
         });
       }
+    };
+
+    if (isShareSupported) {
+      try {
+        await navigator.share({
+          title: 'My Quiz Result!',
+          text: shareText,
+          url: window.location.href,
+        });
+      } catch (error) {
+        // If sharing fails (e.g., user cancels, or permission is denied),
+        // fall back to copying to the clipboard as a secondary option.
+        console.error('Error sharing, falling back to clipboard:', error);
+        await copyToClipboard();
+      }
+    } else {
+      await copyToClipboard();
     }
   };
 
