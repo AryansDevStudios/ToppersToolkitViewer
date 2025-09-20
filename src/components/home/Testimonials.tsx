@@ -15,7 +15,7 @@ const testimonials = [
     name: "Aryan Gupta",
     achievement: "Developer",
     quote: "It's rewarding to build a platform that supports and delivers such valuable educational content to students everywhere.",
-    imgSrc: "/images/AryansImage.webp",
+    imgSrc: "/images/AryansImage.png",
   },
   {
     name: "Ishan Jaiswal",
@@ -92,4 +92,5 @@ export function Testimonials() {
 
 
     
+
 

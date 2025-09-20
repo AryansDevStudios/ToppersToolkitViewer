@@ -256,7 +256,7 @@ export const teachers: TeacherProfile[] = [
     id: "aryan-gupta",
     name: "Aryan Gupta",
     subject: "Technology & Development",
-    photoUrl: "/images/AryansImage.webp",
+    photoUrl: "/images/AryansImage.png",
     quote: "Technology is best when it brings people together.",
     about: [
       "As the developer behind Topper's Toolkit, Aryan Gupta focuses on creating digital tools that enhance the learning experience.",
@@ -288,3 +288,4 @@ export const teachers: TeacherProfile[] = [
     
 
     
+
