@@ -1,7 +1,7 @@
 
 import { getSubjects } from '@/lib/data';
 import { BookCheck } from 'lucide-react';
-import type { Subject, MCQ } from '@/lib/types';
+import type { Subject, MCQ, MCQSet } from '@/lib/types';
 import { SubjectSelector } from '@/components/mcqs/SubjectSelector';
 
 export const revalidate = 0;

@@ -14,7 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { deleteMCQ } from "@/lib/data";
+import { deleteMCQSet } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
@@ -23,10 +23,10 @@ interface DeleteMCQDialogProps {
   subjectId: string;
   subSubjectId: string;
   chapterId: string;
-  mcqId: string;
+  mcqSetId: string;
 }
 
-export function DeleteMCQDialog({ subjectId, subSubjectId, chapterId, mcqId }: DeleteMCQDialogProps) {
+export function DeleteMCQDialog({ subjectId, subSubjectId, chapterId, mcqSetId }: DeleteMCQDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -34,15 +34,15 @@ export function DeleteMCQDialog({ subjectId, subSubjectId, chapterId, mcqId }: D
 
   const handleDelete = () => {
     startTransition(async () => {
-      const result = await deleteMCQ(subjectId, subSubjectId, chapterId, mcqId);
+      const result = await deleteMCQSet(subjectId, subSubjectId, chapterId, mcqSetId);
       if (result.success) {
-        toast({ title: "MCQ Deleted", description: result.message });
+        toast({ title: "MCQ Set Deleted", description: result.message });
         router.refresh();
         setIsOpen(false);
       } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to delete the MCQ.",
+          description: result.error || "Failed to delete the MCQ set.",
           variant: "destructive",
         });
       }
@@ -54,14 +54,14 @@ export function DeleteMCQDialog({ subjectId, subSubjectId, chapterId, mcqId }: D
       <AlertDialogTrigger asChild>
         <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
           <Trash2 className="h-4 w-4" />
-          <span className="sr-only">Delete MCQ</span>
+          <span className="sr-only">Delete MCQ Set</span>
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the MCQ from this chapter.
+            This action cannot be undone. This will permanently delete the MCQ set from this chapter.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

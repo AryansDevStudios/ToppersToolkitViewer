@@ -19,8 +19,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useTransition, useState, useEffect, useCallback } from "react";
-import { upsertMCQs, updateMCQ } from "@/lib/data";
-import type { MCQ } from "@/lib/types";
+import { upsertMCQSet } from "@/lib/data";
+import type { MCQ, MCQSet } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { PlusCircle, Trash2, Copy, AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,38 +28,40 @@ import { debounce } from "lodash";
 import { cn } from "@/lib/utils";
 
 const singleMcqObjectSchema = z.object({
-  question: z.string().min(1, "Question cannot be empty."),
-  options: z.array(z.string().min(1, "Option text cannot be empty.")).min(2, "At least two options are required."),
-  correctOptionIndex: z.number().min(0, "You must select a correct answer.").nonnegative("A correct option must be selected."),
+  question: z.string().min(3, "Question must be at least 3 characters long."),
+  options: z.array(z.string().min(1, "Option text cannot be empty.")).min(2, "All options must have text."),
+  correctOptionIndex: z.number().min(0, "You must select a correct answer by clicking 'Mark'.").nonnegative("A correct option must be selected."),
 });
 
 const formSchema = z.object({
-    mcqs: z.array(singleMcqObjectSchema),
+  name: z.string().min(1, "MCQ Set Name is required."),
+  mcqs: z.array(singleMcqObjectSchema).min(1, "At least one MCQ is required."),
 });
 
 interface MCQFormProps {
   subjectId: string;
   subSubjectId: string;
   chapterId: string;
-  mcq?: MCQ; 
+  mcqSet?: MCQSet; 
   children: React.ReactNode;
 }
 
-const defaultMcqValue = { question: "", options: ["", "", "", ""], correctOptionIndex: -1 };
+const defaultMcqValue: Omit<MCQ, 'id'> = { question: "", options: ["", "", "", ""], correctOptionIndex: -1 };
 
-export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: MCQFormProps) {
+export function MCQForm({ subjectId, subSubjectId, chapterId, mcqSet, children }: MCQFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const [isEditingJson, setIsEditingJson] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
-  const isEditing = !!mcq;
+  const isEditing = !!mcqSet;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      mcqs: isEditing && mcq ? [mcq] : [defaultMcqValue],
+      name: isEditing ? mcqSet.name : "MCQ Set",
+      mcqs: isEditing ? mcqSet.mcqs : [defaultMcqValue],
     },
     mode: "onChange",
   });
@@ -96,7 +98,6 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
 
   // Effect to sync Form state -> JSON state
   useEffect(() => {
-    // Only update JSON text if the user is not currently editing it.
     if (!isEditingJson) {
         setJsonText(JSON.stringify(mcqsValue, null, 2));
     }
@@ -104,39 +105,33 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
 
   useEffect(() => {
     if (isOpen) {
-      const initialValues = isEditing && mcq ? [mcq] : [defaultMcqValue];
-      form.reset({ mcqs: initialValues });
-      setJsonText(JSON.stringify(initialValues, null, 2));
+      const initialValues = {
+        name: isEditing && mcqSet ? mcqSet.name : `MCQ Set ${new Date().toLocaleTimeString()}`,
+        mcqs: isEditing && mcqSet ? mcqSet.mcqs : [defaultMcqValue]
+      };
+      form.reset(initialValues);
+      setJsonText(JSON.stringify(initialValues.mcqs, null, 2));
       setJsonError(null);
     }
-  }, [isOpen, mcq, isEditing, form]);
+  }, [isOpen, mcqSet, isEditing, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("Submitting values:", values);
     startTransition(async () => {
-        let result;
-        if (isEditing) {
-            result = await updateMCQ({
-                id: mcq!.id,
-                subjectId,
-                subSubjectId,
-                chapterId,
-                ...values.mcqs[0],
-            });
-        } else {
-             result = await upsertMCQs({
-                subjectId,
-                subSubjectId,
-                chapterId,
-                mcqs: values.mcqs,
-            });
-        }
+      const result = await upsertMCQSet({
+        id: mcqSet?.id,
+        subjectId,
+        subSubjectId,
+        chapterId,
+        ...values,
+      });
 
       if (result.success) {
         toast({ title: "Success", description: result.message });
         setIsOpen(false);
         router.refresh();
       } else {
-        toast({ title: "Operation Failed", description: result.error || "Could not save the MCQs.", variant: "destructive" });
+        toast({ title: "Operation Failed", description: result.error || "Could not save the MCQ set.", variant: "destructive" });
       }
     });
   }
@@ -146,9 +141,9 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit MCQ' : 'Add New MCQs'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit MCQ Set' : 'Add New MCQ Set'}</DialogTitle>
           <DialogDescription>
-             {isEditing ? 'Modify the question and its options below.' : 'Add questions manually or paste valid JSON. Both views are synchronized.'}
+             Add or edit the MCQ set name and its questions. Use the manual editor or paste JSON. Both views are synchronized.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -156,51 +151,62 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
                     {/* Manual Entry Column */}
                     <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-semibold">Manual Editor</h3>
-                           <div className="space-y-6">
-                                {mcqFields.map((mcqField, mcqIndex) => (
-                                    <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative bg-card">
-                                    {!isEditing && mcqFields.length > 1 && (
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>MCQ Set Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="E.g., Practice Test 1" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <h3 className="text-lg font-semibold border-t pt-4">Questions</h3>
+                           <ScrollArea className="h-[50vh] pr-4">
+                               <div className="space-y-6">
+                                    {mcqFields.map((mcqField, mcqIndex) => (
+                                        <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative bg-card">
                                         <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeMcq(mcqIndex)}>
-                                        <Trash2 className="h-4 w-4" />
+                                          <Trash2 className="h-4 w-4" />
                                         </Button>
-                                    )}
-                                    <FormField
-                                        control={form.control}
-                                        name={`mcqs.${mcqIndex}.question`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                            <FormLabel>Question {mcqIndex + 1}</FormLabel>
-                                            <FormControl>
-                                                <Textarea placeholder="What is the powerhouse of the cell?" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                            </FormItem>
-                                        )}
-                                        />
-                                    <div>
-                                        <FormLabel>Options</FormLabel>
-                                        <FormDescription className="text-xs mb-2">
-                                            Click on an option to mark it as the correct answer.
-                                        </FormDescription>
-                                        <MCQOptionsArray mcqIndex={mcqIndex} />
-                                         {form.formState.errors?.mcqs?.[mcqIndex]?.correctOptionIndex && (
-                                            <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.mcqs[mcqIndex]?.correctOptionIndex?.message}</p>
-                                        )}
-                                    </div>
-                                    </div>
-                                ))}
-                                {!isEditing && (
+                                        <FormField
+                                            control={form.control}
+                                            name={`mcqs.${mcqIndex}.question`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel>Question {mcqIndex + 1}</FormLabel>
+                                                <FormControl>
+                                                    <Textarea placeholder="What is the powerhouse of the cell?" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                            />
+                                        <div>
+                                            <FormLabel>Options</FormLabel>
+                                            <FormDescription className="text-xs mb-2">
+                                                Click on an option to mark it as the correct answer.
+                                            </FormDescription>
+                                            <MCQOptionsArray mcqIndex={mcqIndex} />
+                                            {form.formState.errors?.mcqs?.[mcqIndex]?.correctOptionIndex && (
+                                                <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.mcqs[mcqIndex]?.correctOptionIndex?.message}</p>
+                                            )}
+                                        </div>
+                                        </div>
+                                    ))}
                                     <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => appendMcq(defaultMcqValue)}>
                                         <PlusCircle className="mr-2 h-4 w-4" /> Add Another Question
                                     </Button>
-                                )}
-                           </div>
+                               </div>
+                           </ScrollArea>
                     </div>
 
                     {/* JSON Entry Column */}
                     <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-semibold">JSON Editor</h3>
+                        <h3 className="text-lg font-semibold">JSON Editor for Questions</h3>
                         <div className="flex-1 flex flex-col relative min-h-[400px]">
                             <Textarea 
                                 value={jsonText}
@@ -223,7 +229,7 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
         </Form>
         <DialogFooter className="pt-6 border-t">
             <Button type="submit" form="mcq-form" disabled={isPending || !!jsonError}>
-                {isPending ? "Saving..." : isEditing ? "Save Changes" : `Create ${mcqFields.length} MCQ(s)`}
+                {isPending ? "Saving..." : isEditing ? "Save Changes" : `Create MCQ Set`}
             </Button>
         </DialogFooter>
       </DialogContent>
@@ -241,7 +247,7 @@ function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
     name: `${fieldNamePrefix}.options`,
   });
 
-  const optionsError = errors?.mcqs?.[mcqIndex]?.options?.root;
+  const optionsError = errors?.mcqs?.[mcqIndex]?.options;
 
   return (
     <div className="space-y-3">
@@ -264,17 +270,19 @@ function MCQOptionsArray({ mcqIndex }: { mcqIndex: number }) {
                         <FormControl>
                             <Input {...optionField} placeholder={`Option ${optionIndex + 1}`} />
                         </FormControl>
-                        <Button type="button" variant="destructive" size="icon" onClick={() => remove(optionIndex)} disabled={fields.length <= 2}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {fields.length > 2 && (
+                            <Button type="button" variant="destructive" size="icon" onClick={() => remove(optionIndex)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
                     <FormMessage />
                     </FormItem>
                 )}
             />
         ))}
-        {optionsError && <FormMessage>{optionsError.message}</FormMessage>}
-        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append({text: ""})}>
+        {optionsError && <p className="text-sm font-medium text-destructive mt-2">{optionsError.message}</p>}
+        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => append("")}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Option
         </Button>
     </div>

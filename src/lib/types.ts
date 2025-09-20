@@ -54,11 +54,17 @@ export interface MCQ {
   correctOptionIndex: number;
 }
 
+export interface MCQSet {
+  id: string;
+  name: string;
+  mcqs: MCQ[];
+}
+
 export interface Chapter {
   id:string;
   name: string;
   notes: Note[];
-  mcqs?: MCQ[];
+  mcqSets?: MCQSet[];
 }
 
 export interface SubSubject {

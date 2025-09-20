@@ -26,7 +26,7 @@ export default async function AdminMCQsPage() {
             MCQs Management
         </h1>
         <p className="text-muted-foreground">
-          Create, edit, and delete Multiple Choice Questions for practice quizzes.
+          Create, edit, and delete Multiple Choice Question sets for practice quizzes.
         </p>
       </header>
 
@@ -72,35 +72,26 @@ export default async function AdminMCQsPage() {
                                                </CardTitle>
                                                <MCQForm subjectId={subject.id} subSubjectId={subSubject.id} chapterId={chapter.id}>
                                                    <Button size="sm">
-                                                        <PlusCircle className="mr-2 h-4 w-4" /> Add MCQ
+                                                        <PlusCircle className="mr-2 h-4 w-4" /> Add MCQ Set
                                                    </Button>
                                                </MCQForm>
                                             </CardHeader>
                                             <CardContent>
-                                                {(chapter.mcqs && chapter.mcqs.length > 0) ? (
+                                                {(chapter.mcqSets && chapter.mcqSets.length > 0) ? (
                                                     <div className="space-y-3">
-                                                        {chapter.mcqs.map((mcq, index) => (
-                                                            <div key={mcq.id} className="flex justify-between items-start p-3 border rounded-md bg-muted/30">
-                                                                <div>
-                                                                    <p className="font-semibold">{index + 1}. {mcq.question}</p>
-                                                                    <ol className="list-decimal list-inside text-sm text-muted-foreground mt-2 space-y-1">
-                                                                        {mcq.options.map((option, optIndex) => (
-                                                                            <li key={optIndex} className={optIndex === mcq.correctOptionIndex ? 'font-bold text-green-600' : ''}>
-                                                                                {option}
-                                                                            </li>
-                                                                        ))}
-                                                                    </ol>
-                                                                </div>
+                                                        {chapter.mcqSets.map((mcqSet) => (
+                                                            <div key={mcqSet.id} className="flex justify-between items-center p-3 border rounded-md bg-muted/30">
+                                                                <p className="font-semibold">{mcqSet.name} ({mcqSet.mcqs.length} questions)</p>
                                                                 <div className="flex items-center">
-                                                                    <MCQForm subjectId={subject.id} subSubjectId={subSubject.id} chapterId={chapter.id} mcq={mcq}>
+                                                                    <MCQForm subjectId={subject.id} subSubjectId={subSubject.id} chapterId={chapter.id} mcqSet={mcqSet}>
                                                                         <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
                                                                     </MCQForm>
-                                                                    <DeleteMCQDialog subjectId={subject.id} subSubjectId={subSubject.id} chapterId={chapter.id} mcqId={mcq.id} />
+                                                                    <DeleteMCQDialog subjectId={subject.id} subSubjectId={subSubject.id} chapterId={chapter.id} mcqSetId={mcqSet.id} />
                                                                 </div>
                                                             </div>
                                                         ))}
                                                     </div>
-                                                ) : <p className="text-sm text-muted-foreground italic text-center py-4">No MCQs in this chapter yet.</p>}
+                                                ) : <p className="text-sm text-muted-foreground italic text-center py-4">No MCQ sets in this chapter yet.</p>}
                                             </CardContent>
                                         </Card>
                                       ))}
