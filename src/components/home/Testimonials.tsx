@@ -27,25 +27,25 @@ const testimonials = [
     name: "Gyan Singh",
     achievement: "Student",
     quote: "I really like the notes provided. They are clear, concise, and have helped me a lot in my studies.",
-    imgSrc: "https://picsum.photos/seed/gyan/100/100",
+    imgSrc: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
   },
     {
     name: "Vatsal Upadhaya",
     achievement: "Student",
     quote: "I'm very satisfied with the quality of the material. It's well-organized and covers everything I need.",
-    imgSrc: "https://picsum.photos/seed/vatsal/100/100",
+    imgSrc: "https://cdn-icons-png.flaticon.com/512/9131/9131478.png",
   },
     {
     name: "Aditi Tripathi",
     achievement: "Student",
     quote: "These notes have been very useful to me. They make difficult topics much easier to understand.",
-    imgSrc: "https://picsum.photos/seed/aditi/100/100",
+    imgSrc: "https://cdn-icons-png.flaticon.com/512/9131/9131529.png",
   },
   {
     name: "Priya",
     achievement: "Student",
     quote: "I just love these notes! They are my go-to resource for exam preparation. Highly recommended!",
-    imgSrc: "https://picsum.photos/seed/priya/100/100",
+    imgSrc: "https://cdn-icons-png.flaticon.com/512/9131/9131529.png",
   },
 ];
 
@@ -92,6 +92,7 @@ export function Testimonials() {
 
 
     
+
 
 
 
