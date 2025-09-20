@@ -208,12 +208,15 @@ export const getDashboardStats = async () => {
     const users = await getUsers();
     const allOrders = await getAllPrintOrders();
     const pendingOrders = allOrders.filter(o => o.status === 'pending');
+    const allComplaints = await getAllComplaints();
+    const pendingComplaints = allComplaints.filter(c => c.status === 'pending');
     
     return {
         totalNotes: notes.length,
         totalSubjects: subjects.length,
         totalUsers: users.length,
         totalPendingOrders: pendingOrders.length,
+        totalPendingComplaints: pendingComplaints.length,
     };
 };
 
@@ -1012,10 +1015,15 @@ export async function getAllDoubts(): Promise<Doubt[]> {
     
     try {
         const querySnapshot = await getDocs(q);
-        const doubts = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        } as Doubt));
+        const doubts = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt,
+                answeredAt: data.answeredAt?.toMillis ? data.answeredAt.toMillis() : data.answeredAt,
+            } as Doubt;
+        });
         return doubts;
     } catch (error) {
         console.error("Error fetching all doubts:", error);
@@ -1131,7 +1139,15 @@ export async function getAllComplaints(): Promise<Complaint[]> {
     
     try {
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Complaint));
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt,
+                resolvedAt: data.resolvedAt?.toMillis ? data.resolvedAt.toMillis() : data.resolvedAt,
+            } as Complaint;
+        });
     } catch (error) {
         console.error("Error fetching all complaints:", error);
         return [];

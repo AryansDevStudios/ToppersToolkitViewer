@@ -6,13 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Users, FileText, BookCopy, Printer } from "lucide-react";
+import { Users, FileText, BookCopy, Printer, FileQuestion } from "lucide-react";
 import { getDashboardStats } from "@/lib/data";
 
 export const revalidate = 0;
 
 export default async function AdminDashboardPage() {
-  const { totalNotes, totalSubjects, totalUsers, totalPendingOrders } = await getDashboardStats();
+  const { totalNotes, totalSubjects, totalUsers, totalPendingOrders, totalPendingComplaints } = await getDashboardStats();
 
   const stats = [
     {
@@ -34,6 +34,11 @@ export default async function AdminDashboardPage() {
       title: "Pending Orders",
       value: totalPendingOrders,
       icon: Printer,
+    },
+    {
+      title: "Pending Complaints",
+      value: totalPendingComplaints,
+      icon: FileQuestion,
     }
   ];
 
