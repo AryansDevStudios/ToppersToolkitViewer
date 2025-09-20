@@ -23,7 +23,7 @@ import { upsertMCQs } from "@/lib/data";
 import type { MCQ } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, Copy } from "lucide-react";
 
 const singleMCQSchema = z.object({
   question: z.string().min(3, "Question must be at least 3 characters."),
@@ -175,6 +175,14 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
     });
   }
 
+  const handleCopyDemo = () => {
+    navigator.clipboard.writeText(jsonPlaceholder);
+    toast({
+        title: "Copied!",
+        description: "Demo JSON copied to clipboard.",
+    });
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -248,9 +256,16 @@ export function MCQForm({ subjectId, subSubjectId, chapterId, mcq, children }: M
                             name="jsonInput"
                             render={({ field }) => (
                                 <FormItem className="flex-1 flex flex-col">
-                                <FormLabel>MCQ JSON</FormLabel>
-                                <FormDescription>Paste an array of MCQ objects.</FormDescription>
-                                <FormControl className="flex-1">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <FormLabel>MCQ JSON</FormLabel>
+                                            <FormDescription>Paste an array of MCQ objects.</FormDescription>
+                                        </div>
+                                        <Button type="button" variant="outline" size="sm" onClick={handleCopyDemo}>
+                                            <Copy className="mr-2 h-4 w-4" /> Copy Demo
+                                        </Button>
+                                    </div>
+                                <FormControl className="flex-1 mt-2">
                                     <Textarea
                                     placeholder={jsonPlaceholder}
                                     className="h-full resize-none font-mono text-xs"
