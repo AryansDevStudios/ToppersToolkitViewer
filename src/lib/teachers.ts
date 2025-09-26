@@ -64,7 +64,7 @@ export const teachers: TeacherProfile[] = [
     id: "shivkant-sir",
     name: "Shivkant Sir",
     subject: "History & Politics Teacher",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "To understand the present, we must learn from the past.",
     about: [
       "Shivkant Sir brings the stories of the past and the structures of the present to life for students in sections A and B. He teaches History and Politics with a passion that inspires curiosity and critical thinking, encouraging students to analyze events and understand their impact on today's world. His classes are both informative and thought-provoking.",
@@ -76,7 +76,7 @@ export const teachers: TeacherProfile[] = [
     id: "chandra-prakash-shukla",
     name: "Chandra Prakash Shukla",
     subject: "Teacher (Section A)",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Every student has the potential to shine.",
     about: [
       "Chandra Prakash Shukla is a dedicated teacher for Section A, committed to fostering a positive and encouraging learning environment. He works closely with his students to help them achieve their academic goals and build confidence. His supportive approach makes him a valued mentor and guide.",
@@ -88,7 +88,7 @@ export const teachers: TeacherProfile[] = [
     id: "rajesh-sir",
     name: "Rajesh Sir",
     subject: "Teacher (Section B)",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Learning is a journey we take together.",
     about: [
       "Rajesh Sir is a core member of the teaching staff for Section B, helping students navigate their studies with patience and expertise. He is known for his approachable nature and his ability to make every student feel seen and supported, ensuring a collaborative and effective classroom.",
@@ -100,7 +100,7 @@ export const teachers: TeacherProfile[] = [
     id: "sunil-sir",
     name: "Sunil Sir",
     subject: "Teacher (H/C Section)",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Curiosity is the wick in the candle of learning.",
     about: [
       "Sunil Sir guides the students of the Hybrid/Commerce section with dedication and specialized expertise in his subjects. He is committed to preparing his students for future challenges, equipping them with both knowledge and practical skills in a dynamic learning environment.",
@@ -112,7 +112,7 @@ export const teachers: TeacherProfile[] = [
     id: "adalat-sir",
     name: "Adalat Sir",
     subject: "Hindi Teacher",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Language is the roadmap of a culture.",
     about: [
       "Adalat Sir fosters a deep appreciation for the Hindi language and its rich literary traditions. His teaching goes beyond the curriculum, instilling in students a love for poetic expression and powerful storytelling. He encourages students to embrace their cultural heritage through language, making his classes both educational and inspiring.",
@@ -136,7 +136,7 @@ export const teachers: TeacherProfile[] = [
     id: "divakar-pandey",
     name: "Divakar Pandey",
     subject: "Physics Teacher",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Physics is the universe's poetry.",
     about: [
       "Divakar Pandey makes the principles of physics engaging and understandable for all students. He has a knack for breaking down complex theories into simple, relatable examples. His passion for the subject is contagious, inspiring students to look at the world around them with a new sense of wonder and curiosity.",
@@ -160,7 +160,7 @@ export const teachers: TeacherProfile[] = [
     id: "ajay-sir",
     name: "Ajay Sir",
     subject: "Biology Teacher",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Biology gives you a brain, but life turns it into a mind.",
     about: [
       "Ajay Sir has a remarkable talent for making complex biological concepts from Class 11 incredibly smooth and understandable for his Class 9 students. He ignites a passion for the life sciences by revealing the intricate wonders of the natural world, from the smallest cells to entire ecosystems.",
@@ -172,7 +172,7 @@ export const teachers: TeacherProfile[] = [
     id: "pramod-sir",
     name: "Pramod Sir",
     subject: "Former Maths Teacher",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "The only way to learn mathematics is to do mathematics.",
     about: [
       "We remember Pramod Sir for his dedicated teaching and guidance in Mathematics. His commitment to his students' success left a lasting impact on all who learned from him.",
@@ -184,7 +184,7 @@ export const teachers: TeacherProfile[] = [
     id: "mantasha-maam",
     name: "Mantasha Ma'am",
     subject: "Former English Teacher",
-    photoUrl: "/images/generic-avatar-female.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Words have the power to change the world.",
     about: [
       "Mantasha Ma'am inspired a love for literature and language as our former English teacher. She taught us the power of storytelling and effective communication.",
@@ -196,7 +196,7 @@ export const teachers: TeacherProfile[] = [
     id: "shailendra-sir",
     name: "Shailendra Sir",
     subject: "Former English Teacher",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "To read is to fly; it is to soar to a point of vantage.",
     about: [
       "We appreciate Shailendra Sir for his valuable contributions to our English education. He was dedicated to fostering strong communication and analytical skills in his students.",
@@ -208,7 +208,7 @@ export const teachers: TeacherProfile[] = [
     id: "rahul-sir",
     name: "Rahul Sir",
     subject: "Former Maths Teacher",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Numbers have a way of taking a man by the hand and leading him down the path of reason.",
     about: [
       "Rahul Sir is remembered for his clear and effective teaching methods in Mathematics. He had a gift for making difficult problems seem manageable.",
@@ -220,7 +220,7 @@ export const teachers: TeacherProfile[] = [
     id: "nirupma-maam",
     name: "Nirupma Ma'am",
     subject: "Former Hindi Teacher",
-    photoUrl: "/images/generic-avatar-female.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "The beauty of language is in its expression.",
     about: [
       "We thank Nirupma Ma'am for her dedication to teaching Hindi and its rich cultural heritage. She brought the language to life with her passion for poetry and prose.",
@@ -232,7 +232,7 @@ export const teachers: TeacherProfile[] = [
     id: "avdesh-sir",
     name: "Avdesh Sir",
     subject: "Former IT Teacher",
-    photoUrl: "/images/generic-avatar.png",
+    photoUrl: "/icon/logo512x.png",
     quote: "Technology is a tool. In terms of getting the kids working together and motivating them, the teacher is the most important.",
     about: [
       "Avdesh Sir helped build our foundational knowledge in Information Technology with great patience and skill. He introduced us to the digital world with clarity and purpose.",
