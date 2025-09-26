@@ -5,6 +5,7 @@ import { getUsers } from "@/lib/data";
 import { JsonViewerDialog } from "@/components/admin/subjects/JsonViewerDialog";
 import { SearchableUserGrid } from "@/components/admin/users/SearchableUserGrid";
 import type { User } from "@/lib/types";
+import Link from "next/link";
 
 export const revalidate = 0;
 
@@ -21,6 +22,12 @@ export default async function AdminUsersPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+            <Button asChild variant="outline">
+              <Link href="/admin/suspects">
+                <ShieldAlert className="mr-2 h-4 w-4 text-destructive" />
+                View Suspects
+              </Link>
+            </Button>
             <JsonViewerDialog data={allUsers} title="All Users">
                 <Button variant="outline">
                     <FileJson className="mr-2 h-4 w-4" />
