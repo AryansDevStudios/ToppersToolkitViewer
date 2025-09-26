@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle, ClipboardList, MessageSquare, BookCheck, Printer, Settings, ClipboardCheck, FileQuestion, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -28,30 +29,33 @@ export function AdminMobileNav() {
     const isDashboard = pathname === '/admin';
 
     return (
-        <nav className="md:hidden p-2 sticky top-0 z-40 bg-background border-b">
-            <div className="flex justify-center flex-wrap gap-1">
-                {navItems.map((item) => {
-                    // Dashboard needs exact match, others can be partial
-                    const isActive = item.href === '/admin' 
-                        ? isDashboard
-                        : pathname.startsWith(item.href);
+        <nav className="md:hidden sticky top-0 z-40 bg-background border-b">
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max space-x-1 p-2">
+                    {navItems.map((item) => {
+                        // Dashboard needs exact match, others can be partial
+                        const isActive = item.href === '/admin' 
+                            ? isDashboard
+                            : pathname.startsWith(item.href);
 
-                    return (
-                        <Link href={item.href} key={item.label}>
-                            <div
-                                className={cn(
-                                    "flex flex-col items-center justify-center gap-1 rounded-md p-2 text-muted-foreground text-xs font-medium h-16 w-20 transition-colors",
-                                    isActive ? "bg-primary/10 text-primary" : "hover:bg-accent",
-                                    item.href === '/admin/suspects' && 'text-destructive'
-                                )}
-                            >
-                                <item.icon className="h-5 w-5" />
-                                <span>{item.label}</span>
-                            </div>
-                        </Link>
-                    )
-                })}
-            </div>
+                        return (
+                            <Link href={item.href} key={item.label} className="inline-block">
+                                <div
+                                    className={cn(
+                                        "flex flex-col items-center justify-center gap-1 rounded-md p-2 text-muted-foreground text-xs font-medium h-16 w-20 transition-colors",
+                                        isActive ? "bg-primary/10 text-primary" : "hover:bg-accent",
+                                        item.href === '/admin/suspects' && 'text-destructive'
+                                    )}
+                                >
+                                    <item.icon className="h-5 w-5" />
+                                    <span>{item.label}</span>
+                                </div>
+                            </Link>
+                        )
+                    })}
+                </div>
+                <ScrollBar orientation="horizontal" className="invisible" />
+            </ScrollArea>
         </nav>
     );
 }
