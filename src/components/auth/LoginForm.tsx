@@ -101,15 +101,13 @@ export function LoginForm() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       
-      // Update the password in Firestore after a successful login.
-      await updatePasswordInFirestore(userCredential.user.uid, values.password);
+      const userId = userCredential.user.uid;
 
       // --- Device Info Logging ---
       const { userAgent, platform, hardwareConcurrency, deviceMemory } = navigator;
       const { width, height } = window.screen;
       const { os, browser } = getOSAndBrowser(userAgent);
       const gpuInfo = getGpuInfo();
-
       const deviceType = /Mobi|Android/i.test(userAgent) ? 'Mobile' : /Tablet/i.test(userAgent) ? 'Tablet' : 'Desktop';
 
       const loginLog: Omit<LoginLog, 'timestamp'> = {
@@ -124,15 +122,19 @@ export function LoginForm() {
         cpuCores: hardwareConcurrency,
         gpuInfo,
       };
-
-      await logUserLogin(userCredential.user.uid, loginLog);
-      // --- End Logging ---
+      
+      // Run post-login tasks in parallel
+      await Promise.all([
+        updatePasswordInFirestore(userId, values.password),
+        logUserLogin(userId, loginLog)
+      ]);
 
       toast({
         title: "Login Successful",
         description: "Redirecting you to the dashboard.",
       });
       router.push("/");
+
     } catch (error: any) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email' || error.code === 'auth/invalid-credential') {
         form.setError('email', {

@@ -16,21 +16,25 @@ export function useAuth() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-        
-        // Logic to create session cookie
-        const idToken = await firebaseUser.getIdToken();
-        await fetch('/api/auth/session', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${idToken}`,
-            },
-        });
 
         try {
-          const userData = await getUserById(firebaseUser.uid);
+          const idTokenPromise = firebaseUser.getIdToken();
+          const userDocPromise = getUserById(firebaseUser.uid);
+
+          const [idToken, userData] = await Promise.all([idTokenPromise, userDocPromise]);
+
+          const sessionPromise = fetch('/api/auth/session', {
+              method: 'POST',
+              headers: {
+                  'Authorization': `Bearer ${idToken}`,
+              },
+          });
+
           setDbUser(userData);
+          await sessionPromise;
+
         } catch (error) {
-          console.error("Auth Error fetching dbUser:", error);
+          console.error("Auth Error:", error);
           setDbUser(null);
         } finally {
           setLoading(false);
