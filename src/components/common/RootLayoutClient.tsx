@@ -20,17 +20,16 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
   
-  // This effect will run on the client after the initial render.
-  // It ensures that if a user's session expires or they log out, they are redirected.
-  // By checking `!loading`, we avoid redirecting during the initial auth state check.
   useEffect(() => {
+    // This effect handles client-side redirection for users who log out
+    // or whose sessions expire.
     if (!loading && !user && !isPublicPage) {
       router.push('/login');
     }
-  }, [loading, user, isPublicPage, router, pathname]);
+  }, [loading, user, isPublicPage, router]);
 
-  // If we are on the client, still loading the user state, and not on a public page, show a loader.
-  // This prevents a flash of content for client-side navigations to protected pages.
+  // While the initial auth state is being determined on the client for the very first time,
+  // and we are not on a public page, show a loader. `initialUser` from SSR prevents this on first load.
   if (loading && !isPublicPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -39,9 +38,8 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
 
-  // On the server, or after loading on the client, if the user is not logged in and it's a protected page,
-  // we render null. The useEffect above will handle the client-side redirect. This prevents server-rendering
-  // protected content for unauthenticated users.
+  // If we've determined the user is not authenticated and it's a protected page, render null.
+  // The useEffect above will handle the redirect. This prevents showing protected content.
   if (!user && !isPublicPage) {
     return null; 
   }
