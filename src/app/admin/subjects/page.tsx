@@ -25,14 +25,14 @@ export default async function AdminSubjectsPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Subjects Management</h1>
           <p className="text-muted-foreground">
             Organize the curriculum structure of your platform.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start md:self-auto">
             <JsonViewerDialog data={subjects} title="All Subjects">
                 <Button variant="outline">
                     <FileJsonIcon className="mr-2 h-4 w-4" />
