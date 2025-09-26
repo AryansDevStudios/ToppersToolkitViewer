@@ -19,15 +19,19 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
   const router = useRouter();
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
-
+  
+  // This effect will run on the client after the initial render.
+  // It ensures that if a user's session expires or they log out, they are redirected.
+  // By checking `!loading`, we avoid redirecting during the initial auth state check.
   useEffect(() => {
     if (!loading && !user && !isPublicPage) {
       router.push('/login');
     }
   }, [loading, user, isPublicPage, router, pathname]);
 
-  // Show loader only on initial load for non-public pages if we don't have an initial user
-  if (loading && !isPublicPage && !initialUser) {
+  // If we are on the client, still loading the user state, and not on a public page, show a loader.
+  // This prevents a flash of content for client-side navigations to protected pages.
+  if (loading && !isPublicPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -35,9 +39,10 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
 
-  // If not loading, and not a user, and not a public page, we are about to redirect.
-  // Render null to avoid a flash of content.
-  if (!loading && !user && !isPublicPage) {
+  // On the server, or after loading on the client, if the user is not logged in and it's a protected page,
+  // we render null. The useEffect above will handle the client-side redirect. This prevents server-rendering
+  // protected content for unauthenticated users.
+  if (!user && !isPublicPage) {
     return null; 
   }
 

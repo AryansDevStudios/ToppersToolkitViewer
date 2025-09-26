@@ -10,20 +10,15 @@ import { getUserById } from '@/lib/data';
 export function useAuth(initialUser: User | null) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [dbUser, setDbUser] = useState<User | null>(initialUser);
+  // The 'loading' state is true only until the initial check is done.
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // If we have an initial user from the server, we can consider the user loaded.
-    if (initialUser) {
-      setDbUser(initialUser);
-      setLoading(false);
-    }
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-        // Only fetch dbUser if it wasn't provided by the server initially
-        if (!initialUser) {
+        // If the dbUser is not already set or differs from the firebaseUser, fetch it.
+        if (!dbUser || dbUser.id !== firebaseUser.uid) {
             const userData = await getUserById(firebaseUser.uid);
             setDbUser(userData);
         }
@@ -39,16 +34,25 @@ export function useAuth(initialUser: User | null) {
       } else {
         setUser(null);
         setDbUser(null);
+        // Don't await this, let it happen in the background
         fetch('/api/auth/session', { method: 'DELETE' });
       }
-      // Once the initial check is done, stop the main loading state.
+      // Once the initial auth state is determined, we are no longer 'loading'.
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [initialUser]);
+  }, []); // Run only once on mount
   
   const role = useMemo(() => dbUser?.role || null, [dbUser]);
+
+  // When `initialUser` prop changes (on server-side navigation), update our state.
+  useEffect(() => {
+      if (initialUser) {
+          setDbUser(initialUser);
+      }
+  }, [initialUser]);
+
 
   return { user, dbUser, role, loading };
 }
