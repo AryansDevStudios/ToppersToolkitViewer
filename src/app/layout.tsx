@@ -1,3 +1,4 @@
+
 import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
   title: "Topper's Toolkit",
   description: 'Your one-stop destination for academic resources.',
   icons: {
-    icon: '/icon/logo512x.png',
+    icon: '/favicon.ico',
     shortcut: '/favicon.ico',
     apple: '/icon/logo512x.png',
   },
