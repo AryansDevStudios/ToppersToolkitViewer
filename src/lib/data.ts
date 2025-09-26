@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint } from "./types";
@@ -941,7 +942,7 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
       if (isCorrect && userDoc.exists()) {
           const userData = userDoc.data() as User;
           const currentScore = userData.score || 0;
-          const newScore = currentScore + 10;
+          const newScore = currentScore + 2;
           transaction.update(userDocRef, { score: newScore });
       }
 

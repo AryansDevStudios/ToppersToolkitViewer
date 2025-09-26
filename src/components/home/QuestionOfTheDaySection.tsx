@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -101,7 +102,7 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
       toast({
         title: result.isCorrect ? "Correct!" : "Incorrect",
         description: result.isCorrect
-          ? "+10 points awarded to you on the leaderboard!"
+          ? "+2 points awarded to you on the leaderboard!"
           : "Better luck next time!",
         variant: result.isCorrect ? "default" : "destructive",
       });
