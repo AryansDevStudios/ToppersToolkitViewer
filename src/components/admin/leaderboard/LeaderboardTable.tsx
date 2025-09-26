@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, EyeOff, Eye } from "lucide-react";
+import { Loader2, EyeOff, Eye, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/lib/types";
 import { batchUpdateUsers } from "@/lib/data";
@@ -30,16 +30,29 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [changedUserIds, setChangedUserIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredUsers = useMemo(() => {
+    if (!searchQuery) {
+      return users;
+    }
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return users.filter(user =>
+      (user.name && user.name.toLowerCase().includes(lowercasedQuery)) ||
+      (user.email && user.email.toLowerCase().includes(lowercasedQuery))
+    );
+  }, [users, searchQuery]);
+
 
   const visibleUsers = useMemo(() => {
-    return users
+    return filteredUsers
       .filter(u => u.showOnLeaderboard !== false)
       .sort((a, b) => (b.score || 0) - (a.score || 0));
-  }, [users]);
+  }, [filteredUsers]);
 
   const hiddenUsers = useMemo(() => {
-    return users.filter(u => u.showOnLeaderboard === false);
-  }, [users]);
+    return filteredUsers.filter(u => u.showOnLeaderboard === false);
+  }, [filteredUsers]);
 
 
   const handleScoreChange = (userId: string, newScore: string) => {
@@ -143,7 +156,7 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={3} className="h-24 text-center">
-                  No users in this list.
+                  No users match your search.
                 </TableCell>
               </TableRow>
             )}
@@ -153,6 +166,15 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
 
   return (
     <>
+    <div className="relative max-w-sm mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+            placeholder="Search users by name or email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 h-9"
+        />
+    </div>
     <Card>
       <CardHeader>
         <CardTitle>Visible Users</CardTitle>
