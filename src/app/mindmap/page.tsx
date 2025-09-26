@@ -15,8 +15,19 @@ import { BrainCircuit, Loader2, FileText } from 'lucide-react';
 import Link from 'next/link';
 import type { Note, Subject } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type MindmapNote = Note & { subjectName: string; subSubjectName: string; subjectId: string; subSubjectId: string; chapter: string; slug: string; };
+
+const LoadingSkeleton = () => (
+    <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="h-48 rounded-lg" />
+            ))}
+        </div>
+    </div>
+);
 
 export default function MindmapPage() {
   const [loading, setLoading] = useState(true);
@@ -129,9 +140,7 @@ export default function MindmapPage() {
 
       <main className="max-w-6xl mx-auto">
         {loading ? (
-           <div className="flex justify-center items-center py-24">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-           </div>
+           <LoadingSkeleton />
         ) : displayedNotes.length > 0 ? (
             selectedSubSubject !== 'all' ? (
                  <Accordion type="multiple" className="w-full space-y-4">
@@ -172,17 +181,20 @@ export default function MindmapPage() {
                         <Link href={note.slug} key={note.id} className="block group">
                           <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
                             <CardHeader>
-                              <div className="flex justify-between items-start">
-                                <div className="p-3 bg-primary/10 rounded-lg">
-                                  <Icon className="w-6 h-6 text-primary" />
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-primary/10 rounded-lg">
+                                      <Icon className="w-6 h-6 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors">
+                                      {note.type}
+                                    </CardTitle>
                                 </div>
-                              </div>
                             </CardHeader>
                             <CardContent className="flex flex-col h-full pt-0">
-                              <CardTitle className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                              <p className="text-sm font-semibold mb-1">
                                 {note.chapter}
-                              </CardTitle>
-                              <p className="text-sm text-muted-foreground mb-1">
+                              </p>
+                              <p className="text-sm text-muted-foreground">
                                 {note.subSubjectName}
                               </p>
                             </CardContent>
@@ -208,5 +220,3 @@ export default function MindmapPage() {
     </div>
   );
 }
-
-    
