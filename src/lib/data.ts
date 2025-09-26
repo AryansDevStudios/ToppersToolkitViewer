@@ -907,7 +907,7 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
     return await runTransaction(db, async (transaction) => {
       const qotdDoc = await transaction.get(qotdDocRef);
       const answerDoc = await transaction.get(answerDocRef);
-      const userDoc = await transaction.get(userDoc);
+      
 
       if (!qotdDoc.exists()) throw new Error("Question not found.");
       
@@ -939,11 +939,14 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
       }
       
       // Update the user's score if correct
-      if (isCorrect && userDoc.exists()) {
-          const userData = userDoc.data() as User;
-          const currentScore = userData.score || 0;
-          const newScore = currentScore + 2;
-          transaction.update(userDocRef, { score: newScore });
+      if (isCorrect) {
+          const userDoc = await transaction.get(userDocRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as User;
+            const currentScore = userData.score || 0;
+            const newScore = currentScore + 2;
+            transaction.update(userDocRef, { score: newScore });
+          }
       }
 
       return { success: true, isCorrect, correctOptionIndex: qotdData.correctOptionIndex };
