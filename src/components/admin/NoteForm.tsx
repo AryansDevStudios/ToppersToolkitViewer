@@ -95,7 +95,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   const updateFormFromJson = useCallback((newJson: string) => {
     try {
       const parsed = JSON.parse(newJson);
-      form.reset(parsed);
+      form.reset(parsed, { keepDefaultValues: false });
       setJsonError(null);
     } catch (e) {
       setJsonError("Invalid JSON syntax.");
@@ -486,14 +486,17 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                 />
               )}
             </div>
-            <Button type="submit" disabled={isPending || !!jsonError}>
-              {isPending ? "Submitting..." : isEditing ? "Save Changes" : "Upload Note"}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => router.push('/admin/notes')} disabled={isPending}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isPending || !!jsonError}>
+                {isPending ? "Submitting..." : isEditing ? "Save Changes" : "Upload Note"}
+              </Button>
+            </div>
           </CardFooter>
         </form>
       </Form>
     </Card>
   );
 }
-
-    
