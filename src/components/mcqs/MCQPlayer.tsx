@@ -200,7 +200,7 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
      const incorrectCount = mcqs.length - finalScore;
 
     return (
-      <Card className="w-full max-w-2xl mx-auto">
+      <Card className="w-full max-w-2xl mx-auto select-none">
         <CardHeader>
           <CardTitle className="text-center text-2xl">Quiz Results</CardTitle>
         </CardHeader>
@@ -260,7 +260,7 @@ export function MCQPlayer({ mcqs, chapterId: mcqSetId, chapterName: mcqSetName, 
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto select-none">
       <CardHeader>
         <div className="flex justify-between items-center mb-2">
             <h2 className="text-sm font-medium text-primary">{mcqSetName}</h2>
