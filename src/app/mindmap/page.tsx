@@ -195,7 +195,7 @@ export default function MindmapPage() {
                                 {note.type}
                               </p>
                               <p className="text-sm text-primary">
-                                {note.subjectName} &gt; {note.subSubjectName}
+                                {note.subjectName}, {note.subSubjectName}
                               </p>
                             </CardContent>
                           </Card>
