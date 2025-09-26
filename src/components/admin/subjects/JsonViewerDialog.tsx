@@ -18,7 +18,7 @@ import { FileJson, Copy } from "lucide-react";
 import type { Subject } from "@/lib/types";
 
 interface JsonViewerDialogProps {
-  subject: Subject | Subject[];
+  subject: Subject | Subject[] | undefined;
   title?: string;
   children?: React.ReactNode;
 }
@@ -27,12 +27,17 @@ export function JsonViewerDialog({ subject, title, children }: JsonViewerDialogP
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
+  if (!subject) {
+    return null; // Don't render if subject is not available
+  }
+
   const jsonString = JSON.stringify(subject, null, 2);
   
-  const dialogTitle = title || (Array.isArray(subject) ? "Subjects Data (JSON)" : `${subject.name} (JSON)`);
-  const dialogDescription = Array.isArray(subject) 
+  const isArray = Array.isArray(subject);
+  const dialogTitle = title || (isArray ? "Subjects Data (JSON)" : `${(subject as Subject).name} (JSON)`);
+  const dialogDescription = isArray 
     ? "A read-only view of the entire subjects structure." 
-    : `A read-only view of the ${subject.name} structure.`;
+    : `A read-only view of the ${(subject as Subject).name} structure.`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(jsonString).then(
