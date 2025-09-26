@@ -191,11 +191,11 @@ export default function MindmapPage() {
                                 </div>
                             </CardHeader>
                             <CardContent className="flex flex-col h-full pt-0">
-                              <p className="text-sm font-semibold mb-1">
+                              <p className="text-sm font-semibold mb-2">
                                 {note.type}
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {note.subSubjectName}
+                                {note.subjectName} &gt; {note.subSubjectName}
                               </p>
                             </CardContent>
                           </Card>
