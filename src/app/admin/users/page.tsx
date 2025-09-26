@@ -14,14 +14,14 @@ export default async function AdminUsersPage() {
   
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">User Management</h1>
           <p className="text-muted-foreground">
             View and manage all user accounts.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start md:self-auto">
             <Button asChild variant="outline">
               <Link href="/admin/suspects">
                 <ShieldAlert className="mr-2 h-4 w-4 text-destructive" />
