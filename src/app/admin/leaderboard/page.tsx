@@ -1,13 +1,25 @@
 
+"use client";
+
+import { useEffect, useState } from "react";
 import { getUsers } from "@/lib/data";
-import { Trophy } from "lucide-react";
+import { Loader2, Trophy } from "lucide-react";
 import type { User } from "@/lib/types";
 import { LeaderboardTable } from "@/components/admin/leaderboard/LeaderboardTable";
 
-export const revalidate = 0;
+export default function AdminLeaderboardPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function AdminLeaderboardPage() {
-  const users = await getUsers();
+  useEffect(() => {
+    async function fetchUsers() {
+      setLoading(true);
+      const fetchedUsers = await getUsers();
+      setUsers(fetchedUsers);
+      setLoading(false);
+    }
+    fetchUsers();
+  }, []);
   
   return (
     <div className="space-y-8">
@@ -22,7 +34,13 @@ export default async function AdminLeaderboardPage() {
           </p>
         </div>
       </header>
-      <LeaderboardTable initialUsers={users} />
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      ) : (
+        <LeaderboardTable initialUsers={users} />
+      )}
     </div>
   );
 }
