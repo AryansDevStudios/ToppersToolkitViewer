@@ -15,6 +15,8 @@ export async function getUser(): Promise<User | null> {
     const user = await getUserById(decodedClaims.uid);
     return user;
   } catch (error) {
+    // This is expected if the cookie is invalid or expired.
+    // console.error("Auth server error:", error); // Optional: log for debugging
     return null;
   }
 }
