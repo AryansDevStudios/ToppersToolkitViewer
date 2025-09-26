@@ -209,6 +209,8 @@ export const getDashboardStats = async () => {
     const pendingOrders = allOrders.filter(o => o.status === 'pending');
     const allComplaints = await getAllComplaints();
     const pendingComplaints = allComplaints.filter(c => c.status === 'pending');
+    const allDoubts = await getAllDoubts();
+    const pendingDoubts = allDoubts.filter(d => d.status === 'pending');
     
     return {
         totalNotes: notes.length,
@@ -216,6 +218,7 @@ export const getDashboardStats = async () => {
         totalUsers: users.length,
         totalPendingOrders: pendingOrders.length,
         totalPendingComplaints: pendingComplaints.length,
+        totalPendingDoubts: pendingDoubts.length,
     };
 };
 
