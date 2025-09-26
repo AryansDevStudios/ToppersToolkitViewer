@@ -16,6 +16,16 @@ export function useAuth() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
+        
+        // Logic to create session cookie
+        const idToken = await firebaseUser.getIdToken();
+        await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${idToken}`,
+            },
+        });
+
         try {
           const userData = await getUserById(firebaseUser.uid);
           setDbUser(userData);
@@ -28,6 +38,10 @@ export function useAuth() {
       } else {
         setUser(null);
         setDbUser(null);
+        // Logic to clear session cookie
+        await fetch('/api/auth/session', {
+            method: 'DELETE',
+        });
         setLoading(false);
       }
     });
