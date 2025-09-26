@@ -9,9 +9,9 @@ import { getApp } from "firebase-admin/app";
 import { getAuth as getAdminAuth } from "firebase-admin/auth";
 import { format, parseISO } from "date-fns";
 import { toZonedTime } from 'date-fns-tz';
-import type { QuestionOfTheDay } from "@/lib/types";
+import type { QuestionOfTheDay, User } from "@/lib/types";
 
-async function getCurrentUser() {
+async function getCurrentUser(): Promise<User | null> {
   const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) return null;
 
