@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -11,7 +12,6 @@ const navItems = [
   { href: "/admin/subjects", icon: Library, label: "Subjects" },
   { href: "/admin/notes", icon: FileText, label: "Notes" },
   { href: "/admin/mcqs", icon: BookCheck, label: "MCQs" },
-  { href: "/admin/mcq-attempts", icon: ClipboardCheck, label: "Attempts" },
   { href: "/admin/users", icon: Users, label: "Users" },
   { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
   { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
