@@ -194,7 +194,7 @@ export default function MindmapPage() {
                               <p className="text-sm font-semibold mb-2">
                                 {note.type}
                               </p>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-primary">
                                 {note.subjectName} &gt; {note.subSubjectName}
                               </p>
                             </CardContent>
