@@ -1,32 +1,179 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { HelpCircle } from 'lucide-react';
+import type { Timestamp } from "firebase/firestore";
 
-export default function InquiryPage() {
-  return (
-    <div className="container mx-auto px-4 py-12">
-      <header className="text-center mb-12">
-        <div className="inline-block bg-primary/10 text-primary rounded-full p-4 mb-4">
-          <HelpCircle className="h-12 w-12" />
-        </div>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-2">
-          Inquiry
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Have a question? Ask us anything.
-        </p>
-      </header>
-      <main>
-        <Card>
-          <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Our inquiry form is being set up. Please check back later to submit your questions.
-            </p>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
-  );
+export interface LoginLog {
+  timestamp: number;
+  ipAddress?: string; // Note: Capturing IP on server is more reliable
+  userAgent: string;
+  platform: string;
+  deviceType: 'Desktop' | 'Mobile' | 'Tablet';
+  os: string;
+  browser: string;
+  screenResolution: string;
+  pointingMethod: 'Mouse' | 'Touchscreen';
+  ram?: number; // in GB
+  cpuCores?: number;
+  gpuInfo?: string;
+}
+
+export interface Note {
+  id: string;
+  type: string;
+  url: string;
+  originalUrl?: string;
+  pdfUrl?: string; // For backward compatibility
+  renderAs?: 'pdf' | 'iframe';
+  linkType?: 'github' | 'other';
+  serveViaJsDelivr?: boolean;
+  useProxy?: boolean;
+  icon?: string;
+  createdAt?: number;
+  isPublic?: boolean;
+}
+
+export interface PrintOrder {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  noteId: string;
+  noteType: string;
+  noteChapter: string;
+  noteSubject: string;
+  instructions?: string;
+  price?: number;
+  status: 'pending' | 'completed' | 'cancelled';
+  createdAt: number;
+}
+
+export interface MCQ {
+  id: string;
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+}
+
+export interface MCQSet {
+  id: string;
+  name: string;
+  mcqs: MCQ[];
+}
+
+export interface AnswerRecord {
+  mcqId: string;
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+  selectedOptionIndex: number | null; // null if not answered
+}
+
+export interface QuizAttempt {
+    id: string;
+    userId: string;
+    userName: string;
+    mcqSetId: string;
+    mcqSetName: string;
+    score: number;
+    totalQuestions: number;
+    answers: AnswerRecord[];
+    createdAt: number;
+}
+
+export interface Chapter {
+  id:string;
+  name: string;
+  notes: Note[];
+  mcqSets?: MCQSet[];
+}
+
+export interface SubSubject {
+  id: string;
+  name: string;
+  icon?: string;
+  chapters: Chapter[];
+}
+
+export interface Subject {
+  id: string;
+  name: string;
+  icon: string;
+  subSubjects: SubSubject[];
+}
+
+export interface QotdOption {
+  text: string;
+}
+
+export interface QuestionOfTheDay {
+  id: string;
+  question: string;
+  options: QotdOption[];
+  correctOptionIndex: number;
+  date: string; // YYYY-MM-DD
+  createdAt: number;
+}
+
+export interface UserQotdAnswer {
+  questionId: string;
+  question: string;
+  selectedOptionIndex: number;
+  isCorrect: boolean;
+  answeredAt: number;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "Admin" | "User" | "Student" | "Teacher";
+  classAndSection?: string;
+  gender?: "Male" | "Female";
+  srNo?: string;
+  whatsappNumber: string;
+  password?: string;
+  loginLogs?: LoginLog[];
+  noteAccess?: string[];
+  createdAt?: number;
+  hasAiAccess?: boolean;
+  hasFullNotesAccess?: boolean;
+  score?: number;
+  showOnLeaderboard?: boolean;
+  attemptedQuizzes?: string[];
+}
+
+export interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: number;
+}
+
+export interface Doubt {
+    id: string;
+    userId: string;
+    userName: string;
+    userClassAndSection?: string;
+    question: string;
+    answer?: string;
+    status: 'pending' | 'answered';
+    answeredBy?: string; // Admin's name
+    answeredByAdminId?: string; // Admin's user ID
+}
+
+export interface Complaint {
+    id: string;
+    userId: string;
+    userName: string;
+    userClassAndSection?: string;
+    content: string;
+    response?: string;
+    status: 'pending' | 'resolved';
+    resolvedBy?: string; // Admin's name
+    resolvedByAdminId?: string; // Admin's user ID
+    createdAt: number;
+    resolvedAt?: number;
+}
+
+
+export interface AppSettings {
+  printCostPerPage: number;
 }
