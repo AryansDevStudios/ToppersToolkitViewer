@@ -101,8 +101,9 @@ const ManageMCQsTab = async () => {
                                                     {chapter.name}
                                                 </CardTitle>
                                                 <MCQForm subjectId={subject.id} subSubjectId={subSubject.id} chapterId={chapter.id}>
-                                                    <Button size="sm">
-                                                            <PlusCircle className="mr-2 h-4 w-4" /> Add MCQ Set
+                                                    <Button size="sm" className="p-2 h-8 w-8 md:w-auto md:px-3 md:py-2">
+                                                        <PlusCircle className="h-4 w-4 md:mr-2" />
+                                                        <span className="hidden md:inline">Add MCQ Set</span>
                                                     </Button>
                                                 </MCQForm>
                                                 </CardHeader>
