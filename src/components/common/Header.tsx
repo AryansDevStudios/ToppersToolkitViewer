@@ -60,7 +60,7 @@ export function AppHeader() {
          <div className="flex items-center">
             <SidebarNav />
             <Link href="/" className="flex items-center space-x-2 ml-2">
-                <Image src="https://topperstoolkit.netlify.app/icon/icon_main.png" alt="Topper's Toolkit Logo" width={32} height={32} />
+                <Image src="/icon/logo512x.png" alt="Topper's Toolkit Logo" width={32} height={32} />
                 <span className="font-bold text-base sm:text-lg">
                 Topper's Toolkit
                 </span>

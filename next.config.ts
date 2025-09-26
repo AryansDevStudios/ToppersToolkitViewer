@@ -35,12 +35,6 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'cdn-icons-png.flaticon.com',
-        port: '',
-        pathname: '/**',
-      }
     ],
   },
 };

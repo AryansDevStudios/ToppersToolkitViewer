@@ -16,7 +16,9 @@ export const metadata: Metadata = {
   title: "Topper's Toolkit",
   description: 'Your one-stop destination for academic resources.',
   icons: {
-    icon: 'https://topperstoolkit.netlify.app/icon/icon_app.ico',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/icon/logo512x.png',
   },
 };
 
