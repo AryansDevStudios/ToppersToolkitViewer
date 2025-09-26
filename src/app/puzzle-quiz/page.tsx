@@ -24,7 +24,7 @@ async function getCurrentUser(): Promise<User | null> {
   }
 }
 
-export const revalidate = 0;
+export const revalidate = 60; // Revalidate every 60 seconds
 
 const groupQuestionsByDate = (questions: QuestionOfTheDay[]) => {
     return questions.reduce((acc, question) => {
