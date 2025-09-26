@@ -7,31 +7,37 @@ import { auth, onAuthStateChanged } from '@/lib/firebase';
 import type { User } from '@/lib/types';
 import { getUserById } from '@/lib/data';
 
-export function useAuth() {
+export function useAuth(initialUser: User | null) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [dbUser, setDbUser] = useState<User | null>(null);
+  const [dbUser, setDbUser] = useState<User | null>(initialUser);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
+        
+        // If dbUser is already populated from the server, we don't need to fetch it again
+        if (dbUser && dbUser.id === firebaseUser.uid) {
+            setLoading(false);
+            return;
+        }
 
+        // Fetch dbUser only if it's not available or doesn't match
         try {
-          const idTokenPromise = firebaseUser.getIdToken();
-          const userDocPromise = getUserById(firebaseUser.uid);
+          const [userData, idToken] = await Promise.all([
+            getUserById(firebaseUser.uid),
+            firebaseUser.getIdToken()
+          ]);
+          
+          setDbUser(userData);
 
-          const [idToken, userData] = await Promise.all([idTokenPromise, userDocPromise]);
-
-          const sessionPromise = fetch('/api/auth/session', {
+          await fetch('/api/auth/session', {
               method: 'POST',
               headers: {
                   'Authorization': `Bearer ${idToken}`,
               },
           });
-
-          setDbUser(userData);
-          await sessionPromise;
 
         } catch (error) {
           console.error("Auth Error:", error);
@@ -51,7 +57,7 @@ export function useAuth() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user, dbUser]);
   
   const role = useMemo(() => dbUser?.role || null, [dbUser]);
 

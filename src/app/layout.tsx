@@ -11,8 +11,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { MobileBottomNav } from "@/components/common/MobileBottomNav";
 import { Inter } from 'next/font/google';
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import type { User } from "@/lib/types";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,8 +23,8 @@ const inter = Inter({
 
 const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results'];
 
-function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+function AuthWrapper({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
+  const { user, dbUser, loading } = useAuth(initialUser);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -51,10 +52,12 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 }
 
 
-function RootLayoutContent({
+function RootLayoutClient({
   children,
+  user
 }: Readonly<{
   children: React.ReactNode;
+  user: User | null;
 }>) {
   const pathname = usePathname();
   const isAuthPage = pathname === '/login' || pathname === '/register';
@@ -67,7 +70,7 @@ function RootLayoutContent({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthWrapper>
+          <AuthWrapper initialUser={user}>
             <div className="relative flex min-h-screen flex-col">
               {!isAuthPage && <AppHeader />}
                <main className="flex-1 flex flex-col">
@@ -82,12 +85,14 @@ function RootLayoutContent({
   )
 }
 
-
-export default function RootLayout({
+// This is the new RootLayout that is a Server Component
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+    const { getUser } = await import('@/lib/auth-server');
+    const user = await getUser();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -103,7 +108,7 @@ export default function RootLayout({
           inter.variable
         )}
       >
-        <RootLayoutContent>{children}</RootLayoutContent>
+        <RootLayoutClient user={user}>{children}</RootLayoutClient>
       </body>
     </html>
   );
