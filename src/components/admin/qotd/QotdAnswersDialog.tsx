@@ -16,7 +16,7 @@ import {
 import { Users, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { User, QuestionOfTheDay, UserQotdAnswer } from "@/lib/types";
-import { getAllQotdAnswers, getUsers } from "@/lib/data";
+import { getAllQotdAnswers, getUsers, getUserById } from "@/lib/data";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -73,39 +73,41 @@ export function QotdAnswersDialog({ question, users: initialUsers, answerCount }
       if (!isOpen) return;
       setIsLoading(true);
       try {
-        const [allUserAnswers, allUsers] = await Promise.all([
-            getAllQotdAnswers(),
-            getUsers()
-        ]);
-        console.log("QOTD Dialog: Fetched allUserAnswers", allUserAnswers);
-        console.log("QOTD Dialog: Fetched allUsers", allUsers);
-
-        const relevantAnswers: AnswerDetails[] = [];
-        const userMap = new Map(allUsers.map(u => [u.id, u]));
-
-        allUserAnswers.forEach(userAnswerDoc => {
-          if (userAnswerDoc && Array.isArray(userAnswerDoc.answers)) {
-              const answerForThisQuestion = userAnswerDoc.answers.find(a => a.questionId === question.id);
-              if (answerForThisQuestion) {
-                const user = userMap.get(userAnswerDoc.userId);
-                if (user) {
-                  relevantAnswers.push({
-                    userId: user.id,
-                    userName: user.name,
-                    userEmail: user.email,
-                    userRole: user.role,
-                    hasFullNotesAccess: user.hasFullNotesAccess,
-                    selectedOption: question.options[answerForThisQuestion.selectedOptionIndex]?.text || 'Invalid Option',
-                    isCorrect: answerForThisQuestion.isCorrect,
-                  });
-                } else {
-                    console.warn("QOTD Dialog: Could not find user with ID:", userAnswerDoc.userId);
-                }
-              }
-          }
-        });
+        const allUserAnswerDocs = await getAllQotdAnswers();
         
-        console.log("QOTD Dialog: Found relevant answers:", relevantAnswers);
+        const userAnswersForThisQuestion: { userId: string, answer: UserQotdAnswer }[] = [];
+        
+        allUserAnswerDocs.forEach(doc => {
+            const specificAnswer = doc.answers.find(a => a.questionId === question.id);
+            if (specificAnswer) {
+                userAnswersForThisQuestion.push({ userId: doc.userId, answer: specificAnswer });
+            }
+        });
+
+        const userPromises = userAnswersForThisQuestion.map(ua => getUserById(ua.userId));
+        const userResults = await Promise.all(userPromises);
+        
+        const validUsers = userResults.filter((user): user is User => user !== null);
+        const userMap = new Map(validUsers.map(u => [u.id, u]));
+
+        const relevantAnswers: AnswerDetails[] = userAnswersForThisQuestion
+          .map(({ userId, answer }) => {
+            const user = userMap.get(userId);
+            if (user) {
+              return {
+                userId: user.id,
+                userName: user.name,
+                userEmail: user.email,
+                userRole: user.role,
+                hasFullNotesAccess: user.hasFullNotesAccess,
+                selectedOption: question.options[answer.selectedOptionIndex]?.text || 'Invalid Option',
+                isCorrect: answer.isCorrect,
+              };
+            }
+            return null;
+          })
+          .filter((a): a is AnswerDetails => a !== null);
+
         setAnswers(relevantAnswers);
 
       } catch (error) {
@@ -117,8 +119,10 @@ export function QotdAnswersDialog({ question, users: initialUsers, answerCount }
     };
   
   useEffect(() => {
-    fetchAnswers();
-  }, [isOpen, question, toast]);
+    if (isOpen) {
+      fetchAnswers();
+    }
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
