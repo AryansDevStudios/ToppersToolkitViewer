@@ -34,7 +34,6 @@ import { Switch } from "@/components/ui/switch";
 import { DeleteNoteDialog } from "./DeleteNoteDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { debounce } from "lodash";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Copy } from "lucide-react";
 
@@ -92,7 +91,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
 
   const formValues = useWatch({ control: form.control });
 
-  const debouncedUpdateForm = useCallback(debounce((newJson: string) => {
+  const updateFormFromJson = useCallback((newJson: string) => {
     try {
       const parsed = JSON.parse(newJson);
       const validationResult = formSchema.safeParse(parsed);
@@ -105,7 +104,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     } catch (e) {
       setJsonError("Invalid JSON syntax.");
     }
-  }, 500), [form]);
+  }, [form]);
+
 
   useEffect(() => {
     if (!isEditingJson) {
@@ -116,7 +116,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newJson = e.target.value;
     setJsonText(newJson);
-    debouncedUpdateForm(newJson);
+    updateFormFromJson(newJson);
   };
   
   const handleCopyJson = () => {
@@ -505,3 +505,5 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     </Card>
   );
 }
+
+    
