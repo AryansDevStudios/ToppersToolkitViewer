@@ -32,10 +32,10 @@ import { iconMap, iconNames } from "@/lib/iconMap";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { DeleteNoteDialog } from "./DeleteNoteDialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Copy } from "lucide-react";
+import { ScrollArea } from "../ui/scroll-area";
 
 const noteObjectSchema = z.object({
   subjectId: z.string().min(1, "Subject ID is required"),
@@ -174,64 +174,33 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="pt-6">
-            <Tabs defaultValue="form">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="form">Form View</TabsTrigger>
-                <TabsTrigger value="json">Advanced (JSON)</TabsTrigger>
-              </TabsList>
-              <TabsContent value="form" className="space-y-4 pt-4">
-                 <FormField
-                  control={form.control}
-                  name="subjectId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Subject</FormLabel>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          form.setValue("subSubjectId", ""); // Reset sub-subject on subject change
-                        }}
-                        defaultValue={field.value}
-                        disabled={isPending}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a subject" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {subjects.map((subject) => (
-                            <SelectItem key={subject.id} value={subject.id}>
-                              {subject.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {selectedSubjectId && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Form Fields Column */}
+              <ScrollArea className="h-[70vh] pr-4">
+                <div className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="subSubjectId"
+                    name="subjectId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sub-Subject</FormLabel>
+                        <FormLabel>Subject</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue("subSubjectId", "");
+                          }}
+                          defaultValue={field.value}
                           disabled={isPending}
                         >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a sub-subject" />
+                              <SelectValue placeholder="Select a subject" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {subSubjects.map((subSubject) => (
-                              <SelectItem key={subSubject.id} value={subSubject.id}>
-                                {subSubject.name}
+                            {subjects.map((subject) => (
+                              <SelectItem key={subject.id} value={subject.id}>
+                                {subject.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -240,253 +209,278 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       </FormItem>
                     )}
                   />
-                )}
-                <FormField
-                  control={form.control}
-                  name="chapterName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Chapter Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Motion" {...field} disabled={isPending} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Note Type</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Handwritten Notes, Question Bank" {...field} disabled={isPending}/>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="isPublic"
-                  render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                          <div className="space-y-0.5">
-                              <FormLabel>Make Public</FormLabel>
-                              <FormDescription>
-                                  Allow access to all registered users.
-                              </FormDescription>
-                          </div>
-                          <FormControl>
-                              <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  disabled={isPending}
-                              />
-                          </FormControl>
-                      </FormItem>
-                  )}
-                />
-
-                 <FormField
-                  control={form.control}
-                  name="renderAs"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Render As</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex space-x-4"
-                          disabled={isPending}
-                        >
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <RadioGroupItem value="pdf" />
-                            </FormControl>
-                            <FormLabel className="font-normal">PDF</FormLabel>
-                          </FormItem>
-                           <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <RadioGroupItem value="iframe" />
-                            </FormControl>
-                            <FormLabel className="font-normal">Iframe</FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Content URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} disabled={isPending} />
-                      </FormControl>
-                       {renderAs !== 'iframe' && (
-                        <FormDescription>
-                          {linkType === 'github' ? "Enter the standard GitHub blob URL." : "Enter the direct URL to the content."}
-                        </FormDescription>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {renderAs !== 'iframe' && (
-                  <>
+                  {selectedSubjectId && (
                     <FormField
                       control={form.control}
-                      name="linkType"
+                      name="subSubjectId"
                       render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormLabel>Link Type</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex space-x-4"
-                              disabled={isPending}
-                            >
-                              <FormItem className="flex items-center space-x-2">
-                                <FormControl>
-                                  <RadioGroupItem value="github" />
-                                </FormControl>
-                                <FormLabel className="font-normal">GitHub</FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-2">
-                                <FormControl>
-                                  <RadioGroupItem value="other" />
-                                </FormControl>
-                                <FormLabel className="font-normal">Other</FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
+                        <FormItem>
+                          <FormLabel>Sub-Subject</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            disabled={isPending}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a sub-subject" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {subSubjects.map((subSubject) => (
+                                <SelectItem key={subSubject.id} value={subSubject.id}>
+                                  {subSubject.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
-                    {linkType === 'github' && (
-                        <FormField
-                            control={form.control}
-                            name="serveViaJsDelivr"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <FormLabel>Serve via jsDelivr</FormLabel>
-                                        <FormDescription>
-                                            Convert GitHub link to a faster jsDelivr CDN link.
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            disabled={isPending}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                    )}
-                     {linkType === 'other' && (
-                        <FormField
-                            control={form.control}
-                            name="useProxy"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                                    <div className="space-y-0.5">
-                                        <FormLabel>Use Proxy API</FormLabel>
-                                        <FormDescription>
-                                            Route URL through the Netlify proxy to avoid CORS issues.
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            disabled={isPending}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                    )}
-                  </>
-                )}
-
-                 <FormField
-                  control={form.control}
-                  name="icon"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Icon (Optional)</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        disabled={isPending}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an icon for the note" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {iconNames.map((iconName) => {
-                             const Icon = iconMap[iconName];
-                             return(
-                                <SelectItem key={iconName} value={iconName}>
-                                   <div className="flex items-center gap-2">
-                                    <Icon className="h-4 w-4" />
-                                    <span>{iconName}</span>
-                                   </div>
-                                </SelectItem>
-                             )
-                            })}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
                   )}
-                />
-              </TabsContent>
-              <TabsContent value="json" className="pt-4">
-                  <div className="flex flex-col gap-4">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">JSON Editor</h3>
-                             <Button type="button" variant="outline" size="sm" onClick={handleCopyJson}>
-                                <Copy className="mr-2 h-4 w-4" /> Copy JSON
-                            </Button>
-                        </div>
-                        <div className="flex-1 flex flex-col relative min-h-[400px]">
-                            <Textarea 
-                                value={jsonText}
-                                onChange={handleJsonChange}
-                                onFocus={() => setIsEditingJson(true)}
-                                onBlur={() => setIsEditingJson(false)}
-                                placeholder='{ "type": "...", "url": "..." }'
-                                className={cn("h-full min-h-[60vh] resize-none font-mono text-xs flex-1", jsonError && "border-destructive focus-visible:ring-destructive")}
-                            />
-                            {jsonError && (
-                                <div className="absolute bottom-2 left-2 right-2 p-2 bg-destructive/10 border border-destructive/50 text-destructive text-xs rounded-md flex items-center gap-2">
-                                    <AlertTriangle className="h-4 w-4" />
-                                    {jsonError}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-              </TabsContent>
-            </Tabs>
+                  <FormField
+                    control={form.control}
+                    name="chapterName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Chapter Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Motion" {...field} disabled={isPending} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Note Type</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Handwritten Notes, Question Bank" {...field} disabled={isPending}/>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="isPublic"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                            <div className="space-y-0.5">
+                                <FormLabel>Make Public</FormLabel>
+                                <FormDescription>
+                                    Allow access to all registered users.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    disabled={isPending}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="renderAs"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Render As</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex space-x-4"
+                            disabled={isPending}
+                          >
+                            <FormItem className="flex items-center space-x-2">
+                              <FormControl>
+                                <RadioGroupItem value="pdf" />
+                              </FormControl>
+                              <FormLabel className="font-normal">PDF</FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2">
+                              <FormControl>
+                                <RadioGroupItem value="iframe" />
+                              </FormControl>
+                              <FormLabel className="font-normal">Iframe</FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Content URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://..." {...field} disabled={isPending} />
+                        </FormControl>
+                        {renderAs !== 'iframe' && (
+                          <FormDescription>
+                            {linkType === 'github' ? "Enter the standard GitHub blob URL." : "Enter the direct URL to the content."}
+                          </FormDescription>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {renderAs !== 'iframe' && (
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="linkType"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormLabel>Link Type</FormLabel>
+                            <FormControl>
+                              <RadioGroup
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                className="flex space-x-4"
+                                disabled={isPending}
+                              >
+                                <FormItem className="flex items-center space-x-2">
+                                  <FormControl>
+                                    <RadioGroupItem value="github" />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">GitHub</FormLabel>
+                                </FormItem>
+                                <FormItem className="flex items-center space-x-2">
+                                  <FormControl>
+                                    <RadioGroupItem value="other" />
+                                  </FormControl>
+                                  <FormLabel className="font-normal">Other</FormLabel>
+                                </FormItem>
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {linkType === 'github' && (
+                          <FormField
+                              control={form.control}
+                              name="serveViaJsDelivr"
+                              render={({ field }) => (
+                                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                      <div className="space-y-0.5">
+                                          <FormLabel>Serve via jsDelivr</FormLabel>
+                                          <FormDescription>
+                                              Convert GitHub link to a faster jsDelivr CDN link.
+                                          </FormDescription>
+                                      </div>
+                                      <FormControl>
+                                          <Switch
+                                              checked={field.value}
+                                              onCheckedChange={field.onChange}
+                                              disabled={isPending}
+                                          />
+                                      </FormControl>
+                                  </FormItem>
+                              )}
+                          />
+                      )}
+                      {linkType === 'other' && (
+                          <FormField
+                              control={form.control}
+                              name="useProxy"
+                              render={({ field }) => (
+                                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                      <div className="space-y-0.5">
+                                          <FormLabel>Use Proxy API</FormLabel>
+                                          <FormDescription>
+                                              Route URL through the Netlify proxy to avoid CORS issues.
+                                          </FormDescription>
+                                      </div>
+                                      <FormControl>
+                                          <Switch
+                                              checked={field.value}
+                                              onCheckedChange={field.onChange}
+                                              disabled={isPending}
+                                          />
+                                      </FormControl>
+                                  </FormItem>
+                              )}
+                          />
+                      )}
+                    </>
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="icon"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Icon (Optional)</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          disabled={isPending}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select an icon for the note" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {iconNames.map((iconName) => {
+                              const Icon = iconMap[iconName];
+                              return(
+                                  <SelectItem key={iconName} value={iconName}>
+                                    <div className="flex items-center gap-2">
+                                      <Icon className="h-4 w-4" />
+                                      <span>{iconName}</span>
+                                    </div>
+                                  </SelectItem>
+                              )
+                              })}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </ScrollArea>
+
+              {/* JSON Editor Column */}
+              <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">JSON Editor</h3>
+                      <Button type="button" variant="outline" size="sm" onClick={handleCopyJson}>
+                          <Copy className="mr-2 h-4 w-4" /> Copy JSON
+                      </Button>
+                  </div>
+                  <div className="flex-1 flex flex-col relative min-h-[70vh]">
+                      <Textarea 
+                          value={jsonText}
+                          onChange={handleJsonChange}
+                          onFocus={() => setIsEditingJson(true)}
+                          onBlur={() => setIsEditingJson(false)}
+                          placeholder='{ "type": "...", "url": "..." }'
+                          className={cn("h-full min-h-[70vh] resize-none font-mono text-xs flex-1", jsonError && "border-destructive focus-visible:ring-destructive")}
+                      />
+                      {jsonError && (
+                          <div className="absolute bottom-2 left-2 right-2 p-2 bg-destructive/10 border border-destructive/50 text-destructive text-xs rounded-md flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4" />
+                              {jsonError}
+                          </div>
+                      )}
+                  </div>
+              </div>
+            </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
+          <CardFooter className="flex justify-between mt-6">
             <div>
               {isEditing && note?.id && compositeChapterId && (
                 <DeleteNoteDialog 
