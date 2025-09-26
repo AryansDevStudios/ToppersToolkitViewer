@@ -4,7 +4,7 @@
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
-import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, type WriteBatch } from "firebase/firestore";
 import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
@@ -583,8 +583,8 @@ export const getUsers = async (): Promise<User[]> => {
   }
 };
 
-export const upsertUser = async (userData: Partial<User> & { id: string }) => {
-    const { id, score, showOnLeaderboard, attemptedQuizzes, ...profileData } = userData;
+export const upsertUser = async (userData: Partial<User> & { id: string }, batch?: WriteBatch) => {
+    const { id, ...dataToUpdate } = userData;
     if (!id) {
         return { success: false, error: "User ID is required for updates." };
     }
@@ -592,25 +592,50 @@ export const upsertUser = async (userData: Partial<User> & { id: string }) => {
     const userDocRef = doc(db, 'users', id);
 
     try {
-        const dataToUpdate: { [key: string]: any } = { ...profileData };
-        if (score !== undefined) dataToUpdate.score = score;
-        if (showOnLeaderboard !== undefined) dataToUpdate.showOnLeaderboard = showOnLeaderboard;
-        if (attemptedQuizzes !== undefined) dataToUpdate.attemptedQuizzes = attemptedQuizzes;
-
         if (Object.keys(dataToUpdate).length > 0) {
-            await setDoc(userDocRef, dataToUpdate, { merge: true });
+            if (batch) {
+                batch.set(userDocRef, dataToUpdate, { merge: true });
+            } else {
+                await setDoc(userDocRef, dataToUpdate, { merge: true });
+            }
         }
         
-        revalidatePath('/admin/users', 'layout');
-        revalidatePath('/admin/leaderboard');
-        revalidatePath('/leaderboard');
-        revalidatePath('/mcqs');
+        // Revalidation is handled by the calling function if it's not a batch operation
+        if (!batch) {
+            revalidatePath('/admin/users', 'layout');
+            revalidatePath('/admin/leaderboard');
+            revalidatePath('/leaderboard');
+            revalidatePath('/mcqs');
+        }
 
         return { success: true, message: "User updated successfully." };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
 };
+
+export const batchUpdateUsers = async (usersData: (Partial<User> & { id: string })[]) => {
+    const batch = writeBatch(db);
+
+    for (const userData of usersData) {
+        const { id, ...dataToUpdate } = userData;
+        if (id && Object.keys(dataToUpdate).length > 0) {
+            const userDocRef = doc(db, 'users', id);
+            batch.set(userDocRef, dataToUpdate, { merge: true });
+        }
+    }
+
+    try {
+        await batch.commit();
+        revalidatePath('/admin/users', 'layout');
+        revalidatePath('/admin/leaderboard');
+        revalidatePath('/leaderboard');
+        return { success: true, message: "Users updated successfully." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+};
+
 
 export const updateUserRole = async (userId: string, newRole: User['role']) => {
     if (!userId || !newRole) {

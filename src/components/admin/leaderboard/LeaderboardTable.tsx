@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, EyeOff, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@/lib/types";
-import { upsertUser } from "@/lib/data";
+import { batchUpdateUsers } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 
 interface LeaderboardTableProps {
@@ -72,20 +72,16 @@ export function LeaderboardTable({ initialUsers }: LeaderboardTableProps) {
         return;
       }
 
-      const results = await Promise.all(
-        usersToUpdate.map(user => upsertUser({ 
-            id: user.id, 
-            score: user.score,
-            showOnLeaderboard: user.showOnLeaderboard,
-        }))
-      );
+      const result = await batchUpdateUsers(usersToUpdate.map(user => ({
+          id: user.id,
+          score: user.score,
+          showOnLeaderboard: user.showOnLeaderboard,
+      })));
 
-      const failedUpdates = results.filter(r => !r.success);
-
-      if (failedUpdates.length > 0) {
+      if (!result.success) {
         toast({
-          title: "Some Updates Failed",
-          description: "Not all user data could be saved. Please try again.",
+          title: "Update Failed",
+          description: result.error || "Not all user data could be saved. Please try again.",
           variant: "destructive",
         });
       } else {
