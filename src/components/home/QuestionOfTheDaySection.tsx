@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -31,11 +30,29 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { format, parseISO } from "date-fns";
+import { Skeleton } from "../ui/skeleton";
 
 interface QuestionOfTheDaySectionProps {
   initialQuestion: QuestionOfTheDay;
   initialUser: User | null;
 }
+
+const QuestionSkeleton = () => (
+    <Card>
+        <CardHeader>
+            <Skeleton className="h-6 w-3/4 rounded-md" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+            <Skeleton className="h-12 w-full rounded-md" />
+            <Skeleton className="h-12 w-full rounded-md" />
+            <Skeleton className="h-12 w-full rounded-md" />
+        </CardContent>
+        <CardFooter className="justify-end">
+            <Skeleton className="h-10 w-28 rounded-md" />
+        </CardFooter>
+    </Card>
+);
+
 
 export function QuestionOfTheDaySection({ initialQuestion, initialUser }: QuestionOfTheDaySectionProps) {
   const { user, dbUser: authDbUser, loading: authLoading } = useAuth();
@@ -162,13 +179,7 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
   };
 
   if (authLoading || isLoadingAnswer) {
-      return (
-        <Card>
-            <div className="flex items-center justify-center h-48">
-                <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-        </Card>
-      );
+      return <QuestionSkeleton />;
   }
 
   return (
@@ -185,5 +196,3 @@ export function QuestionOfTheDaySection({ initialQuestion, initialUser }: Questi
     </Card>
   );
 }
-
-    
