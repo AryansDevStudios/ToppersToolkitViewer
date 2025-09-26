@@ -13,8 +13,8 @@ export default async function AdminNotesPage() {
   const users: User[] = await getUsers();
 
   return (
-    <div className="space-y-8">
-      <header className="flex items-center justify-between">
+    <div className="space-y-6">
+      <header className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold">Notes Management</h1>
           <p className="text-muted-foreground">
