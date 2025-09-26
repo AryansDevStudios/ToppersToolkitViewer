@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
     apple: '/icon/logo512x.png',
   },
+  manifest: '/manifest.json',
 };
 
 export default async function RootLayout({

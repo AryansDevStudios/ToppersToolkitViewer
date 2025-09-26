@@ -1,80 +1,78 @@
-const CACHE_NAME = 'toppers-toolkit-cache-v1';
+// A basic service worker for caching static assets
 
-// These are the files that will be cached upon installation.
+const CACHE_NAME = 'toppers-toolkit-cache-v1';
 const urlsToCache = [
-    '/',
-    '/fallback',
-    '/manifest.json',
-    '/icon/icon_main.png'
+  '/',
+  '/manifest.json'
+  // Add other important assets here.
+  // The service worker will automatically cache assets as they are requested.
 ];
 
-// Install the service worker and cache the initial resources
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Opened cache');
-                // Add all the assets to the cache
-                return cache.addAll(urlsToCache);
-            })
-    );
+// Install a service worker
+self.addEventListener('install', event => {
+  // Perform install steps
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
 });
 
-// Activate event: clean up old caches
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
-    );
-});
+// Cache and return requests
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(function(response) {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
 
-// Fetch event: serve cached content or fetch from network
-self.addEventListener('fetch', (event) => {
-    // We only want to cache GET requests
-    if (event.request.method !== 'GET') {
-        return;
-    }
+        // IMPORTANT: Clone the request. A request is a stream and
+        // can only be consumed once. Since we are consuming this
+        // once by cache and once by the browser for fetch, we need
+        // to clone the response.
+        const fetchRequest = event.request.clone();
 
-    // For images, use a "cache-first" strategy
-    if (event.request.destination === 'image') {
-        event.respondWith(
-            caches.open(CACHE_NAME).then((cache) => {
-                return cache.match(event.request).then((cachedResponse) => {
-                    // Return from cache if available
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-                    // Otherwise, fetch from the network, cache it, and return it
-                    return fetch(event.request).then((networkResponse) => {
-                        cache.put(event.request, networkResponse.clone());
-                        return networkResponse;
-                    });
-                });
-            })
+        return fetch(fetchRequest).then(
+          function(response) {
+            // Check if we received a valid response
+            if(!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // IMPORTANT: Clone the response. A response is a stream
+            // and because we want the browser to consume the response
+            // as well as the cache consuming the response, we need
+            // to clone it so we have two streams.
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then(function(cache) {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
         );
-        return; // End execution for images
-    }
-
-    // For all other requests (HTML, CSS, JS, etc.), go to the network first.
-    // This ensures the user always gets the latest pages and code.
-    event.respondWith(
-        fetch(event.request)
-            .catch(() => {
-                // If the network request fails (e.g., offline),
-                // try to serve a fallback page from the cache.
-                return caches.open(CACHE_NAME).then((cache) => {
-                    if (event.request.mode === 'navigate') {
-                         return cache.match('/fallback');
-                    }
-                    return cache.match(event.request);
-                });
-            })
+      })
     );
+});
+
+// Update a service worker
+self.addEventListener('activate', event => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 });
