@@ -21,7 +21,7 @@ export default async function AdminNoticesPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <ClipboardList className="w-8 h-8 text-primary" />
