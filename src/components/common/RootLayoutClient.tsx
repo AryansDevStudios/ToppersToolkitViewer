@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from 'react';
@@ -25,7 +26,8 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     }
   }, [loading, user, isPublicPage, router, pathname]);
 
-  if (loading && !isPublicPage) {
+  // Show loader only on initial load for non-public pages if we don't have an initial user
+  if (loading && !isPublicPage && !initialUser) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -33,8 +35,10 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
 
-  if (!user && !isPublicPage) {
-    return null; // Render nothing while redirecting
+  // If not loading, and not a user, and not a public page, we are about to redirect.
+  // Render null to avoid a flash of content.
+  if (!loading && !user && !isPublicPage) {
+    return null; 
   }
 
   return <>{children}</>;

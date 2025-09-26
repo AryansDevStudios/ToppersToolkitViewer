@@ -13,51 +13,40 @@ export function useAuth(initialUser: User | null) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // If we have an initial user from the server, we can consider the user loaded.
+    if (initialUser) {
+      setDbUser(initialUser);
+      setLoading(false);
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
+        // Only fetch dbUser if it wasn't provided by the server initially
+        if (!initialUser) {
+            const userData = await getUserById(firebaseUser.uid);
+            setDbUser(userData);
+        }
         
-        // If dbUser is already populated from the server, we don't need to fetch it again
-        if (dbUser && dbUser.id === firebaseUser.uid) {
-            setLoading(false);
-            return;
-        }
-
-        // Fetch dbUser only if it's not available or doesn't match
-        try {
-          const [userData, idToken] = await Promise.all([
-            getUserById(firebaseUser.uid),
-            firebaseUser.getIdToken()
-          ]);
-          
-          setDbUser(userData);
-
-          await fetch('/api/auth/session', {
+        // Sync session in the background
+        firebaseUser.getIdToken().then(idToken => {
+            fetch('/api/auth/session', {
               method: 'POST',
-              headers: {
-                  'Authorization': `Bearer ${idToken}`,
-              },
-          });
+              headers: { 'Authorization': `Bearer ${idToken}` },
+            });
+        });
 
-        } catch (error) {
-          console.error("Auth Error:", error);
-          setDbUser(null);
-        } finally {
-          setLoading(false);
-        }
       } else {
         setUser(null);
         setDbUser(null);
-        // Logic to clear session cookie
-        await fetch('/api/auth/session', {
-            method: 'DELETE',
-        });
-        setLoading(false);
+        fetch('/api/auth/session', { method: 'DELETE' });
       }
+      // Once the initial check is done, stop the main loading state.
+      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [user, dbUser]);
+  }, [initialUser]);
   
   const role = useMemo(() => dbUser?.role || null, [dbUser]);
 
