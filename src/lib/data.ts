@@ -905,24 +905,25 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
 
   try {
     return await runTransaction(db, async (transaction) => {
+      // --- ALL READS MUST GO FIRST ---
       const qotdDoc = await transaction.get(qotdDocRef);
       const answerDoc = await transaction.get(answerDocRef);
-      
+      const userDoc = await transaction.get(userDocRef);
 
-      if (!qotdDoc.exists()) throw new Error("Question not found.");
+      if (!qotdDoc.exists()) {
+        throw new Error("Question not found.");
+      }
+      if (answerDoc.exists()) {
+        const existingAnswers = answerDoc.data().answers as UserQotdAnswer[];
+        if (existingAnswers.some(ans => ans.questionId === questionId)) {
+          throw new Error("You have already answered this question.");
+        }
+      }
       
       const qotdData = qotdDoc.data() as QuestionOfTheDay;
-
-      // Check if this question has already been answered by the user
-      if (answerDoc.exists()) {
-          const existingAnswers = answerDoc.data().answers as UserQotdAnswer[];
-          if (existingAnswers.some(ans => ans.questionId === questionId)) {
-              throw new Error("You have already answered this question.");
-          }
-      }
-
       const isCorrect = qotdData.correctOptionIndex === selectedOptionIndex;
 
+      // --- ALL WRITES GO AFTER READS ---
       const newAnswer: UserQotdAnswer = {
         questionId,
         question: qotdData.question,
@@ -930,23 +931,20 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
         isCorrect,
         answeredAt: Date.now(),
       };
-      
-      // Save the answer in the user's answer document
+
       if (answerDoc.exists()) {
-           transaction.update(answerDocRef, { answers: arrayUnion(newAnswer) });
+        transaction.update(answerDocRef, { answers: arrayUnion(newAnswer) });
       } else {
-           transaction.set(answerDocRef, { userId, answers: [newAnswer] });
+        transaction.set(answerDocRef, { userId, answers: [newAnswer] });
       }
       
-      // Update the user's score if correct
       if (isCorrect) {
-          const userDoc = await transaction.get(userDocRef);
-          if (userDoc.exists()) {
-            const userData = userDoc.data() as User;
-            const currentScore = userData.score || 0;
-            const newScore = currentScore + 2;
-            transaction.update(userDocRef, { score: newScore });
-          }
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as User;
+          const currentScore = userData.score || 0;
+          const newScore = currentScore + 2;
+          transaction.update(userDocRef, { score: newScore });
+        }
       }
 
       return { success: true, isCorrect, correctOptionIndex: qotdData.correctOptionIndex };
