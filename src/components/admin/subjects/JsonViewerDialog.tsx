@@ -18,14 +18,21 @@ import { FileJson, Copy } from "lucide-react";
 import type { Subject } from "@/lib/types";
 
 interface JsonViewerDialogProps {
-  subjects: Subject[];
+  subject: Subject | Subject[];
+  title?: string;
+  children?: React.ReactNode;
 }
 
-export function JsonViewerDialog({ subjects }: JsonViewerDialogProps) {
+export function JsonViewerDialog({ subject, title, children }: JsonViewerDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
-  const jsonString = JSON.stringify(subjects, null, 2);
+  const jsonString = JSON.stringify(subject, null, 2);
+  
+  const dialogTitle = title || (Array.isArray(subject) ? "Subjects Data (JSON)" : `${subject.name} (JSON)`);
+  const dialogDescription = Array.isArray(subject) 
+    ? "A read-only view of the entire subjects structure." 
+    : `A read-only view of the ${subject.name} structure.`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(jsonString).then(
@@ -47,18 +54,11 @@ export function JsonViewerDialog({ subjects }: JsonViewerDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-            <FileJson className="mr-2 h-4 w-4" />
-            View as JSON
-        </Button>
-      </DialogTrigger>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Subjects Data (JSON)</DialogTitle>
-          <DialogDescription>
-            A read-only view of the entire subjects structure.
-          </DialogDescription>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full w-full rounded-md border">

@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Library, Folder, FileText, Edit, Eye } from "lucide-react";
+import { PlusCircle, Library, Folder, FileText, Edit, Eye, FileJson as FileJsonIcon } from "lucide-react";
 import { SubjectForm } from "@/components/admin/subjects/SubjectForm";
 import { SubSubjectForm } from "@/components/admin/subjects/SubSubjectForm";
 import { ChapterForm } from "@/components/admin/subjects/ChapterForm";
@@ -33,7 +33,12 @@ export default async function AdminSubjectsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-            <JsonViewerDialog subjects={subjects} />
+            <JsonViewerDialog subject={subjects} title="All Subjects">
+                <Button variant="outline">
+                    <FileJsonIcon className="mr-2 h-4 w-4" />
+                    View All as JSON
+                </Button>
+            </JsonViewerDialog>
             <SubjectForm trigger={
               <Button>
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -62,6 +67,12 @@ export default async function AdminSubjectsPage() {
                       <CardTitle className="text-2xl">{subject.name}</CardTitle>
                     </div>
                     <div className="flex items-center gap-2">
+                       <JsonViewerDialog subject={subject}>
+                         <Button variant="ghost" size="icon">
+                            <FileJsonIcon className="h-4 w-4" />
+                            <span className="sr-only">View JSON</span>
+                         </Button>
+                       </JsonViewerDialog>
                        <SubSubjectForm subjectId={subject.id} trigger={
                         <Button variant="outline">
                           <PlusCircle className="mr-2 h-4 w-4" /> Add Sub-Subject
