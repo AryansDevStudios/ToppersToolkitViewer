@@ -36,6 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Copy } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
+import { Separator } from "../ui/separator";
 
 const noteObjectSchema = z.object({
   subjectId: z.string().min(1, "Subject ID is required"),
@@ -94,13 +95,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   const updateFormFromJson = useCallback((newJson: string) => {
     try {
       const parsed = JSON.parse(newJson);
-      const validationResult = formSchema.safeParse(parsed);
-      if (validationResult.success) {
-        form.reset(validationResult.data);
-        setJsonError(null);
-      } else {
-        setJsonError(validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; '));
-      }
+      form.reset(parsed);
+      setJsonError(null);
     } catch (e) {
       setJsonError("Invalid JSON syntax.");
     }
@@ -174,10 +170,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Form Fields Column */}
-              <ScrollArea className="h-[70vh] pr-4">
-                <div className="space-y-4">
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="subjectId"
@@ -239,32 +233,35 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       )}
                     />
                   )}
-                  <FormField
-                    control={form.control}
-                    name="chapterName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Chapter Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Motion" {...field} disabled={isPending} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Note Type</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Handwritten Notes, Question Bank" {...field} disabled={isPending}/>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="chapterName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Chapter Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Motion" {...field} disabled={isPending} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Note Type</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Handwritten Notes, Question Bank" {...field} disabled={isPending}/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
                     name="isPublic"
@@ -450,34 +447,33 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       </FormItem>
                     )}
                   />
-                </div>
-              </ScrollArea>
+                  <Separator className="!mt-8" />
+                  {/* JSON Editor */}
+                  <div className="space-y-2 pt-2">
+                      <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-semibold">JSON Editor</h3>
+                          <Button type="button" variant="outline" size="sm" onClick={handleCopyJson}>
+                              <Copy className="mr-2 h-4 w-4" /> Copy JSON
+                          </Button>
+                      </div>
+                       <div className="relative">
+                          <Textarea 
+                              value={jsonText}
+                              onChange={handleJsonChange}
+                              onFocus={() => setIsEditingJson(true)}
+                              onBlur={() => setIsEditingJson(false)}
+                              placeholder='{ "type": "...", "url": "..." }'
+                              className={cn("min-h-[250px] resize-y font-mono text-xs", jsonError && "border-destructive focus-visible:ring-destructive")}
+                          />
+                          {jsonError && (
+                              <div className="absolute bottom-2 left-2 right-2 p-2 bg-destructive/10 border border-destructive/50 text-destructive text-xs rounded-md flex items-center gap-2">
+                                  <AlertTriangle className="h-4 w-4" />
+                                  {jsonError}
+                              </div>
+                          )}
+                      </div>
+                  </div>
 
-              {/* JSON Editor Column */}
-              <div className="flex flex-col gap-4">
-                  <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">JSON Editor</h3>
-                      <Button type="button" variant="outline" size="sm" onClick={handleCopyJson}>
-                          <Copy className="mr-2 h-4 w-4" /> Copy JSON
-                      </Button>
-                  </div>
-                  <div className="flex-1 flex flex-col relative min-h-[70vh]">
-                      <Textarea 
-                          value={jsonText}
-                          onChange={handleJsonChange}
-                          onFocus={() => setIsEditingJson(true)}
-                          onBlur={() => setIsEditingJson(false)}
-                          placeholder='{ "type": "...", "url": "..." }'
-                          className={cn("h-full min-h-[70vh] resize-none font-mono text-xs flex-1", jsonError && "border-destructive focus-visible:ring-destructive")}
-                      />
-                      {jsonError && (
-                          <div className="absolute bottom-2 left-2 right-2 p-2 bg-destructive/10 border border-destructive/50 text-destructive text-xs rounded-md flex items-center gap-2">
-                              <AlertTriangle className="h-4 w-4" />
-                              {jsonError}
-                          </div>
-                      )}
-                  </div>
-              </div>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between mt-6">
