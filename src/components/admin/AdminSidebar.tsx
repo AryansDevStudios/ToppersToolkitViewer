@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -18,6 +17,7 @@ import {
   Settings,
   ClipboardCheck,
   FileQuestion,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ const navItems = [
   { href: "/admin/notes", icon: FileText, label: "Notes" },
   { href: "/admin/mcqs", icon: BookCheck, label: "MCQs" },
   { href: "/admin/users", icon: Users, label: "Users" },
+  { href: "/admin/suspects", icon: ShieldAlert, label: "Suspects" },
   { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
   { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
   { href: "/admin/notices", icon: ClipboardList, label: "Notices" },
@@ -54,7 +55,7 @@ export function AdminSidebar() {
               <Button
                 asChild
                 variant={pathname.startsWith(item.href) ? "secondary" : "ghost"}
-                className="w-full justify-start"
+                className={cn("w-full justify-start", item.href === '/admin/suspects' && 'text-destructive')}
               >
                 <Link href={item.href}>
                   <item.icon className="mr-2 h-4 w-4" />

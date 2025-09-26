@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle, ClipboardList, MessageSquare, BookCheck, Printer, Settings, ClipboardCheck, FileQuestion } from "lucide-react";
+import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle, ClipboardList, MessageSquare, BookCheck, Printer, Settings, ClipboardCheck, FileQuestion, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/admin/notes", icon: FileText, label: "Notes" },
   { href: "/admin/mcqs", icon: BookCheck, label: "MCQs" },
   { href: "/admin/users", icon: Users, label: "Users" },
+  { href: "/admin/suspects", icon: ShieldAlert, label: "Suspects" },
   { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
   { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
   { href: "/admin/notices", icon: ClipboardList, label: "Notices" },
@@ -42,7 +43,8 @@ export function AdminMobileNav() {
                             <div
                                 className={cn(
                                     "flex flex-col items-center justify-center gap-1 rounded-md p-2 text-muted-foreground text-xs font-medium h-16 w-20 transition-colors",
-                                    isActive ? "bg-primary/10 text-primary" : "hover:bg-accent"
+                                    isActive ? "bg-primary/10 text-primary" : "hover:bg-accent",
+                                    item.href === '/admin/suspects' && 'text-destructive'
                                 )}
                             >
                                 <item.icon className="h-5 w-5" />
