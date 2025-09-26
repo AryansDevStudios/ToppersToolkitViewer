@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, KeyRound, Edit } from "lucide-react";
+import { MoreHorizontal, KeyRound, Edit, FileJson } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getUsers } from "@/lib/data";
 import {
@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { User } from "@/lib/types";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { JsonViewerDialog } from "@/components/admin/subjects/JsonViewerDialog";
 
 export const revalidate = 0;
 
@@ -95,6 +96,12 @@ export default async function AdminUsersPage() {
             View and manage all user accounts.
           </p>
         </div>
+        <JsonViewerDialog data={users} title="All Users">
+            <Button variant="outline">
+                <FileJson className="mr-2 h-4 w-4" />
+                View All as JSON
+            </Button>
+        </JsonViewerDialog>
       </header>
       <Card>
          <CardHeader>

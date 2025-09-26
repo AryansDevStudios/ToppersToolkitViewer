@@ -15,29 +15,28 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { FileJson, Copy } from "lucide-react";
-import type { Subject } from "@/lib/types";
 
 interface JsonViewerDialogProps {
-  subject: Subject | Subject[] | undefined;
+  data: any;
   title?: string;
   children?: React.ReactNode;
 }
 
-export function JsonViewerDialog({ subject, title, children }: JsonViewerDialogProps) {
+export function JsonViewerDialog({ data, title, children }: JsonViewerDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
-  if (!subject) {
-    return null; // Don't render if subject is not available
+  if (!data) {
+    return null; // Don't render if data is not available
   }
 
-  const jsonString = JSON.stringify(subject, null, 2);
+  const jsonString = JSON.stringify(data, null, 2);
   
-  const isArray = Array.isArray(subject);
-  const dialogTitle = title || (isArray ? "Subjects Data (JSON)" : `${(subject as Subject).name} (JSON)`);
-  const dialogDescription = isArray 
-    ? "A read-only view of the entire subjects structure." 
-    : `A read-only view of the ${(subject as Subject).name} structure.`;
+  const isArray = Array.isArray(data);
+  const itemName = !isArray ? (data as any)?.name : '';
+
+  const dialogTitle = title || (isArray ? "JSON Data" : `${itemName} (JSON)`);
+  const dialogDescription = `A read-only view of the data structure.`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(jsonString).then(

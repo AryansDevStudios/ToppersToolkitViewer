@@ -33,7 +33,7 @@ export default async function AdminSubjectsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-            <JsonViewerDialog subject={subjects} title="All Subjects">
+            <JsonViewerDialog data={subjects} title="All Subjects">
                 <Button variant="outline">
                     <FileJsonIcon className="mr-2 h-4 w-4" />
                     View All as JSON
@@ -67,7 +67,7 @@ export default async function AdminSubjectsPage() {
                       <CardTitle className="text-2xl">{subject.name}</CardTitle>
                     </div>
                     <div className="flex items-center gap-2">
-                       <JsonViewerDialog subject={subject}>
+                       <JsonViewerDialog data={subject}>
                          <Button variant="ghost" size="icon">
                             <FileJsonIcon className="h-4 w-4" />
                             <span className="sr-only">View JSON</span>
