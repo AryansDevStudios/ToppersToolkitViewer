@@ -181,4 +181,3 @@ export interface Complaint {
 export interface AppSettings {
   printCostPerPage: number;
 }
-    

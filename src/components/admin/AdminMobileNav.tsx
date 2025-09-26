@@ -3,9 +3,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle, ClipboardList, MessageSquare, BookCheck, Printer, Settings, ClipboardCheck, FileQuestion, ShieldAlert } from "lucide-react";
+import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle, ClipboardList, MessageSquare, BookCheck, Printer, Settings, Menu, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useState } from "react";
+import { ScrollArea } from "../ui/scroll-area";
+import { Separator } from "../ui/separator";
+
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
@@ -17,45 +28,57 @@ const navItems = [
   { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
   { href: "/admin/notices", icon: ClipboardList, label: "Notices" },
   { href: "/admin/doubts", icon: MessageSquare, label: "Doubts" },
-  { href: "/admin/complaints", icon: FileQuestion, label: "Complaints" },
+  { href: "/admin/complaints", icon: FileText, label: "Complaints" },
   { href: "/admin/orders", icon: Printer, label: "Print Orders"},
   { href: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
 export function AdminMobileNav() {
     const pathname = usePathname();
-
-    // A simple way to check for the base path /admin and not its children
-    const isDashboard = pathname === '/admin';
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <nav className="md:hidden sticky top-0 z-40 bg-background border-b">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-1 p-2">
-                    {navItems.map((item) => {
-                        // Dashboard needs exact match, others can be partial
-                        const isActive = item.href === '/admin' 
-                            ? isDashboard
-                            : pathname.startsWith(item.href);
-
-                        return (
-                            <Link href={item.href} key={item.label} className="inline-block">
-                                <div
-                                    className={cn(
-                                        "flex flex-col items-center justify-center gap-1 rounded-md p-2 text-muted-foreground text-xs font-medium h-16 w-20 transition-colors",
-                                        isActive ? "bg-primary/10 text-primary" : "hover:bg-accent",
-                                        item.href === '/admin/suspects' && 'text-destructive'
-                                    )}
+        <nav className="md:hidden flex items-center h-16 px-4 border-b bg-background">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <Menu className="h-6 w-6" />
+                        <span className="sr-only">Open Admin Menu</span>
+                    </Button>
+                </SheetTrigger>
+                 <SheetContent side="left" className="w-full max-w-xs sm:max-w-sm p-0">
+                    <SheetHeader className="p-6 pb-2">
+                        <SheetTitle className="text-2xl">Admin Menu</SheetTitle>
+                    </SheetHeader>
+                    <ScrollArea className="h-[calc(100%-4rem)]">
+                        <div className="py-4 px-6">
+                            <ul className="space-y-1">
+                            {navItems.map((item) => {
+                                const isActive = (item.href === '/admin' && pathname === '/admin') || (item.href !== '/admin' && pathname.startsWith(item.href));
+                                return (
+                                <li key={item.label}>
+                                <Button
+                                    asChild
+                                    variant={isActive ? "secondary" : "ghost"}
+                                    className="w-full justify-start"
+                                    onClick={() => setIsOpen(false)}
                                 >
-                                    <item.icon className="h-5 w-5" />
-                                    <span>{item.label}</span>
-                                </div>
-                            </Link>
-                        )
-                    })}
-                </div>
-                <ScrollBar orientation="horizontal" className="invisible" />
-            </ScrollArea>
+                                    <Link href={item.href}>
+                                    <item.icon className="mr-2 h-4 w-4" />
+                                    {item.label}
+                                    </Link>
+                                </Button>
+                                </li>
+                            )})}
+                            </ul>
+                        </div>
+                    </ScrollArea>
+                </SheetContent>
+            </Sheet>
+             <div className="flex-1 text-center">
+                <h2 className="font-semibold text-lg">Admin Panel</h2>
+            </div>
+            <div className="w-10"></div>
         </nav>
     );
 }
