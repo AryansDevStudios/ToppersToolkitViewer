@@ -17,6 +17,7 @@ export const metadata: Metadata = {
   title: "Topper's Toolkit",
   description: 'Your one-stop destination for academic resources.',
   icons: {
+    icon: '/favicon.ico',
     apple: '/icon/logo512x.png',
   },
   manifest: '/manifest.json',
