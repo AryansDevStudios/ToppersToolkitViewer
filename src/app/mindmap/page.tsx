@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { BrainCircuit, Loader2, FileText } from 'lucide-react';
 import Link from 'next/link';
-import { iconMap } from '@/lib/iconMap';
 import type { Note, Subject } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -209,3 +208,5 @@ export default function MindmapPage() {
     </div>
   );
 }
+
+    
