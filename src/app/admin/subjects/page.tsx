@@ -74,8 +74,9 @@ export default async function AdminSubjectsPage() {
                          </Button>
                        </JsonViewerDialog>
                        <SubSubjectForm subjectId={subject.id} trigger={
-                        <Button variant="outline">
-                          <PlusCircle className="mr-2 h-4 w-4" /> Add Sub-Subject
+                        <Button variant="outline" size="sm" className="p-2 h-8 w-8 md:w-auto md:px-3 md:py-2">
+                          <PlusCircle className="h-4 w-4 md:mr-2" />
+                          <span className="hidden md:inline">Add Sub-Subject</span>
                         </Button>
                        } />
                       <SubjectForm subject={subject} />
@@ -100,8 +101,9 @@ export default async function AdminSubjectsPage() {
                                     <h4 className="text-md font-semibold">Chapters</h4>
                                      <div className="flex items-center gap-2">
                                        <ChapterForm subjectId={subject.id} subSubjectId={subSubject.id} trigger={
-                                          <Button variant="outline" size="sm">
-                                              <PlusCircle className="mr-2 h-4 w-4" /> Add Chapter
+                                          <Button variant="outline" size="sm" className="p-2 h-8 w-8 md:w-auto md:px-3 md:py-2">
+                                              <PlusCircle className="h-4 w-4 md:mr-2" />
+                                              <span className="hidden md:inline">Add Chapter</span>
                                           </Button>
                                        } />
                                        <SubSubjectForm subjectId={subject.id} subSubject={subSubject} />
