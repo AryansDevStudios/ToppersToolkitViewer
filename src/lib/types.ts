@@ -159,6 +159,8 @@ export interface Doubt {
     status: 'pending' | 'answered';
     answeredBy?: string; // Admin's name
     answeredByAdminId?: string; // Admin's user ID
+    createdAt: number;
+    answeredAt?: number;
 }
 
 export interface Complaint {

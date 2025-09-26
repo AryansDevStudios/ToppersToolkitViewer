@@ -9,6 +9,7 @@ import seedData from '../subjects-seed.json';
 import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
 import { unstable_noStore as noStore } from 'next/cache';
+import { z } from "zod";
 
 const convertToJsDelivr = (githubUrl: string): string => {
     try {
@@ -812,6 +813,61 @@ export async function deleteQuestionOfTheDay(id: string) {
   }
 }
 
+const optionSchema = z.object({
+  text: z.string(),
+});
+
+const qotdObjectSchema = z.object({
+  question: z.string(),
+  options: z.array(optionSchema),
+  correctOptionIndex: z.number(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format."),
+});
+
+const bulkQotdSchema = z.array(qotdObjectSchema);
+
+export async function bulkCreateQuestionsOfTheDay(jsonString: string) {
+    let questions;
+    try {
+        const jsonData = JSON.parse(jsonString);
+        questions = bulkQotdSchema.parse(jsonData);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return { success: false, error: `Validation Error: ${error.errors[0].path.join('.')} - ${error.errors[0].message}` };
+        }
+        return { success: false, error: "Invalid JSON format." };
+    }
+
+    if (questions.length === 0) {
+        return { success: false, error: "JSON array is empty." };
+    }
+
+    const batch = writeBatch(db);
+    let count = 0;
+
+    for (const questionData of questions) {
+        const docId = uuidv4();
+        const qotdDocRef = doc(db, 'qotd', docId);
+        const newQuestion: Omit<QuestionOfTheDay, 'id'> = {
+            ...questionData,
+            id: docId,
+            createdAt: Date.now(),
+        };
+        batch.set(qotdDocRef, newQuestion);
+        count++;
+    }
+
+    try {
+        await batch.commit();
+        revalidatePath('/admin/qotd');
+        revalidatePath('/puzzle-quiz');
+        return { success: true, count };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+
 export async function getUserQotdAnswers(userId: string): Promise<UserQotdAnswer[] | null> {
     noStore();
     if (!userId) return null;
@@ -994,17 +1050,16 @@ export async function createDoubt(userId: string, userName: string, userClassAnd
     const doubtId = uuidv4();
     const doubtDocRef = doc(db, "doubts", doubtId);
 
-    const newDoubt: Omit<Doubt, 'id'> = {
+    const newDoubt: Omit<Doubt, 'id'| 'createdAt'> = {
         userId,
         userName,
         userClassAndSection,
         question,
         status: 'pending',
-        createdAt: Date.now(),
     };
 
     try {
-        await setDoc(doubtDocRef, newDoubt);
+        await setDoc(doubtDocRef, { ...newDoubt, createdAt: serverTimestamp() });
         revalidatePath('/doubt-box');
         revalidatePath('/admin/doubts');
         return { success: true };
@@ -1018,17 +1073,18 @@ export async function getUserDoubts(userId: string): Promise<Doubt[]> {
     if (!userId) return [];
     
     const doubtsCollection = collection(db, 'doubts');
-    const q = query(doubtsCollection, where('userId', '==', userId));
+    const q = query(doubtsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
     
     try {
         const querySnapshot = await getDocs(q);
-        const doubts = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        } as Doubt));
-        // Sort by the 'createdAt' number in descending order
-        doubts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        return doubts;
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt,
+            } as Doubt;
+        });
     } catch (error) {
         console.error("Error fetching user doubts:", error);
         return [];
@@ -1042,7 +1098,7 @@ export async function getAllDoubts(): Promise<Doubt[]> {
     
     try {
         const querySnapshot = await getDocs(q);
-        const doubts = querySnapshot.docs.map(doc => {
+        return querySnapshot.docs.map(doc => {
             const data = doc.data();
             return {
                 id: doc.id,
@@ -1051,7 +1107,6 @@ export async function getAllDoubts(): Promise<Doubt[]> {
                 answeredAt: data.answeredAt?.toMillis ? data.answeredAt.toMillis() : data.answeredAt,
             } as Doubt;
         });
-        return doubts;
     } catch (error) {
         console.error("Error fetching all doubts:", error);
         return [];
@@ -1080,7 +1135,7 @@ export async function answerDoubt(doubtId: string, answer: string, adminName: st
             // Only update status and answeredAt if it's the first time being answered
             if (doubtDoc.data().status !== 'answered') {
                 dataToUpdate.status = 'answered';
-                dataToUpdate.answeredAt = Date.now();
+                dataToUpdate.answeredAt = serverTimestamp();
             }
 
             transaction.update(doubtDocRef, dataToUpdate);
@@ -1118,17 +1173,16 @@ export async function createComplaint(userId: string, userName: string, userClas
     const complaintId = uuidv4();
     const complaintDocRef = doc(db, "complaints", complaintId);
 
-    const newComplaint: Omit<Complaint, 'id'> = {
+    const newComplaint: Omit<Complaint, 'id' | 'createdAt'> = {
         userId,
         userName,
         userClassAndSection,
         content,
         status: 'pending',
-        createdAt: Date.now(),
     };
 
     try {
-        await setDoc(complaintDocRef, newComplaint);
+        await setDoc(complaintDocRef, { ...newComplaint, createdAt: serverTimestamp() });
         revalidatePath('/complaints');
         revalidatePath('/admin/complaints');
         return { success: true };
@@ -1142,17 +1196,18 @@ export async function getUserComplaints(userId: string): Promise<Complaint[]> {
     if (!userId) return [];
     
     const complaintsCollection = collection(db, 'complaints');
-    const q = query(complaintsCollection, where('userId', '==', userId));
+    const q = query(complaintsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
     
     try {
         const querySnapshot = await getDocs(q);
-        const complaints = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        } as Complaint));
-        // Sort by the 'createdAt' number in descending order
-        complaints.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-        return complaints;
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt,
+            } as Complaint;
+        });
     } catch (error) {
         console.error("Error fetching user complaints:", error);
         return [];
@@ -1202,7 +1257,7 @@ export async function resolveComplaint(complaintId: string, response: string, ad
 
             if (complaintDoc.data().status !== 'resolved') {
                 dataToUpdate.status = 'resolved';
-                dataToUpdate.resolvedAt = Date.now();
+                dataToUpdate.resolvedAt = serverTimestamp();
             }
 
             transaction.update(complaintDocRef, dataToUpdate);
@@ -1323,17 +1378,16 @@ export async function markQuizAsAttempted(userId: string, mcqSetId: string) {
     }
 }
 
-export async function saveQuizAttempt(attemptData: Omit<QuizAttempt, 'id'>): Promise<{ success: boolean, error?: string, attemptId?: string }> {
+export async function saveQuizAttempt(attemptData: Omit<QuizAttempt, 'id' | 'createdAt'>): Promise<{ success: boolean, error?: string, attemptId?: string }> {
     const attemptId = uuidv4();
     const attemptDocRef = doc(db, "quizAttempts", attemptId);
 
-    const newAttempt: QuizAttempt = {
+    const newAttempt: Omit<QuizAttempt, 'id'> = {
         ...attemptData,
-        id: attemptId
     };
 
     try {
-        await setDoc(attemptDocRef, newAttempt);
+        await setDoc(attemptDocRef, { ...newAttempt, id: attemptId, createdAt: serverTimestamp() });
         return { success: true, attemptId: attemptId };
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -1347,7 +1401,11 @@ export async function getQuizAttemptById(attemptId: string): Promise<QuizAttempt
     try {
         const docSnap = await getDoc(attemptDocRef);
         if (docSnap.exists()) {
-            return docSnap.data() as QuizAttempt;
+             const data = docSnap.data();
+             return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+             } as QuizAttempt;
         }
         return null;
     } catch (error) {
@@ -1362,7 +1420,13 @@ export async function getAllQuizAttempts(): Promise<QuizAttempt[]> {
     const q = query(attemptsCollection, orderBy('createdAt', 'desc'));
     try {
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => doc.data() as QuizAttempt);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+            } as QuizAttempt;
+        });
     } catch (error) {
         console.error("Error fetching all quiz attempts:", error);
         return [];
@@ -1375,15 +1439,13 @@ export async function createPrintOrder(orderData: Omit<PrintOrder, 'id' | 'statu
     const orderId = uuidv4();
     const orderDocRef = doc(db, "printOrders", orderId);
 
-    const newOrder: PrintOrder = {
+    const newOrder: Omit<PrintOrder, 'id' | 'createdAt'> = {
         ...orderData,
-        id: orderId,
         status: 'pending',
-        createdAt: Date.now(),
     };
 
     try {
-        await setDoc(orderDocRef, newOrder);
+        await setDoc(orderDocRef, { ...newOrder, id: orderId, createdAt: serverTimestamp() });
         revalidatePath('/admin/orders');
         revalidatePath('/purchase-history');
         return { success: true, orderId: orderId };
@@ -1400,16 +1462,17 @@ export async function getUserPrintOrders(userId: string): Promise<PrintOrder[]> 
 
     try {
         const ordersCollection = collection(db, 'printOrders');
-        const q = query(ordersCollection, orderBy('createdAt', 'desc'));
+        const q = query(ordersCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
         
         const querySnapshot = await getDocs(q);
         
-        const allOrders = querySnapshot.docs.map(doc => doc.data() as PrintOrder);
-
-        // Filter on the client-side for debugging.
-        const userOrders = allOrders.filter(order => order.userId === userId);
-
-        return userOrders;
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+            } as PrintOrder;
+        });
 
     } catch (error) {
         console.error("Error fetching user print orders:", error);
@@ -1424,7 +1487,13 @@ export async function getAllPrintOrders(): Promise<PrintOrder[]> {
     
     try {
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => doc.data() as PrintOrder);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+            } as PrintOrder;
+        });
     } catch (error) {
         console.error("Error fetching print orders:", error);
         return [];
@@ -1438,7 +1507,11 @@ export async function getPrintOrderById(orderId: string): Promise<PrintOrder | n
     try {
         const docSnap = await getDoc(orderDocRef);
         if (docSnap.exists()) {
-            return docSnap.data() as PrintOrder;
+             const data = docSnap.data();
+             return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+             } as PrintOrder;
         }
         return null;
     } catch (error) {

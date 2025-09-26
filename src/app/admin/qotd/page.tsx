@@ -3,13 +3,14 @@
 import { getQuestionsOfTheDay, getUsers, getAllQotdAnswers } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, HelpCircle, Edit } from "lucide-react";
+import { PlusCircle, HelpCircle, Edit, Upload } from "lucide-react";
 import { QotdForm } from "@/components/admin/qotd/QotdForm";
 import Link from "next/link";
 import { format } from "date-fns";
 import { DeleteQotdDialog } from "@/components/admin/qotd/DeleteQotdDialog";
 import { QotdAnswersDialog } from "@/components/admin/qotd/QotdAnswersDialog";
 import type { User, UserQotdAnswer } from "@/lib/types";
+import { BulkQotdForm } from "@/components/admin/qotd/BulkQotdForm";
 
 export const revalidate = 0;
 
@@ -42,12 +43,20 @@ export default async function AdminQotdPage() {
             Manage the daily questions for your users.
           </p>
         </div>
-        <QotdForm>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Question
-          </Button>
-        </QotdForm>
+        <div className="flex items-center gap-2">
+            <BulkQotdForm>
+                <Button variant="outline">
+                    <Upload className="mr-2 h-4 w-4" />
+                    Bulk Upload
+                </Button>
+            </BulkQotdForm>
+            <QotdForm>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Question
+              </Button>
+            </QotdForm>
+        </div>
       </header>
 
        {questions.length === 0 ? (
