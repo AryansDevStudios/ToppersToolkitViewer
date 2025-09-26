@@ -33,7 +33,7 @@ export default async function AdminQotdPage() {
 
   return (
     <div className="space-y-8">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
              <HelpCircle className="w-8 h-8 text-primary" />
@@ -43,7 +43,7 @@ export default async function AdminQotdPage() {
             Manage the daily questions for your users.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start md:self-auto">
             <BulkQotdForm>
                 <Button variant="outline">
                     <Upload className="mr-2 h-4 w-4" />
