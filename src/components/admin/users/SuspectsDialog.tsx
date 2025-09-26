@@ -1,25 +1,24 @@
 
-import { getUsers } from "@/lib/data";
-import type { User } from "@/lib/types";
-import { ShieldAlert, Users as UsersIcon } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+"use client";
 
-export const revalidate = 0;
+import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ShieldAlert, Users as UsersIcon } from "lucide-react";
+import type { User } from "@/lib/types";
+import Link from "next/link";
 
 const getInitials = (name: string | null | undefined): string => {
     if (!name) return 'U';
@@ -60,23 +59,32 @@ const findSuspects = (users: User[]): Record<string, User[]> => {
 };
 
 
-export default async function AdminSuspectsPage() {
-    const users = await getUsers();
-    const suspectGroups = findSuspects(users);
-    const suspectGroupEntries = Object.entries(suspectGroups);
+interface SuspectsDialogProps {
+  users: User[];
+}
 
-    return (
-        <div className="space-y-8">
-            <header>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                    <ShieldAlert className="w-8 h-8 text-destructive" />
-                    Suspected Users
-                </h1>
-                <p className="text-muted-foreground">
-                    Groups of users flagged for potential account sharing based on identical GPU information.
-                </p>
-            </header>
+export function SuspectsDialog({ users }: SuspectsDialogProps) {
+  const [isOpen, setIsOpen] = useState(false);
 
+  const suspectGroups = useMemo(() => findSuspects(users), [users]);
+  const suspectGroupEntries = Object.entries(suspectGroups);
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="text-destructive border-destructive/50 hover:bg-destructive/10 hover:text-destructive">
+          <ShieldAlert className="mr-2 h-4 w-4" />
+          View Suspects
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Suspected Users</DialogTitle>
+          <DialogDescription>
+            Groups of users flagged for potential account sharing based on identical GPU information.
+          </DialogDescription>
+        </DialogHeader>
+        <ScrollArea className="h-[60vh] pr-6">
             {suspectGroupEntries.length > 0 ? (
                 <Accordion type="multiple" className="w-full space-y-4">
                     {suspectGroupEntries.map(([gpuInfo, userGroup]) => (
@@ -103,7 +111,7 @@ export default async function AdminSuspectsPage() {
                                                             <p className="text-xs text-primary">{user.role}</p>
                                                         </div>
                                                     </div>
-                                                    <Button asChild variant="outline" size="sm">
+                                                    <Button asChild variant="outline" size="sm" onClick={() => setIsOpen(false)}>
                                                         <Link href={`/admin/users/access/${user.id}`}>Manage User</Link>
                                                     </Button>
                                                 </CardContent>
@@ -116,12 +124,17 @@ export default async function AdminSuspectsPage() {
                     ))}
                 </Accordion>
             ) : (
-                <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+                <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg h-full flex flex-col items-center justify-center">
                     <UsersIcon className="h-16 w-16 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold mb-2">No Suspects Found</h2>
                     <p>No users have been flagged for potential account sharing at this time.</p>
                 </div>
             )}
-        </div>
-    );
+        </ScrollArea>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsOpen(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
