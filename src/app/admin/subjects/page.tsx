@@ -16,6 +16,7 @@ import { DeleteDialog } from "@/components/admin/subjects/DeleteDialog";
 import { iconMap } from "@/lib/iconMap";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { JsonViewerDialog } from "@/components/admin/subjects/JsonViewerDialog";
 
 export const revalidate = 0;
 
@@ -31,12 +32,15 @@ export default async function AdminSubjectsPage() {
             Organize the curriculum structure of your platform.
           </p>
         </div>
-        <SubjectForm trigger={
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Subject
-          </Button>
-        } />
+        <div className="flex items-center gap-2">
+            <JsonViewerDialog subjects={subjects} />
+            <SubjectForm trigger={
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Subject
+              </Button>
+            } />
+        </div>
       </header>
 
        {subjects.length === 0 ? (
