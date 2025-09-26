@@ -186,13 +186,13 @@ export default function MindmapPage() {
                                       <Icon className="w-6 h-6 text-primary" />
                                     </div>
                                     <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors">
-                                      {note.type}
+                                      {note.chapter}
                                     </CardTitle>
                                 </div>
                             </CardHeader>
                             <CardContent className="flex flex-col h-full pt-0">
                               <p className="text-sm font-semibold mb-1">
-                                {note.chapter}
+                                {note.type}
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {note.subSubjectName}
