@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { BookCheck, Library, Folder, FileText, PlusCircle, Edit, Trash2, ClipboardCheck, Eye, User, BookCopy } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { MCQForm } from "@/components/admin/mcqs/MCQForm";
 import { DeleteMCQDialog } from "@/components/admin/mcqs/DeleteMCQDialog";
 import {
@@ -295,4 +295,3 @@ export default async function AdminMCQsPage() {
     </div>
   );
 }
-
