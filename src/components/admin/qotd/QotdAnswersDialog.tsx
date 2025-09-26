@@ -77,10 +77,12 @@ export function QotdAnswersDialog({ question, users: initialUsers, answerCount }
         
         const userAnswersForThisQuestion: { userId: string, answer: UserQotdAnswer }[] = [];
         
-        allUserAnswerDocs.forEach(doc => {
-            const specificAnswer = doc.answers.find(a => a.questionId === question.id);
-            if (specificAnswer) {
-                userAnswersForThisQuestion.push({ userId: doc.userId, answer: specificAnswer });
+        allUserAnswerDocs.forEach(userAnswerDoc => {
+            if (userAnswerDoc && Array.isArray(userAnswerDoc.answers)) {
+                const specificAnswer = userAnswerDoc.answers.find(a => a.questionId === question.id);
+                if (specificAnswer) {
+                    userAnswersForThisQuestion.push({ userId: userAnswerDoc.userId, answer: specificAnswer });
+                }
             }
         });
 
