@@ -105,9 +105,7 @@ export function GlobalSearch() {
             onChange={handleInputChange}
             placeholder="Search notes by title, chapter, subject..."
             className="w-full pl-10 h-12 text-base"
-            disabled={loading}
             />
-            {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
         </div>
 
         <div className="mt-8">
