@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { iconMap } from '@/lib/iconMap';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type NoteItem = (Note & { subjectName: string; subSubjectName: string; chapter: string; slug: string });
 
@@ -38,6 +39,18 @@ const SearchResultCard = ({ note }: { note: NoteItem }) => {
         </Link>
     );
 };
+
+const SearchSkeleton = () => (
+    <div className="space-y-4">
+        <Skeleton className="h-6 w-1/4 rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Skeleton className="h-40 rounded-lg" />
+            <Skeleton className="h-40 rounded-lg" />
+            <Skeleton className="h-40 rounded-lg" />
+            <Skeleton className="h-40 rounded-lg" />
+        </div>
+    </div>
+);
 
 
 export function GlobalSearch() {
@@ -98,7 +111,9 @@ export function GlobalSearch() {
         </div>
 
         <div className="mt-8">
-            {hasSearched ? (
+            {loading ? (
+                <SearchSkeleton />
+            ) : hasSearched ? (
                  results.length > 0 ? (
                     <div className="space-y-4">
                          <h2 className="text-lg font-semibold">{results.length} result(s) found</h2>
@@ -113,12 +128,10 @@ export function GlobalSearch() {
                     </div>
                 )
             ) : (
-                !loading && (
-                    <div className="text-center py-16 text-muted-foreground">
-                        <h3 className="text-xl font-semibold">Search for Notes</h3>
-                        <p>Enter a query above to find notes, chapters, or subjects.</p>
-                    </div>
-                )
+                <div className="text-center py-16 text-muted-foreground">
+                    <h3 className="text-xl font-semibold">Search for Notes</h3>
+                    <p>Enter a query above to find notes, chapters, or subjects.</p>
+                </div>
             )}
         </div>
     </div>
