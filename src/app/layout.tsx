@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   description: 'Your one-stop destination for academic resources.',
   icons: {
     icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
     apple: '/icon/logo512x.png',
   },
   manifest: '/manifest.json',
