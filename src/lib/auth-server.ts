@@ -6,7 +6,8 @@ import { getUserById } from './data';
 import type { User } from './types';
 
 export async function getUser(): Promise<User | null> {
-  const sessionCookie = cookies().get('session')?.value;
+  const cookieStore = cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
   if (!sessionCookie) return null;
 
   try {
