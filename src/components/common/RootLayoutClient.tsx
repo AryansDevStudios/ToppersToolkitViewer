@@ -72,7 +72,7 @@ export function RootLayoutClient({
   const isDoubtSolverPage = pathname === '/solve-doubts';
 
   useEffect(() => {
-    const faviconUrl = "/icon/logo512x.png";
+    const faviconUrl = "/favicon.ico";
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
       link = document.createElement('link');
