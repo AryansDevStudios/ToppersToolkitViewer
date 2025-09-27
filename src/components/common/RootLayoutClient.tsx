@@ -18,18 +18,6 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
   const pathname = usePathname();
   const router = useRouter();
 
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
-          console.log('Service Worker registration successful with scope: ', registration.scope);
-        }, function(err) {
-          console.log('Service Worker registration failed: ', err);
-        });
-      });
-    }
-  }, []);
-
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
   
   useEffect(() => {
