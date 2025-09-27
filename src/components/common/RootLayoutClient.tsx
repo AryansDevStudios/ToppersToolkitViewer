@@ -71,6 +71,17 @@ export function RootLayoutClient({
   const isAuthPage = pathname === '/login' || pathname === '/register';
   const isDoubtSolverPage = pathname === '/solve-doubts';
 
+  useEffect(() => {
+    const faviconUrl = "/icon/logo512x.png";
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = faviconUrl;
+  }, []);
+
   return (
     <ThemeProvider
       attribute="class"
