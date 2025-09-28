@@ -98,7 +98,7 @@ export default function PricingPage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
             <div className="mx-auto max-w-4xl text-center">
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl bg-gradient-to-r from-fuchsia-500 to-cyan-500 bg-clip-text text-transparent">
                     Unlock Your Potential
                 </h1>
                 <p className="mt-6 text-lg leading-8 text-muted-foreground">
@@ -175,3 +175,4 @@ export default function PricingPage() {
         </div>
     );
 }
+
