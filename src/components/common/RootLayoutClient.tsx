@@ -17,9 +17,9 @@ const publicPaths = [
     '/login', 
     '/register', 
     '/terms', 
-    '/user-manual', 
+    '/user-manual',
+    '/about-us',
     '/quiz-results',
-    '/about-us'
 ];
 const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
 
@@ -31,7 +31,6 @@ const authenticatedOpenPaths = [
     '/doubt-box',
     '/invite-friends',
     '/leaderboard',
-    '/mcqs',
     '/notices',
     '/purchase-history',
     '/puzzle-quiz',
@@ -67,7 +66,7 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     }
     
     // User is logged in, check for protected routes
-    const isOpenPage = authenticatedOpenPaths.some(path => pathname === path || pathname.startsWith(`${path}/`)) || subscriptionPaths.some(path => pathname.startsWith(path));
+    const isOpenPage = authenticatedOpenPaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path))) || subscriptionPaths.some(path => pathname.startsWith(path));
     const isProtectedPage = !isOpenPage;
 
     console.log(`[AuthGuard] Checks: isPublicPage=${isPublicPage}, isOpenPage=${isOpenPage}, isProtectedPage=${isProtectedPage}`);
