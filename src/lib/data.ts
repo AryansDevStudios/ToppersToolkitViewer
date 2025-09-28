@@ -1,6 +1,7 @@
+
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, type WriteBatch } from "firebase/firestore";
@@ -1577,6 +1578,91 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
         revalidatePath('/admin/settings');
         revalidatePath('/order-print', 'layout');
         return { success: true, message: "Settings updated successfully." };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+
+// --- Subscription Management ---
+
+export async function createSubscriptionRequest(
+    data: Pick<Subscription, 'userId' | 'userName' | 'userEmail' | 'paymentMethod'>
+): Promise<{ success: boolean, error?: string }> {
+    const { userId, userName, userEmail, paymentMethod } = data;
+    if (!userId || !userName || !userEmail || !paymentMethod) {
+        return { success: false, error: "Missing required fields for subscription request." };
+    }
+
+    const subscriptionId = uuidv4();
+    const subscriptionDocRef = doc(db, "subscriptions", subscriptionId);
+
+    const newSubscription: Omit<Subscription, 'id' | 'createdAt'> = {
+        userId,
+        userName,
+        userEmail,
+        paymentMethod,
+        status: 'pending',
+    };
+
+    try {
+        await setDoc(subscriptionDocRef, { ...newSubscription, id: subscriptionId, createdAt: serverTimestamp() });
+        revalidatePath('/admin/subscriptions');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+
+export async function getAllSubscriptions(): Promise<Subscription[]> {
+    noStore();
+    const subscriptionsCollection = collection(db, 'subscriptions');
+    const q = query(subscriptionsCollection, orderBy('createdAt', 'desc'));
+
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                createdAt: data.createdAt?.toMillis() || 0,
+                completedAt: data.completedAt?.toMillis() || undefined,
+            } as Subscription;
+        });
+    } catch (error) {
+        console.error("Error fetching subscriptions:", error);
+        return [];
+    }
+}
+
+export async function completeSubscription(subscriptionId: string, userId: string): Promise<{ success: boolean; error?: string }> {
+    if (!subscriptionId || !userId) {
+        return { success: false, error: "Subscription ID and User ID are required." };
+    }
+
+    const subscriptionDocRef = doc(db, 'subscriptions', subscriptionId);
+    const userDocRef = doc(db, 'users', userId);
+
+    const batch = writeBatch(db);
+
+    // Update subscription status
+    batch.update(subscriptionDocRef, {
+        status: 'completed',
+        completedAt: serverTimestamp()
+    });
+
+    // Update user's access rights
+    batch.update(userDocRef, {
+        hasFullNotesAccess: true,
+        demoExpiresAt: null // Remove demo access if it exists
+    });
+
+    try {
+        await batch.commit();
+        revalidatePath('/admin/subscriptions');
+        revalidatePath('/', 'layout'); // Revalidate layout to update auth context everywhere
+        return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

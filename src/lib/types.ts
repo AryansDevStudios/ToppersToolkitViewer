@@ -46,6 +46,18 @@ export interface PrintOrder {
   createdAt: number;
 }
 
+export interface Subscription {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  paymentMethod: 'UPI' | 'Cash';
+  status: 'pending' | 'completed';
+  createdAt: number;
+  completedAt?: number;
+}
+
+
 export interface MCQ {
   id: string;
   question: string;

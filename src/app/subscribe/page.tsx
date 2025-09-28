@@ -4,12 +4,13 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check, Star, Copy, ExternalLink } from 'lucide-react';
+import { Check, Star, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { createSubscriptionRequest } from '@/lib/data';
 
 const includedFeatures = [
     'Full Access to All Notes',
@@ -31,7 +32,9 @@ export default function SubscribePage() {
     const { toast } = useToast();
     const { user, dbUser } = useAuth(null);
     const router = useRouter();
-    const [paymentMethod, setPaymentMethod] = useState('upi');
+    const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cash'>('upi');
+    const [isPending, startTransition] = useTransition();
+
 
     const handleCopyToClipboard = (text: string, type: string) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -55,26 +58,43 @@ export default function SubscribePage() {
             return;
         }
         
-        const paymentDetails = paymentMethod === 'upi'
-            ? "I have completed the payment of ₹100 via UPI. Please find the transaction details attached after this message."
-            : "I would like to pay ₹100 in cash. Please let me know when and where we can meet to complete the transaction.";
+        startTransition(async () => {
+             const paymentMethodFormatted = paymentMethod === 'upi' ? 'UPI' : 'Cash';
+            // Create subscription request in the database
+            const result = await createSubscriptionRequest({
+                userId: user.uid,
+                userName: dbUser.name,
+                userEmail: dbUser.email,
+                paymentMethod: paymentMethodFormatted,
+            });
 
-        const message = `Hello! I want to subscribe to Topper's Toolkit.
+            if (!result.success) {
+                toast({ title: "Order Failed", description: result.error || "Could not save your subscription request.", variant: "destructive" });
+                return;
+            }
+
+            const paymentDetails = paymentMethod === 'upi'
+                ? "I have completed the payment of ₹100 via UPI. Please find the transaction details attached after this message."
+                : "I would like to pay ₹100 in cash. Please let me know when and where we can meet to complete the transaction.";
+
+            const message = `Hello! I want to subscribe to Topper's Toolkit.
 
 *My Details:*
 *Name:* ${dbUser.name}
 *Email:* ${dbUser.email}
 *User ID:* ${user.uid}
 
-*Payment Method Chosen: ${paymentMethod === 'upi' ? 'UPI / QR Code' : 'Cash Payment'}*
+*Payment Method Chosen: ${paymentMethodFormatted}*
 
 ${paymentDetails}
 
 Please activate my full subscription upon verification. Thank you!`;
 
-        const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+            const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        });
     };
+
 
     return (
         <div className="container mx-auto max-w-4xl px-4 py-12">
@@ -98,7 +118,7 @@ Please activate my full subscription upon verification. Thank you!`;
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <ul className="space-y-4">
+                             <ul className="space-y-4">
                                 {includedFeatures.map((feature) => (
                                     <li key={feature} className="flex items-start gap-3">
                                         <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
@@ -123,14 +143,14 @@ Please activate my full subscription upon verification. Thank you!`;
                             </CardDescription>
                         </CardHeader>
                          <CardContent>
-                            <Tabs defaultValue={paymentMethod} onValueChange={setPaymentMethod} className="w-full">
+                            <Tabs defaultValue={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'upi' | 'cash')} className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
                                     <TabsTrigger value="upi">UPI / QR Code</TabsTrigger>
                                     <TabsTrigger value="cash">Cash Payment</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="upi" className="mt-6">
                                     <div className="flex flex-col items-center text-center space-y-4">
-                                        <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100. <strong className="text-primary">After paying, you must click the "Confirm" button below.</strong></p>
+                                        <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100. <strong className="text-blue-500">After paying, you must click the "Confirm" button below.</strong></p>
                                         <div className="p-2 border-4 border-primary rounded-lg bg-white">
                                              <Image
                                                 src="/images/payment_qr.png"
@@ -164,9 +184,10 @@ Please activate my full subscription upon verification. Thank you!`;
                             <p className="text-sm text-muted-foreground text-center">
                                 After payment, click below to send a confirmation message on WhatsApp. Your subscription will be activated shortly after verification.
                             </p>
-                            <Button className="w-full" onClick={handleProceedToWhatsApp}>
-                                Confirm on WhatsApp
-                                <ExternalLink className="ml-2 h-4 w-4" />
+                            <Button className="w-full" onClick={handleProceedToWhatsApp} disabled={isPending}>
+                               {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                               {isPending ? 'Processing...' : 'Confirm on WhatsApp'}
+                               {!isPending && <ExternalLink className="ml-2 h-4 w-4" />}
                             </Button>
                         </CardFooter>
                     </Card>
