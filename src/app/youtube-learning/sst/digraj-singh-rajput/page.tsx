@@ -72,7 +72,7 @@ const videoContent = {
 const SidebarMenu = () => (
     <Sheet>
         <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="fixed bottom-4 left-4 z-50 h-12 w-12 rounded-full shadow-lg">
+            <Button variant="default" size="icon" className="fixed bottom-4 left-4 z-50 h-12 w-12 rounded-full shadow-lg">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Open Chapter Menu</span>
             </Button>
@@ -174,3 +174,4 @@ export default function DigrajSinghRajputPage() {
         </div>
     );
 }
+
