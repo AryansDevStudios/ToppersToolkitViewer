@@ -30,7 +30,6 @@ export function useAuth(initialUser: User | null) {
         });
       } else {
         setDbUser(null);
-        fetch('/api/auth/session', { method: 'DELETE' });
       }
       setLoading(false);
     });
