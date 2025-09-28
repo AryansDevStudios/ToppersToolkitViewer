@@ -27,18 +27,18 @@ export default function YouTubeLearningPage() {
           Hand-picked educational videos to supplement your learning. Select a subject to begin.
         </p>
       </header>
-      <main>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-5xl mx-auto">
+      <main className="max-w-2xl mx-auto">
+        <div className="space-y-6">
           {subjects.map((subject) => {
             const Icon = iconMap[subject.icon as keyof typeof iconMap] || YoutubeIcon;
             return (
               <Link href={subject.href} key={subject.name} className="group block">
                 <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 group-hover:border-primary/50">
-                  <CardContent className="p-4 flex flex-col items-center justify-center aspect-square">
-                    <div className="bg-primary/10 text-primary p-4 rounded-lg mb-4">
+                  <CardContent className="p-6 flex items-center gap-6">
+                    <div className="bg-primary/10 text-primary p-4 rounded-lg">
                       <Icon className="h-8 w-8" />
                     </div>
-                    <CardTitle className="text-base font-semibold text-center">
+                    <CardTitle className="text-xl font-semibold text-left">
                       {subject.name}
                     </CardTitle>
                   </CardContent>
