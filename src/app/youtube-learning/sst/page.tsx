@@ -37,7 +37,7 @@ export default function SstYoutubePage() {
             <CardContent className="flex flex-col md:flex-row items-center gap-6">
                 <div className="md:w-1/3">
                     <Image 
-                        src="https://picsum.photos/seed/digraj/400/400"
+                        src="https://yt3.googleusercontent.com/pCuxvLAGBdSiUnP94Te7NBm06VwR6Q9bqwxRiI9CfV7HEMl5ornA0w0hQH1wz13mZa4VwWxegJQ=s900-c-k-c0x00ffffff-no-rj"
                         alt="Photo of Digraj Singh Rajput"
                         width={400}
                         height={400}
