@@ -25,11 +25,14 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
     const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
-    if (!user && !isPublicPage) {
+    if (!user && !isPublicPage && !isSubscriptionPage) {
       router.push('/login');
       return;
     }
     
+    // Temporarily removing the redirect for expired demos.
+    // We can re-evaluate this logic later.
+    /*
     if (user && dbUser) {
         const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
         const demoExpiresAt = dbUser.demoExpiresAt;
@@ -40,12 +43,14 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
             router.push('/pricing');
         }
     }
+    */
 
   }, [loading, user, dbUser, pathname, router]);
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
+  const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
-  if (loading && !isPublicPage) {
+  if (loading && !isPublicPage && !isSubscriptionPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -53,7 +58,7 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
   
-  if (!user && !isPublicPage) {
+  if (!user && !isPublicPage && !isSubscriptionPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
