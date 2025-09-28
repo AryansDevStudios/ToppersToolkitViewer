@@ -16,7 +16,7 @@ export default async function AdminSubscriptionsPage() {
       <header>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <Star className="w-8 h-8 text-primary" />
-          Subscription Management
+          Subscription Requests
         </h1>
         <p className="text-muted-foreground">
           Review and approve user subscription requests.

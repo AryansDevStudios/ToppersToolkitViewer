@@ -122,7 +122,7 @@ export function SubscriptionList({ pending, completed }: SubscriptionListProps) 
             <Clock className="mr-2 h-4 w-4"/> Pending ({pending.length})
         </TabsTrigger>
         <TabsTrigger value="completed">
-            <Check className="mr-2 h-4 w-4"/> Completed ({completed.length})
+            <Check className="mr-2 h-4 w-4"/> Completed Requests ({completed.length})
         </TabsTrigger>
       </TabsList>
       <TabsContent value="pending" className="mt-6">
