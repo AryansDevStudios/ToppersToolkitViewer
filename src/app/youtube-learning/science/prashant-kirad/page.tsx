@@ -47,10 +47,10 @@ const videoContent = {
     'chem-ch2': { title: '2. Is Matter Around Us Pure?', videos: [{ src: "https://www.youtube.com/embed/fDTLrhcIWx0", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/tjl1gtYhYsI", caption: "Rapid Revision" }] },
     'chem-ch3': { title: '3. Atoms and Molecules', videos: [{ src: "https://www.youtube.com/embed/Jy2bLuZU8ps", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/BnS2-1PHe2s", caption: "Rapid Revision" }] },
     'chem-ch4': { title: '4. Structure of the Atom', videos: [{ src: "https://www.youtube.com/embed/0UqHoagKXts", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/UhY583T5t-g", caption: "Rapid Revision" }] },
-    'bio-ch5': { title: '5. The Fundamental Unit of Life - Cell', videos: [{ src: "https://www.youtube.com/embed/3YuuphvXYmo", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/5JCm_G4wS3g", caption: "Rapid Revision" }] },
+    'bio-ch5': { title: '5. The Fundamental Unit of Life - Cell', videos: [{ src: "https://www.youtube.com/embed/3YuuphvXYmo", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/LTaq4yHNtSk", caption: "Rapid Revision" }] },
     'bio-ch6': { title: '6. Tissues', videos: [{ src: "https://www.youtube.com/embed/RJsLw5cmbP8", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/VpRj5bPZqA", caption: "Rapid Revision" }] },
-    'phy-ch7': { title: '7. Motion', videos: [{ src: "https://www.youtube.com/embed/jC6MW9KOQvU", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/uoHbY_y-Ao4", caption: "Rapid Revision" }] },
-    'phy-ch8': { title: '8. Force and Laws of Motion', videos: [{ src: "https://www.youtube.com/embed/CfxfW64P04s", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/8EZAXd1pG7k", caption: "Rapid Revision" }] },
+    'phy-ch7': { title: '7. Motion', videos: [{ src: "https://www.youtube.com/embed/jC6MW9KOQvU", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/MKycFW1uAzU", caption: "Rapid Revision" }] },
+    'phy-ch8': { title: '8. Force and Laws of Motion', videos: [{ src: "https://www.youtube.com/embed/CfxfW64P04s", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/lKt93tG0eik", caption: "Rapid Revision" }] },
     'phy-ch9': { title: '9. Gravitation', videos: [{ src: "https://www.youtube.com/embed/yeFQ2Ce_nKo", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/8-rsy2zSj28", caption: "Rapid Revision" }] },
     'phy-ch10': { title: '10. Work and Energy', videos: [{ src: "https://www.youtube.com/embed/bGFE2Z-VVM8", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/j_kavOBi2aI", caption: "Rapid Revision" }] },
     'phy-ch11': { title: '11. Sound', videos: [{ src: "https://www.youtube.com/embed/UpXKKEbCByA", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/wL3y41Tsoc4", caption: "Rapid Revision" }] },
@@ -149,5 +149,3 @@ export default function PrashantKiradSciencePage() {
         </div>
     );
 }
-
-    
