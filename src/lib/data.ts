@@ -1697,3 +1697,19 @@ export async function completeSubscription(subscriptionId: string, userId: strin
         return { success: false, error: e.message };
     }
 }
+
+export const startUserDemo = async (userId: string) => {
+    if (!userId) {
+        return { success: false, error: "User ID is required." };
+    }
+    const userDocRef = doc(db, "users", userId);
+    try {
+        await updateDoc(userDocRef, {
+            demoExpiresAt: Date.now() + 60 * 60 * 1000, // 1 hour from now
+        });
+        revalidatePath('/', 'layout');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}

@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { startUserDemo } from '@/lib/data';
 
 const includedFeatures = [
     'Full Access to All Notes',
@@ -29,6 +30,24 @@ const includedFeatures = [
 export default function PricingPage() {
     const { user, dbUser, loading: authLoading } = useAuth(null);
     const router = useRouter();
+    const { toast } = useToast();
+    const [isStartingDemo, setIsStartingDemo] = useState(false);
+
+    const handleStartDemo = async () => {
+        if (!user) {
+            toast({ title: "Please log in", description: "You need to be logged in to start a demo.", variant: "destructive" });
+            return;
+        }
+        setIsStartingDemo(true);
+        const result = await startUserDemo(user.uid);
+        if (result.success) {
+            toast({ title: "Demo Started!", description: "You have 1 hour of full access. Enjoy!" });
+            router.push('/');
+        } else {
+            toast({ title: "Error", description: result.error || "Could not start the demo.", variant: "destructive" });
+            setIsStartingDemo(false);
+        }
+    };
     
     if (authLoading) {
         return (
@@ -38,6 +57,9 @@ export default function PricingPage() {
         );
     }
     
+    // Determine if the user is eligible for a demo
+    const isDemoEligible = dbUser && !dbUser.hasFullNotesAccess && !dbUser.demoExpiresAt;
+
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
             <div className="mx-auto max-w-4xl text-center">
@@ -45,10 +67,51 @@ export default function PricingPage() {
                     Unlock Your Potential
                 </h1>
                 <p className="mt-6 text-lg leading-8 text-muted-foreground">
-                    Get full access to all our premium study materials and tools by subscribing.
+                    Get full access to all our premium study materials and tools by subscribing, or start a free demo.
                 </p>
             </div>
             <div className="mt-12 w-full max-w-md">
+
+                {isDemoEligible && (
+                    <>
+                        <Card className="mb-8 border-dashed">
+                             <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Clock className="h-6 w-6 text-primary"/>
+                                    Try for Free
+                                </CardTitle>
+                                <CardDescription>
+                                   Get a glimpse of all features with a one-time demo.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-xl font-bold">1-Hour Full Access Demo</p>
+                            </CardContent>
+                            <CardFooter>
+                                <Button onClick={handleStartDemo} disabled={isStartingDemo} variant="outline" className="w-full">
+                                    {isStartingDemo ? (
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Starting...</>
+                                    ) : (
+                                        "Start 1-Hour Demo"
+                                    )}
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                        
+                        <div className="relative my-8 text-center">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                OR
+                                </span>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+
                 {/* Subscription Card */}
                 <Card className="flex flex-col ring-2 ring-primary">
                      <CardHeader>

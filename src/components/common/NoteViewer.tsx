@@ -31,7 +31,7 @@ const AccessDenied = () => (
              Access Denied
         </h2>
         <p className="mt-2 text-muted-foreground max-w-md">
-            You do not have permission to view this document. Please subscribe to get access.
+            You do not have permission to view this document. Please subscribe for full access.
         </p>
         <Button asChild className="mt-6">
             <Link href="/pricing">
@@ -117,8 +117,9 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
         setHasAccess(null); // Reset for re-check
 
         const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
+        const isDemoActive = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
         
-        const canAccess = hasActiveSubscription || note.isPublic || dbUser.role === 'Admin';
+        const canAccess = hasActiveSubscription || isDemoActive || note.isPublic || dbUser.role === 'Admin';
         
         setHasAccess(canAccess);
 

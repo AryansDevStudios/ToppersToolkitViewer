@@ -19,6 +19,7 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
   const { user, dbUser, loading } = useAuth(initialUser);
   const pathname = usePathname();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (loading) return;
@@ -26,17 +27,30 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
     const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
-    if (!user && !isPublicPage && !isSubscriptionPage) {
+    if (!user && !isPublicPage) {
       router.push('/login');
       return;
     }
     
-  }, [loading, user, dbUser, pathname, router]);
+    if (user && dbUser) {
+        // If user is not subscribed and demo has expired, redirect to pricing
+        const isDemoExpired = dbUser.demoExpiresAt ? dbUser.demoExpiresAt < Date.now() : false;
+
+        if (!dbUser.hasFullNotesAccess && isDemoExpired && !isSubscriptionPage && !isPublicPage) {
+            toast({
+                title: "Demo Expired",
+                description: "Your free demo has ended. Please subscribe for full access.",
+                variant: "destructive"
+            });
+            router.push('/pricing');
+        }
+    }
+    
+  }, [loading, user, dbUser, pathname, router, toast]);
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
-  const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
-  if (loading && !isPublicPage && !isSubscriptionPage) {
+  if (loading && !isPublicPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -44,12 +58,8 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
   
-  if (!user && !isPublicPage && !isSubscriptionPage) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+  if (!user && !isPublicPage) {
+    return null; // or a loading spinner
   }
 
 
