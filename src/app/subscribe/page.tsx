@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,6 @@ const includedFeatures = [
     'Access to All Notes & Materials',
     'Unlimited AI Doubt Solver Usage',
     'Practice All MCQs & Quizzes',
-    'Ad-Free Browsing Experience',
     'Priority Support',
 ];
 
