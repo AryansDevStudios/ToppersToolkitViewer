@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/common/ThemeProvider';
 import { AppHeader } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
+import { useToast } from '@/hooks/use-toast';
 
 const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results'];
 const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
@@ -64,6 +65,7 @@ export function RootLayoutClient({
   user: User | null;
 }>) {
   const pathname = usePathname();
+  const { toast } = useToast();
   const isAuthPage = pathname === '/login' || pathname === '/register';
   const isDoubtSolverPage = pathname === '/solve-doubts';
   const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
@@ -78,6 +80,49 @@ export function RootLayoutClient({
     }
     link.href = faviconUrl;
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'q') {
+        event.preventDefault();
+        
+        try {
+          // Clear local storage and session storage
+          localStorage.clear();
+          sessionStorage.clear();
+
+          // Clear service worker caches if any
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(key => caches.delete(key)));
+          }
+
+          toast({
+            title: "Cache Cleared",
+            description: "All site caches have been cleared. The page will now reload.",
+          });
+
+          // Force a reload after a short delay to allow toast to appear
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Could not clear all caches.",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [toast]);
 
   return (
     <ThemeProvider
