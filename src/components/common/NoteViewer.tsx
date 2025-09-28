@@ -129,7 +129,7 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
             setHasAccess(true);
         } else {
             setHasAccess(false);
-            if (demoExpiresAt) { // Check if a demo *was* active
+            if (demoExpiresAt && Date.now() > demoExpiresAt) { // Check if a demo *was* active and is now expired
                 setIsDemoExpired(true);
             }
         }
