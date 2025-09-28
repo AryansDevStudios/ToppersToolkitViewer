@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Clock, Star } from 'lucide-react';
@@ -23,6 +24,14 @@ export default function PricingPage() {
     const [isStartingDemo, setIsStartingDemo] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
+
+    useEffect(() => {
+        // If user already has a subscription or an active demo, redirect them
+        if (!authLoading && (dbUser?.hasFullNotesAccess || (dbUser?.demoExpiresAt && dbUser.demoExpiresAt > Date.now()))) {
+            router.replace('/');
+        }
+    }, [authLoading, dbUser, router]);
+
 
     const handleStartDemo = async () => {
         if (!user) {
@@ -49,7 +58,7 @@ export default function PricingPage() {
         }
     };
 
-    if (authLoading) {
+    if (authLoading || (dbUser?.hasFullNotesAccess || (dbUser?.demoExpiresAt && dbUser.demoExpiresAt > Date.now()))) {
         return (
             <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -57,12 +66,6 @@ export default function PricingPage() {
         );
     }
     
-    // If user already has a subscription or an active demo, redirect them
-    if (dbUser?.hasFullNotesAccess || (dbUser?.demoExpiresAt && dbUser.demoExpiresAt > Date.now())) {
-        router.replace('/');
-        return null;
-    }
-
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
             <div className="mx-auto max-w-4xl text-center">
