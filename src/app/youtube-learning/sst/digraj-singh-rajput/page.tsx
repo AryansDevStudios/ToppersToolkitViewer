@@ -69,11 +69,11 @@ const videoContent = {
 };
 
 const Sidebar = () => (
-    <aside className="w-full lg:w-72 lg:h-screen lg:fixed top-0 left-0 bg-card border-r p-6 box-border hidden lg:flex lg:flex-col">
+    <aside className="w-full lg:w-72 bg-card border-b lg:border-b-0 lg:border-r p-6 box-border">
         <div className="text-xl font-bold text-primary mb-5 pb-4 border-b">
             Class 9 SST
         </div>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="lg:h-[calc(100vh-12rem)]">
             <nav>
                 <ul>
                     {subjects.map(subject => (
@@ -128,15 +128,9 @@ const VideoCard = ({ chapterId }: { chapterId: keyof typeof videoContent }) => {
 export default function DigrajSinghRajputPage() {
     return (
         <div className="flex flex-col lg:flex-row bg-background">
-             <Button asChild variant="outline" size="sm" className="absolute top-4 left-4 z-10 lg:hidden">
-                <Link href="/youtube-learning/sst">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                </Link>
-            </Button>
             <Sidebar />
-            <main className="flex-1 lg:ml-72 p-4 md:p-10 space-y-8">
-                 <Button asChild variant="outline" size="sm" className="mb-4 hidden lg:inline-flex">
+            <main className="flex-1 p-4 md:p-10 space-y-8">
+                 <Button asChild variant="outline" size="sm" className="mb-4">
                     <Link href="/youtube-learning/sst">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to SST Teachers
@@ -170,4 +164,5 @@ export default function DigrajSinghRajputPage() {
         </div>
     );
 }
+
 
