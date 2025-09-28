@@ -50,20 +50,21 @@ export default function SubscribePage() {
         }
         
         const paymentDetails = paymentMethod === 'upi'
-            ? "I have completed the payment of ₹100 via UPI. Please find the transaction details attached."
-            : "I will be paying ₹100 in cash. Please activate my account upon confirmation.";
+            ? "I have completed the payment of ₹100 via UPI. Please find the transaction details attached after this message."
+            : "I would like to pay ₹100 in cash. Please let me know when and where we can meet to complete the transaction.";
 
-        const message = `Hello, I'm interested in the Topper's Toolkit subscription.
+        const message = `Hello! I want to subscribe to Topper's Toolkit.
 
 *My Details:*
-Name: ${dbUser.name}
-Email: ${dbUser.email}
-User ID: ${user.uid}
+*Name:* ${dbUser.name}
+*Email:* ${dbUser.email}
+*User ID:* ${user.uid}
 
-*Payment Method:* ${paymentMethod.toUpperCase()}
+*Payment Method Chosen: ${paymentMethod.toUpperCase()}*
+
 ${paymentDetails}
 
-Please activate my account. Thank you!`;
+Please activate my full subscription upon verification. Thank you!`;
 
         const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
