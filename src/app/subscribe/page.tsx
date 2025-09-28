@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useState } from 'react';
 
 const includedFeatures = [
     'Access to All Notes & Materials',
@@ -25,6 +25,7 @@ export default function SubscribePage() {
     const { toast } = useToast();
     const { user, dbUser } = useAuth(null);
     const router = useRouter();
+    const [paymentMethod, setPaymentMethod] = useState('upi');
 
     const handleCopyToClipboard = (text: string, type: string) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -47,15 +48,22 @@ export default function SubscribePage() {
             router.push('/login');
             return;
         }
+        
+        const paymentDetails = paymentMethod === 'upi'
+            ? "I have completed the payment of ₹100 via UPI. Please find the transaction details attached."
+            : "I will be paying ₹100 in cash. Please activate my account upon confirmation.";
 
         const message = `Hello, I'm interested in the Topper's Toolkit subscription.
 
-My Details:
+*My Details:*
 Name: ${dbUser.name}
 Email: ${dbUser.email}
 User ID: ${user.uid}
 
-I have completed the payment of ₹100. Please activate my account. Thank you!`;
+*Payment Method:* ${paymentMethod.toUpperCase()}
+${paymentDetails}
+
+Please activate my account. Thank you!`;
 
         const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
@@ -108,7 +116,7 @@ I have completed the payment of ₹100. Please activate my account. Thank you!`;
                             </CardDescription>
                         </CardHeader>
                          <CardContent>
-                            <Tabs defaultValue="upi" className="w-full">
+                            <Tabs defaultValue={paymentMethod} onValueChange={setPaymentMethod} className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
                                     <TabsTrigger value="upi">UPI / QR Code</TabsTrigger>
                                     <TabsTrigger value="cash">Cash Payment</TabsTrigger>
