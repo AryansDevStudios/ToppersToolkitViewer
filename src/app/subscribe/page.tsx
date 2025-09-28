@@ -12,10 +12,16 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const includedFeatures = [
-    'Access to All Notes & Materials',
-    'Unlimited AI Doubt Solver Usage',
-    'Practice All MCQs & Quizzes',
-    'Priority Support',
+    'Full Access to All Notes',
+    'Unlimited AI Doubt Solver',
+    'All MCQ & Quiz Practice Sets',
+    'Compete on the Leaderboard',
+    'Access All Mind Maps',
+    'YouTube Learning Guides',
+    'Priority Doubt Resolution',
+    'Submit Complaints',
+    'View Full Notice Board',
+    'Personalized Order History'
 ];
 
 const UPI_ID = "nitish545454@ybl";
@@ -60,7 +66,7 @@ export default function SubscribePage() {
 *Email:* ${dbUser.email}
 *User ID:* ${user.uid}
 
-*Payment Method Chosen: ${paymentMethod.toUpperCase()}*
+*Payment Method Chosen: ${paymentMethod === 'upi' ? 'UPI / QR Code' : 'Cash Payment'}*
 
 ${paymentDetails}
 
@@ -124,7 +130,7 @@ Please activate my full subscription upon verification. Thank you!`;
                                 </TabsList>
                                 <TabsContent value="upi" className="mt-6">
                                     <div className="flex flex-col items-center text-center space-y-4">
-                                        <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100.</p>
+                                        <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100. <strong className="text-destructive">After paying, you must click the "Confirm" button below.</strong></p>
                                         <div className="p-2 border-4 border-primary rounded-lg bg-white">
                                              <Image
                                                 src="/images/payment_qr.png"
