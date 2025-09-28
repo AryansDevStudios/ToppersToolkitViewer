@@ -23,17 +23,32 @@ export function SubscriptionStatusDialog() {
   const { dbUser } = useAuth(null);
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [dialogContent, setDialogContent] = useState({ title: "", description: "" });
 
   useEffect(() => {
     if (!dbUser) return;
 
     const hasSeenDialog = sessionStorage.getItem(DIALOG_SEEN_KEY);
     
-    // Condition for demo expiration
     const isDemoExpired = dbUser.demoExpiresAt && dbUser.demoExpiresAt < Date.now();
-    const shouldShowDemoExpired = isDemoExpired && !dbUser.hasFullNotesAccess;
+    const isSubExpired = dbUser.subscriptionExpiresAt && dbUser.subscriptionExpiresAt < Date.now();
 
-    if (shouldShowDemoExpired && !hasSeenDialog) {
+    const shouldShowDemoExpired = isDemoExpired && !dbUser.hasFullNotesAccess;
+    const shouldShowSubExpired = isSubExpired && !dbUser.hasFullNotesAccess;
+
+
+    if ((shouldShowDemoExpired || shouldShowSubExpired) && !hasSeenDialog) {
+        if (shouldShowSubExpired) {
+             setDialogContent({
+                title: "Subscription Expired",
+                description: "Your subscription has ended. Please renew to continue enjoying unlimited access to all notes and features.",
+            });
+        } else {
+             setDialogContent({
+                title: "Demo Period Expired",
+                description: "Your free demo has ended. To continue enjoying unlimited access to all notes and features, please subscribe.",
+            });
+        }
         setIsOpen(true);
         sessionStorage.setItem(DIALOG_SEEN_KEY, 'true');
     }
@@ -56,10 +71,10 @@ export function SubscriptionStatusDialog() {
         <AlertDialogHeader className="items-center text-center">
           <ShieldAlert className="h-14 w-14 text-destructive mb-2" />
           <AlertDialogTitle className="text-2xl">
-            Demo Period Expired
+            {dialogContent.title}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-base">
-            Your free demo has ended. To continue enjoying unlimited access to all notes and features, please subscribe.
+            {dialogContent.description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-center pt-4 gap-3 sm:gap-4">

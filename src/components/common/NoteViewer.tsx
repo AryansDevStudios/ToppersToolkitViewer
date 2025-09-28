@@ -9,7 +9,7 @@ import { getUserById, getNoteById as fetchNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo, useRef, useCallback } from "react";
 import dynamic from 'next/dynamic';
-import type { Note } from "@/lib/types";
+import type { Note, User } from "@/lib/types";
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 
@@ -119,7 +119,7 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
         const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
         const isDemoActive = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
         
-        const canAccess = hasActiveSubscription || isDemoActive || note.isPublic || dbUser.role === 'Admin';
+        const canAccess = hasActiveSubscription || isDemoActive || note.isPublic || (dbUser.noteAccess?.includes(noteId)) || dbUser.role === 'Admin';
         
         setHasAccess(canAccess);
 
