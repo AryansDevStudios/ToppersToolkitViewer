@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck, Puzzle, Search, Clock } from "lucide-react";
+import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck, Puzzle, Search, Clock, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -67,8 +67,17 @@ function DemoTimerMobile() {
         return () => clearInterval(interval);
     }, [dbUser]);
 
-    if (!timeLeft || timeLeft === "Expired") {
+    if (!timeLeft) {
         return null;
+    }
+
+    if (timeLeft === "Expired") {
+        return (
+            <Link href="/pricing" className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1 text-xs font-medium bg-destructive text-destructive-foreground px-2 py-1 rounded-full shadow-md">
+                <ShieldAlert className="h-3 w-3" />
+                <span>Demo Expired</span>
+            </Link>
+        )
     }
 
     return (

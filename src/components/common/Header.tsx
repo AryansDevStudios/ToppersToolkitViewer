@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogIn, Sun, Moon, Search, Clock } from "lucide-react";
+import { LogIn, Sun, Moon, Search, Clock, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -74,8 +74,17 @@ function DemoTimer() {
         return () => clearInterval(interval);
     }, [dbUser]);
 
-    if (!timeLeft || timeLeft === "Expired") {
+    if (!timeLeft) {
         return null;
+    }
+
+    if (timeLeft === "Expired") {
+        return (
+             <Link href="/pricing" className="hidden md:flex items-center gap-2 text-sm font-medium bg-destructive text-destructive-foreground px-3 py-1.5 rounded-md hover:bg-destructive/90 transition-colors">
+                <ShieldAlert className="h-4 w-4" />
+                <span>Demo Expired</span>
+            </Link>
+        )
     }
 
     return (
