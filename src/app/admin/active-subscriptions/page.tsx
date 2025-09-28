@@ -1,7 +1,7 @@
 
 
 import { getUsers } from "@/lib/data";
-import { CheckCircle, Clock, Edit } from "lucide-react";
+import { CheckCircle, Clock } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -67,7 +67,6 @@ export default async function ActiveSubscriptionsPage() {
                 <TableHead className="hidden md:table-cell">Role</TableHead>
                 <TableHead className="hidden lg:table-cell">Started On</TableHead>
                 <TableHead className="text-right">Expires</TableHead>
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -114,15 +113,12 @@ export default async function ActiveSubscriptionsPage() {
                             )}
                         </div>
                       </TableCell>
-                       <TableCell className="text-right">
-                          <ExtendSubscriptionDialog user={user} />
-                       </TableCell>
                     </TableRow>
                   );
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No active subscriptions found.
                   </TableCell>
                 </TableRow>
