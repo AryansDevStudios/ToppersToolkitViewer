@@ -1659,7 +1659,7 @@ export async function getUserSubscriptions(userId: string): Promise<Subscription
             return {
                 ...data,
                 createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt,
-                completedAt: data.completedAt?.toMillis ? data.completedAt.toMillis() : data.completedAt,
+                completedAt: data.completedAt?.toMillis() ? data.completedAt.toMillis() : data.completedAt,
             } as Subscription;
         });
 
@@ -1732,6 +1732,22 @@ export const startUserDemo = async (userId: string) => {
         await updateDoc(userDocRef, {
             demoExpiresAt: Date.now() + 60 * 60 * 1000, // 1 hour from now
         });
+        revalidatePath('/', 'layout');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function revokeUserFullAccess(userId: string): Promise<{ success: boolean; error?: string }> {
+    if (!userId) {
+        return { success: false, error: "User ID is required." };
+    }
+    const userDocRef = doc(db, 'users', userId);
+    try {
+        await updateDoc(userDocRef, { hasFullNotesAccess: false });
+        revalidatePath('/admin/active-subscriptions');
+        revalidatePath('/admin/users');
         revalidatePath('/', 'layout');
         return { success: true };
     } catch (e: any) {

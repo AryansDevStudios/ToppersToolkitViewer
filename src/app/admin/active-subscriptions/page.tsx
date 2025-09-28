@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { subMonths } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { ExtendSubscriptionDialog } from "@/components/admin/subscriptions/ExtendSubscriptionDialog";
+import { RevokeAccessButton } from "@/components/admin/subscriptions/RevokeAccessButton";
 
 export const revalidate = 0;
 
@@ -66,7 +67,8 @@ export default async function ActiveSubscriptionsPage() {
                 <TableHead className="hidden lg:table-cell">Class</TableHead>
                 <TableHead className="hidden md:table-cell">Role</TableHead>
                 <TableHead className="hidden lg:table-cell">Started On</TableHead>
-                <TableHead className="text-right">Expires</TableHead>
+                <TableHead>Expires</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -102,9 +104,9 @@ export default async function ActiveSubscriptionsPage() {
                        <TableCell className="hidden lg:table-cell">
                           {zonedStartedAt ? format(zonedStartedAt, 'Pp') : 'N/A'}
                        </TableCell>
-                      <TableCell className={cn("text-right font-medium", isExpired && "text-destructive")}>
-                        <div className="flex flex-col items-end gap-1">
-                            <div className="flex items-center justify-end gap-2">
+                      <TableCell className={cn("font-medium", isExpired && "text-destructive")}>
+                        <div className="flex flex-col items-start gap-1">
+                            <div className="flex items-center gap-2">
                                 {isExpired && <Clock className="h-4 w-4" />}
                                 {zonedExpiresAt ? format(zonedExpiresAt, 'Pp') : 'N/A'}
                             </div>
@@ -113,12 +115,21 @@ export default async function ActiveSubscriptionsPage() {
                             )}
                         </div>
                       </TableCell>
+                       <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {isExpired ? (
+                                <RevokeAccessButton userId={user.id} userName={user.name} />
+                            ) : (
+                                <ExtendSubscriptionDialog user={user} />
+                            )}
+                          </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     No active subscriptions found.
                   </TableCell>
                 </TableRow>
