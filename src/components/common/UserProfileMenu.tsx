@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, UserCog } from "lucide-react";
+import { LogOut, UserCog, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -96,6 +96,13 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
             </Link>
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem asChild>
+          <Link href="/purchase-history">
+            <History className="mr-2 h-4 w-4" />
+            <span>Subscription History</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
