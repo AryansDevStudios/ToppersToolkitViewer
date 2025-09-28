@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -23,7 +22,9 @@ const includedFeatures = [
     'Priority Doubt Resolution',
     'Submit Complaints',
     'View Full Notice Board',
-    'Personalized Order History'
+    'Personalized Order History',
+    'Reasoning Practice Section',
+    'GK & Current Affairs for GS Olympiad',
 ];
 
 export default function PricingPage() {
