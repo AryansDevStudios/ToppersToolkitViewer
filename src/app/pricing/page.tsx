@@ -163,7 +163,7 @@ export default function PricingPage() {
                         </ul>
                     </CardContent>
                     <CardFooter>
-                        <Button asChild className="w-full">
+                        <Button asChild className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white">
                             <Link href="/subscribe">
                                 <Star className="mr-2 h-4 w-4" />
                                 Choose Plan
