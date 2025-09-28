@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import type { User } from '@/lib/types';
@@ -43,6 +43,7 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
+  const [isAccessChecked, setIsAccessChecked] = useState(false);
 
   useEffect(() => {
     if (loading) {
@@ -51,11 +52,14 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
 
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
     if (isPublicPage) {
+      setIsAccessChecked(true);
       return; 
     }
 
     if (!user || !dbUser) {
       router.push('/login');
+      // Access check is "complete" in the sense that a redirect is happening
+      // We don't set to true, to avoid a flash of the login page behind the loader
       return;
     }
     
@@ -77,32 +81,29 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
             variant: "destructive"
         });
         router.push('/pricing');
+        // Redirecting, so access check is "done" for this path.
+        // We don't set to true, to avoid flash of content on the pricing page.
+        return;
       }
     }
+    
+    // If we reach here, the user has access to the page.
+    setIsAccessChecked(true);
     
   }, [loading, user, dbUser, pathname, router, toast]);
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
 
-  // If loading or not a public page and user is not yet determined, show loader
-  if (loading && !isPublicPage) {
+  // If the page isn't public and we haven't finished the access check, show a loader.
+  if (!isPublicPage && !isAccessChecked) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
-  
-  // For non-public pages, wait until we have user data before rendering children
-  if (!isPublicPage && !user) {
-    return (
-        <div className="flex h-screen w-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-    );
-  }
 
-
+  // Render children only if access is checked and granted, or if it's a public page.
   return <>{children}</>;
 }
 
