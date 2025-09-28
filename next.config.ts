@@ -19,13 +19,19 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'picsum.photos',
+        hostname: 'raw.githubusercontent.com',
         port: '',
         pathname: '/**',
       },
       {
         protocol: 'https',
-        hostname: 'cdn-icons-png.flaticon.com',
+        hostname: 'topperstoolkit.netlify.app',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
       },
