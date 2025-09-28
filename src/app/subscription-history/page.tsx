@@ -47,7 +47,7 @@ const SubscriptionCard = ({ subscription }: { subscription: Subscription }) => {
 
 
 export default function SubscriptionHistoryPage() {
-    const { user, loading: authLoading } = useAuth(null);
+    const { user, loading: authLoading } = useAuth();
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 

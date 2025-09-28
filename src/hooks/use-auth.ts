@@ -7,13 +7,14 @@ import { auth, onAuthStateChanged } from '@/lib/firebase';
 import type { User } from '@/lib/types';
 import { getUserById } from '@/lib/data';
 
-export function useAuth(initialUser: User | null) {
+export function useAuth(initialUser?: User | null) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [dbUser, setDbUser] = useState<User | null>(initialUser);
-  const [loading, setLoading] = useState(!initialUser); // Only be in a loading state if there's no initialUser
+  const [dbUser, setDbUser] = useState<User | null>(initialUser || null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       setUser(firebaseUser);
       if (firebaseUser) {
         // If dbUser is not set or differs, fetch it.
