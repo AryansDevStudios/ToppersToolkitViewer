@@ -63,9 +63,9 @@ const features = [
     href: '/mindmap',
   },
     {
-    title: 'GS Preparation',
-    icon: 'BookCheck',
-    href: '/mcqs',
+    title: 'Learn from YouTube',
+    icon: 'Youtube',
+    href: '/youtube-learning',
   },
   {
     title: 'Complaints',
