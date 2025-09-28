@@ -23,7 +23,7 @@ const publicPaths = [
     '/quiz-results',
     '/about-us',
 ];
-const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
+const subscriptionPaths = ['/subscribe', '/subscription-confirmation'];
 
 const authenticatedOpenPaths = [
     '/',
@@ -37,6 +37,7 @@ const authenticatedOpenPaths = [
     '/puzzle-quiz',
     '/rules-policies',
     '/search',
+    '/pricing'
 ];
 
 const AccessDenied = () => (
@@ -79,7 +80,6 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
 
     if (!user || !dbUser) {
       router.push('/login');
-      // While redirecting, keep it in a loading-like state.
       setAccessState('loading'); 
       return;
     }
@@ -89,13 +89,12 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
 
     if (isProtectedPage) {
       const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
-      const isSubExpired = dbUser.subscriptionExpiresAt ? dbUser.subscriptionExpiresAt < Date.now() : false;
       const isDemoActive = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
       const isAdmin = dbUser.role === 'Admin';
+      
+      const hasAccess = hasActiveSubscription || isDemoActive || isAdmin;
 
-      const finalAccessStatus = hasActiveSubscription && !isSubExpired;
-
-      if (!isAdmin && !finalAccessStatus && !isDemoActive) {
+      if (!hasAccess) {
         setAccessState('denied');
         return;
       }
@@ -107,7 +106,7 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
 
   if (accessState === 'loading') {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-[calc(100vh-8rem)] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -132,7 +131,7 @@ export function RootLayoutClient({
   const { toast } = useToast();
   const isAuthPage = pathname === '/login' || pathname === '/register';
   const isDoubtSolverPage = pathname === '/solve-doubts';
-  const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
+  const isSubscriptionFlowPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
   useEffect(() => {
     const faviconUrl = "/favicon.ico";
@@ -151,11 +150,9 @@ export function RootLayoutClient({
         event.preventDefault();
         
         try {
-          // Clear local storage and session storage
           localStorage.clear();
           sessionStorage.clear();
 
-          // Clear service worker caches if any
           if ('caches' in window) {
             const keys = await caches.keys();
             await Promise.all(keys.map(key => caches.delete(key)));
@@ -166,7 +163,6 @@ export function RootLayoutClient({
             description: "All site caches have been cleared. The page will now reload.",
           });
 
-          // Force a reload after a short delay to allow toast to appear
           setTimeout(() => {
             window.location.reload();
           }, 1000);
@@ -195,17 +191,17 @@ export function RootLayoutClient({
       enableSystem
       disableTransitionOnChange
     >
-      <AuthWrapper initialUser={user}>
-        <div className="relative flex min-h-screen flex-col">
-          {!isAuthPage && !isSubscriptionPage && <AppHeader />}
-          <main className="flex-1 flex flex-col">
+      <div className="relative flex min-h-screen flex-col">
+        {!isAuthPage && !isSubscriptionFlowPage && <AppHeader />}
+        <main className="flex-1 flex flex-col">
+          <AuthWrapper initialUser={user}>
             {children}
-          </main>
-          <SubscriptionStatusDialog />
-          {!isAuthPage && !isDoubtSolverPage && !isSubscriptionPage && <Footer />}
-          {!isAuthPage && !isSubscriptionPage && <MobileBottomNav />}
-        </div>
-      </AuthWrapper>
+          </AuthWrapper>
+        </main>
+        <SubscriptionStatusDialog />
+        {!isAuthPage && !isDoubtSolverPage && !isSubscriptionFlowPage && <Footer />}
+        {!isAuthPage && !isSubscriptionFlowPage && <MobileBottomNav />}
+      </div>
     </ThemeProvider>
   );
 }
