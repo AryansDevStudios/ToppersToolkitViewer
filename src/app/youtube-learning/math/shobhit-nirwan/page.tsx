@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Sigma, ArrowLeft, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -25,18 +25,18 @@ const chapters = [
 ];
 
 const videoContent = {
-    'ch1': { title: '1. Number Systems', videoSrc: "https://www.youtube.com/embed/videoseries?si=SNd3mGg9f3M88p7Y&amp;list=PL4AiseKN0xx8hBVR06p2E3722q709Pz_k" },
-    'ch2': { title: '2. Polynomials', videoSrc: "https://www.youtube.com/embed/videoseries?si=G0Kx2qjB0E8lXn5T&amp;list=PL4AiseKN0xx9PTbMI32Yx6Lw3HlSnMhD7" },
-    'ch3': { title: '3. Coordinate Geometry', videoSrc: "https://www.youtube.com/embed/videoseries?si=Gv27z2Lw-m-5D4k8&amp;list=PL4AiseKN0xx9KqK0j2b22Y0-BvA-5x1TT" },
-    'ch4': { title: '4. Linear Equations in Two Variables', videoSrc: "https://www.youtube.com/embed/videoseries?si=265fQf5fT2W1iYhS&amp;list=PL4AiseKN0xx8Dks4n9vJb-eY3a15L5tB9" },
-    'ch5': { title: '5. Introduction to Euclid\'s Geometry', videoSrc: "https://www.youtube.com/embed/videoseries?si=_kG4x8K4d9kC7Q5L&amp;list=PL4AiseKN0xx9xNkPZ_A0YyYyYYoGqgA49" },
-    'ch6': { title: '6. Lines and Angles', videoSrc: "https://www.youtube.com/embed/videoseries?si=G0Kx2qjB0E8lXn5T&amp;list=PL4AiseKN0xx9PTbMI32Yx6Lw3HlSnMhD7" },
-    'ch7': { title: '7. Triangles', videoSrc: "https://www.youtube.com/embed/videoseries?si=7J3lK8B3S9n0mG3f&amp;list=PL4AiseKN0xx9hN-D9pA3jV3p3b4cMkmj5" },
-    'ch8': { title: '8. Quadrilaterals', videoSrc: "https://www.youtube.com/embed/videoseries?si=x9Y8F5F8e7d7S_rE&amp;list=PL4AiseKN0xx89fXpC4Xy4e4Rj2uP_4_pP" },
-    'ch9': { title: '9. Circles', videoSrc: "https://www.youtube.com/embed/videoseries?si=W8g9d9V9w9C4j_fD&amp;list=PL4AiseKN0xx_2qfGj-fadesT8mmQxL5Jv" },
-    'ch10': { title: '10. Heron\'s Formula', videoSrc: "https://www.youtube.com/embed/videoseries?si=W-r8s8S7b4Z-k_jV&amp;list=PL4AiseKN0xx-f2v3S0W-Iu_S-wA6rTfG6" },
-    'ch11': { title: '11. Surface Areas and Volumes', videoSrc: "https://www.youtube.com/embed/videoseries?si=B5e7S4Z-l_k_jV9W&amp;list=PL4AiseKN0xx-f2v3S0W-Iu_S-wA6rTfG6" },
-    'ch12': { title: '12. Statistics', videoSrc: "https://www.youtube.com/embed/videoseries?si=A-s8s8S7b4Z-k_jV&amp;list=PL4AiseKN0xx-f2v3S0W-Iu_S-wA6rTfG6" },
+    'ch1': { title: '1. Number Systems', description: "Explore the world of numbers, from integers to rational and irrational numbers, and learn how to represent them on the number line.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=SNd3mGg9f3M88p7Y&amp;list=PL4AiseKN0xx8hBVR06p2E3722q709Pz_k", caption: "One Shot Lecture" }] },
+    'ch2': { title: '2. Polynomials', description: "Dive into the basics of algebraic expressions, understanding degrees, coefficients, and the different types of polynomials.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=G0Kx2qjB0E8lXn5T&amp;list=PL4AiseKN0xx9PTbMI32Yx6Lw3HlSnMhD7", caption: "One Shot Lecture" }] },
+    'ch3': { title: '3. Coordinate Geometry', description: "Learn how to plot points on the Cartesian plane and understand the relationship between algebra and geometry.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=Gv27z2Lw-m-5D4k8&amp;list=PL4AiseKN0xx9KqK0j2b22Y0-BvA-5x1TT", caption: "One Shot Lecture" }] },
+    'ch4': { title: '4. Linear Equations in Two Variables', description: "Understand how to represent and solve linear equations with two variables, and see their graphical representation.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=265fQf5fT2W1iYhS&amp;list=PL4AiseKN0xx8Dks4n9vJb-eY3a15L5tB9", caption: "One Shot Lecture" }] },
+    'ch5': { title: '5. Introduction to Euclid\'s Geometry', description: "Journey back in time to explore the foundational axioms and postulates of geometry as laid down by Euclid.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=_kG4x8K4d9kC7Q5L&amp;list=PL4AiseKN0xx9xNkPZ_A0YyYyYYoGqgA49", caption: "One Shot Lecture" }] },
+    'ch6': { title: '6. Lines and Angles', description: "Master the properties of lines and angles, including parallel lines, transversals, and angle relationships.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=G0Kx2qjB0E8lXn5T&amp;list=PL4AiseKN0xx9PTbMI32Yx6Lw3HlSnMhD7", caption: "One Shot Lecture" }] },
+    'ch7': { title: '7. Triangles', description: "Discover the properties of triangles, congruence rules, and inequalities in this fundamental chapter of geometry.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=7J3lK8B3S9n0mG3f&amp;list=PL4AiseKN0xx9hN-D9pA3jV3p3b4cMkmj5", caption: "One Shot Lecture" }] },
+    'ch8': { title: '8. Quadrilaterals', description: "Explore the different types of quadrilaterals and their unique properties, from parallelograms to trapezoids.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=x9Y8F5F8e7d7S_rE&amp;list=PL4AiseKN0xx89fXpC4Xy4e4Rj2uP_4_pP", caption: "One Shot Lecture" }] },
+    'ch9': { title: '9. Circles', description: "Learn about the various parts of a circle, their properties, and theorems related to chords, arcs, and angles.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=W8g9d9V9w9C4j_fD&amp;list=PL4AiseKN0xx_2qfGj-fadesT8mmQxL5Jv", caption: "One Shot Lecture" }] },
+    'ch10': { title: '10. Heron\'s Formula', description: "Discover a powerful formula to find the area of a triangle when the lengths of all three sides are known.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=W-r8s8S7b4Z-k_jV&amp;list=PL4AiseKN0xx-f2v3S0W-Iu_S-wA6rTfG6", caption: "One Shot Lecture" }] },
+    'ch11': { title: '11. Surface Areas and Volumes', description: "Calculate the surface areas and volumes of various 3D shapes like cubes, cuboids, cylinders, cones, and spheres.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=B5e7S4Z-l_k_jV9W&amp;list=PL4AiseKN0xx-f2v3S0W-Iu_S-wA6rTfG6", caption: "One Shot Lecture" }] },
+    'ch12': { title: '12. Statistics', description: "Learn how to collect, present, and analyze data using various graphical representations and measures of central tendency.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=A-s8s8S7b4Z-k_jV&amp;list=PL4AiseKN0xx-f2v3S0W-Iu_S-wA6rTfG6", caption: "One Shot Lecture" }] },
 };
 
 const SidebarMenu = () => {
@@ -81,8 +81,16 @@ const VideoCard = ({ chapterId }: { chapterId: keyof typeof videoContent }) => {
                 <CardTitle className="text-xl text-primary">{chapter.title}</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="aspect-video rounded-lg overflow-hidden shadow-md">
-                    <iframe src={chapter.videoSrc} title={chapter.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen className="w-full h-full"></iframe>
+                {chapter.description && <p className="text-muted-foreground mb-6">{chapter.description}</p>}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     {chapter.videos.map((video, index) => (
+                        <div key={index}>
+                            <div className="aspect-video rounded-lg overflow-hidden shadow-md">
+                                <iframe src={video.src} title={video.caption} allowFullScreen className="w-full h-full"></iframe>
+                            </div>
+                            {video.caption && <p className="text-center text-sm text-muted-foreground mt-2">{video.caption}</p>}
+                        </div>
+                    ))}
                 </div>
             </CardContent>
         </Card>
@@ -110,4 +118,4 @@ export default function ShobhitNirwanMathPage() {
         </div>
     );
 }
-
+    
