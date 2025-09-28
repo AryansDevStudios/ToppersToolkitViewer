@@ -11,7 +11,7 @@ import { Footer } from '@/components/common/Footer';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 
 const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results'];
-const subscriptionPaths = ['/pricing', '/subscribe'];
+const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
 
 function AuthWrapper({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
   const { user, dbUser, loading } = useAuth(initialUser);
@@ -22,24 +22,26 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
   const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
   useEffect(() => {
-    if (!loading && !user && !isPublicPage) {
+    if (loading) return;
+
+    if (!user && !isPublicPage) {
       router.push('/login');
+      return;
     }
 
-    // Subscription enforcement logic
-    if (!loading && user && dbUser) {
+    if (user && dbUser) {
         const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
         const hasActiveDemo = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
         
+        // If user has no access and is on a page that requires a subscription, redirect them.
         if (!hasActiveSubscription && !hasActiveDemo && !isSubscriptionPage && !isPublicPage && pathname !== '/') {
-            // Allow access to home, but redirect from other protected pages
-             router.push('/pricing');
+            router.push('/pricing');
         }
     }
 
   }, [loading, user, dbUser, isPublicPage, isSubscriptionPage, router, pathname]);
 
-  if (loading && !isPublicPage && !isSubscriptionPage) {
+  if (loading && !isPublicPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />

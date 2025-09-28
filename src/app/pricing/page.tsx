@@ -34,7 +34,8 @@ export default function PricingPage() {
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!authLoading && dbUser && dbUser.hasFullNotesAccess) {
+        // If the user *has* full access, they don't need to be on the pricing page. Redirect them away.
+        if (!authLoading && dbUser?.hasFullNotesAccess) {
              router.replace('/');
         }
     }, [authLoading, dbUser, router]);
