@@ -13,7 +13,14 @@ import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { useToast } from '@/hooks/use-toast';
 import { SubscriptionStatusDialog } from './SubscriptionStatusDialog';
 
-const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results', '/about-us'];
+const publicPaths = [
+    '/login', 
+    '/register', 
+    '/terms', 
+    '/user-manual', 
+    '/quiz-results', // Allow viewing results even if logged out
+    '/about-us'
+];
 const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
 
 // Pages accessible to any logged-in user, regardless of subscription
@@ -43,30 +50,31 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     if (loading) return;
 
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
-    const isOpenPage = authenticatedOpenPaths.some(path => pathname.startsWith(path)) || subscriptionPaths.some(path => pathname.startsWith(path));
-    
-    // If not a public page and not an open page, it's a protected page
-    const isProtectedPage = !isPublicPage && !isOpenPage;
-    
-    if (!user && !isPublicPage) {
-        // If user is not logged in and it's not a public page, redirect to login
+    if (isPublicPage) return; // Allow access to public pages
+
+    if (!user) {
         router.push('/login');
         return;
     }
-
-    if (user && dbUser && isProtectedPage) {
-        // User is logged in, now check for subscription status on protected pages
-        const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
-        const isDemoActive = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
+    
+    // At this point, user is logged in. Now check for page-specific access.
+    if (dbUser) {
+        const isOpenPage = authenticatedOpenPaths.some(path => pathname.startsWith(path)) || subscriptionPaths.some(path => pathname.startsWith(path));
         
-        if (!hasActiveSubscription && !isDemoActive && dbUser.role !== 'Admin') {
-            toast({
-                title: "Subscription Required",
-                description: "You need an active subscription to access this page.",
-                variant: "destructive"
-            });
-            router.push('/pricing');
-            return;
+        // If it's not a generally accessible "open" page, it's a protected one.
+        if (!isOpenPage) {
+            const hasActiveSubscription = dbUser.hasFullNotesAccess === true && (!dbUser.subscriptionExpiresAt || dbUser.subscriptionExpiresAt > Date.now());
+            const isDemoActive = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
+            
+            if (dbUser.role !== 'Admin' && !hasActiveSubscription && !isDemoActive) {
+                toast({
+                    title: "Subscription Required",
+                    description: "You need an active subscription to access this page.",
+                    variant: "destructive"
+                });
+                router.push('/pricing');
+                return;
+            }
         }
     }
     
@@ -82,8 +90,14 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
   
+  // If we are still loading but the user object is not available yet for a non-public page,
+  // we show a loader to prevent a flash of content.
   if (!user && !isPublicPage) {
-    return null; // or a loading spinner
+    return (
+        <div className="flex h-screen w-full items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    );
   }
 
 
