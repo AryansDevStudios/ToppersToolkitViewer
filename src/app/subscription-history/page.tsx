@@ -53,7 +53,6 @@ export default function SubscriptionHistoryPage() {
 
     useEffect(() => {
         if (authLoading) {
-            setIsLoading(true);
             return;
         }
         if (!user) {
@@ -61,16 +60,20 @@ export default function SubscriptionHistoryPage() {
             return;
         }
 
-        setIsLoading(true);
-        getUserSubscriptions(user.uid)
-        .then((userSubscriptions) => {
-            setSubscriptions(userSubscriptions);
-        }).catch(error => {
-            console.error("Failed to fetch subscriptions:", error);
-            setSubscriptions([]);
-        }).finally(() => {
-            setIsLoading(false);
-        });
+        const fetchSubscriptions = async () => {
+            setIsLoading(true);
+            try {
+                const userSubscriptions = await getUserSubscriptions(user.uid);
+                setSubscriptions(userSubscriptions);
+            } catch (error) {
+                console.error("Failed to fetch subscriptions:", error);
+                setSubscriptions([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSubscriptions();
 
     }, [user, authLoading]);
     
@@ -111,9 +114,10 @@ export default function SubscriptionHistoryPage() {
                     {subscriptions.map(sub => <SubscriptionCard key={sub.id} subscription={sub} />)}
                 </div>
             ) : (
-                <p className="text-center text-muted-foreground py-16">
-                    You haven't made any subscription requests yet.
-                </p>
+                <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+                  <h2 className="text-xl font-semibold">No Subscription History</h2>
+                  <p className="mt-2">You haven't made any subscription requests yet.</p>
+                </div>
             )
         )}
       </main>
