@@ -14,10 +14,16 @@ import { startDemo } from '@/lib/data';
 import { Loader2 } from 'lucide-react';
 
 const includedFeatures = [
-    'Access to All Notes',
-    'AI Doubt Solver',
-    'MCQ Practice Sets',
-    'Priority Support',
+    'Full Access to All Notes',
+    'Unlimited AI Doubt Solver',
+    'All MCQ & Quiz Practice Sets',
+    'Compete on the Leaderboard',
+    'Access All Mind Maps',
+    'YouTube Learning Guides',
+    'Priority Doubt Resolution',
+    'Submit Complaints',
+    'View Full Notice Board',
+    'Personalized Order History'
 ];
 
 export default function PricingPage() {
@@ -28,8 +34,8 @@ export default function PricingPage() {
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!authLoading && dbUser?.hasFullNotesAccess) {
-            router.replace('/');
+        if (!authLoading && dbUser && dbUser.hasFullNotesAccess) {
+             router.replace('/');
         }
     }, [authLoading, dbUser, router]);
     
