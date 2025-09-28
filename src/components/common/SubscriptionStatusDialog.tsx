@@ -52,19 +52,19 @@ export function SubscriptionStatusDialog() {
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
-            <ShieldAlert className="h-6 w-6 text-destructive" />
+      <AlertDialogContent className="max-w-xl">
+        <AlertDialogHeader className="items-center text-center">
+          <ShieldAlert className="h-14 w-14 text-destructive mb-2" />
+          <AlertDialogTitle className="text-2xl">
             Demo Period Expired
           </AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="text-base">
             Your free demo has ended. To continue enjoying unlimited access to all notes and features, please subscribe.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
+        <AlertDialogFooter className="sm:justify-center pt-4 gap-3 sm:gap-4">
           <AlertDialogCancel>Continue Browsing</AlertDialogCancel>
-          <AlertDialogAction onClick={handleActionClick}>
+          <AlertDialogAction onClick={handleActionClick} className="bg-primary hover:bg-primary/90">
             <Star className="mr-2 h-4 w-4" />
             View Subscription Plans
           </AlertDialogAction>
@@ -73,4 +73,3 @@ export function SubscriptionStatusDialog() {
     </AlertDialog>
   );
 }
-
