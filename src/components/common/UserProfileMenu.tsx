@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, UserCog, History, Star } from "lucide-react";
+import { LogOut, UserCog, History, Star, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,10 +18,46 @@ import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { differenceInDays, formatDistanceToNowStrict } from 'date-fns';
 
 interface UserProfileMenuProps {
   isMobile?: boolean;
 }
+
+const SubscriptionStatus = () => {
+    const { dbUser } = useAuth();
+
+    if (!dbUser?.hasFullNotesAccess) {
+        return null;
+    }
+    
+    if (dbUser.subscriptionExpiresAt) {
+        const now = new Date();
+        const expiryDate = new Date(dbUser.subscriptionExpiresAt);
+        const daysRemaining = differenceInDays(expiryDate, now);
+
+        if (daysRemaining < 0) {
+            return (
+                <p className="text-xs font-medium text-destructive">
+                    Subscription Expired
+                </p>
+            );
+        }
+        
+        return (
+            <p className="text-xs font-medium text-primary">
+                {formatDistanceToNowStrict(expiryDate, { addSuffix: true })}
+            </p>
+        );
+    }
+    
+    return (
+        <p className="text-xs font-medium text-green-500 flex items-center gap-1">
+            <ShieldCheck className="h-3 w-3" />
+            Permanent Access
+        </p>
+    );
+};
 
 export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
   const { user, dbUser, role, loading } = useAuth();
@@ -85,6 +121,9 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            <div className="pt-1">
+                <SubscriptionStatus />
+            </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -96,12 +135,6 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
             </Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem asChild>
-          <Link href="/subscription-history">
-            <Star className="mr-2 h-4 w-4" />
-            <span>Subscription History</span>
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/purchase-history">
             <History className="mr-2 h-4 w-4" />

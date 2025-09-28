@@ -37,7 +37,6 @@ const mainNavLinks = [
 const secondaryNavLinks = [
     { title: 'How to Use?', icon: 'BookUser', href: '/user-manual' },
     { title: 'Terms & Conditions', icon: 'Gavel', href: '/terms' },
-    { title: 'Subscription History', icon: 'Star', href: '/subscription-history' },
     { title: 'Print Order History', icon: 'History', href: '/purchase-history' },
     { title: 'Invite Friends', icon: 'Gift', href: '/invite-friends' },
     { title: 'Complaints', icon: 'FileQuestion', href: '/complaints' },
