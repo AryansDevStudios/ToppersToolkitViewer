@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck, Puzzle, Search } from "lucide-react";
+import { Home, Compass, ShoppingBag, LogIn, Sparkles, BookCheck, Puzzle, Search, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -39,6 +39,45 @@ const MobileNavSkeleton = () => (
     </div>
 );
 
+function DemoTimerMobile() {
+    const { dbUser } = useAuth(null);
+    const [timeLeft, setTimeLeft] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!dbUser?.demoExpiresAt || dbUser.hasFullNotesAccess) {
+            setTimeLeft(null);
+            return;
+        }
+
+        const interval = setInterval(() => {
+            const now = Date.now();
+            const expiration = dbUser.demoExpiresAt!;
+            const remaining = expiration - now;
+
+            if (remaining <= 0) {
+                setTimeLeft("Expired");
+                clearInterval(interval);
+            } else {
+                const minutes = Math.floor((remaining / 1000) / 60);
+                const seconds = Math.floor((remaining / 1000) % 60);
+                setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [dbUser]);
+
+    if (!timeLeft || timeLeft === "Expired") {
+        return null;
+    }
+
+    return (
+        <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1 text-xs font-medium bg-secondary text-secondary-foreground px-2 py-1 rounded-full shadow-md">
+            <Clock className="h-3 w-3" />
+            <span>Demo: {timeLeft}</span>
+        </div>
+    );
+}
 
 export function MobileBottomNav() {
     const pathname = usePathname();
@@ -92,6 +131,7 @@ export function MobileBottomNav() {
 
     return (
         <nav className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
+            <DemoTimerMobile />
             <div className={cn("container grid h-16 max-w-lg items-center p-0", gridColsClass)}>
                 {navItems.map((item) => {
                     const isActive = (item.href === "/" && pathname === "/") || (item.href !== "/" && pathname.startsWith(item.href));

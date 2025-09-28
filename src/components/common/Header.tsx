@@ -46,6 +46,47 @@ function ThemeToggle() {
   );
 }
 
+function DemoTimer() {
+    const { dbUser } = useAuth(null);
+    const [timeLeft, setTimeLeft] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!dbUser?.demoExpiresAt || dbUser.hasFullNotesAccess) {
+            setTimeLeft(null);
+            return;
+        }
+
+        const interval = setInterval(() => {
+            const now = Date.now();
+            const expiration = dbUser.demoExpiresAt!;
+            const remaining = expiration - now;
+
+            if (remaining <= 0) {
+                setTimeLeft("Expired");
+                clearInterval(interval);
+                 // No auto-reload to prevent loops
+            } else {
+                const minutes = Math.floor((remaining / 1000) / 60);
+                const seconds = Math.floor((remaining / 1000) % 60);
+                setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [dbUser]);
+
+    if (!timeLeft || timeLeft === "Expired") {
+        return null;
+    }
+
+    return (
+        <div className="hidden md:flex items-center gap-2 text-sm font-medium bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md">
+            <Clock className="h-4 w-4" />
+            <span>Demo: {timeLeft}</span>
+        </div>
+    );
+}
+
 export function AppHeader() {
   const { user, role, loading } = useAuth(null);
   const [mounted, setMounted] = useState(false);
@@ -73,6 +114,8 @@ export function AppHeader() {
                   <Link href="/admin">Admin Panel</Link>
               </Button>
             )}
+
+            <DemoTimer />
 
           <Button variant="ghost" size="icon" asChild>
             <Link href="/search">
