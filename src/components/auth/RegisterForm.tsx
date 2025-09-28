@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -43,7 +44,6 @@ const formSchema = z.object({
   class: z.string().optional(),
   section: z.string().optional(),
   gender: z.string().optional(),
-  srNo: z.string().optional(),
   email: z.string().email({ message: "Please enter a valid email."}),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
@@ -68,14 +68,6 @@ const formSchema = z.object({
 }, {
     message: "Gender is required for teachers.",
     path: ['gender'],
-}).refine(data => {
-    if (data.role === 'Student') {
-        return !!data.srNo && /^\d{4}$/.test(data.srNo);
-    }
-    return true;
-}, {
-    message: "SR. No. must be exactly 4 digits.",
-    path: ['srNo']
 });
 
 // Helper to get ordinal suffix
@@ -141,7 +133,6 @@ export function RegisterForm() {
     defaultValues: {
       name: "",
       role: "Student",
-      srNo: "",
       email: "",
       password: "",
       whatsappNumber: "",
@@ -188,7 +179,6 @@ export function RegisterForm() {
             const classNum = parseInt(values.class);
             userData.classAndSection = `${classNum}${getOrdinalSuffix(classNum)} ${values.section}`;
           }
-          userData.srNo = values.srNo?.trim();
       } else if (role === 'Teacher') {
           userData.gender = values.gender as User['gender'];
       }
@@ -340,19 +330,6 @@ export function RegisterForm() {
                             )}
                         />
                     </div>
-                     <FormField
-                        control={form.control}
-                        name="srNo"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>SR. No.</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g., 1234" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
                 </>
             )}
             

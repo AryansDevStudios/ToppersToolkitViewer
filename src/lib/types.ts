@@ -1,3 +1,4 @@
+
 import type { Timestamp } from "firebase/firestore";
 
 export interface LoginLog {
@@ -127,7 +128,6 @@ export interface User {
   role: "Admin" | "User" | "Student" | "Teacher";
   classAndSection?: string;
   gender?: "Male" | "Female";
-  srNo?: string;
   whatsappNumber: string;
   password?: string;
   loginLogs?: LoginLog[];

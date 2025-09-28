@@ -32,7 +32,6 @@ const formSchema = z.object({
   class: z.string().optional(),
   section: z.string().optional(),
   gender: z.string().optional(),
-  srNo: z.string().optional(),
   email: z.string().email(),
   password: z.string().optional(),
   whatsappNumber: z.string().min(1, { message: "WhatsApp Number is required." }),
@@ -74,7 +73,6 @@ export function UserForm({ user }: UserFormProps) {
       class: initialClass ? initialClass.replace(/(st|nd|rd|th)/, '') : '',
       section: initialSection || '',
       gender: user.gender || '',
-      srNo: user.srNo || "",
       email: user.email || "",
       password: user.password || "",
       whatsappNumber: user.whatsappNumber || "",
@@ -102,10 +100,6 @@ export function UserForm({ user }: UserFormProps) {
                 toast({ title: "Validation Error", description: "Class and Section are required for students.", variant: "destructive" });
                 return;
             }
-             if (!values.srNo || !/^\d{4}$/.test(values.srNo)) {
-                toast({ title: "Validation Error", description: "SR. No. must be exactly 4 digits for students.", variant: "destructive" });
-                return;
-            }
             const classNum = parseInt(values.class);
             classAndSection = `${classNum}${getOrdinalSuffix(classNum)} ${values.section}`;
         }
@@ -119,7 +113,6 @@ export function UserForm({ user }: UserFormProps) {
           name: values.name.trim(),
           classAndSection: classAndSection,
           gender: user.role === 'Teacher' ? values.gender as User['gender'] : undefined,
-          srNo: isStudentLike ? values.srNo?.trim() : undefined,
           whatsappNumber: values.whatsappNumber?.trim(),
         };
 
@@ -235,19 +228,6 @@ export function UserForm({ user }: UserFormProps) {
                         )}
                     />
                 </div>
-                 <FormField
-                    control={form.control}
-                    name="srNo"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>SR. No.</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., 1234" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
             </>
         )}
 

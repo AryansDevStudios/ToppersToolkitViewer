@@ -102,7 +102,6 @@ export function SearchableUserGrid({ initialUsers }: SearchableUserGridProps) {
             (user.name && user.name.toLowerCase().includes(lowercasedQuery)) ||
             (user.email && user.email.toLowerCase().includes(lowercasedQuery)) ||
             (user.classAndSection && user.classAndSection.toLowerCase().includes(lowercasedQuery)) ||
-            (user.srNo && user.srNo.includes(lowercasedQuery)) ||
             (user.whatsappNumber && user.whatsappNumber.includes(lowercasedQuery))
         );
     }, [initialUsers, searchQuery]);
