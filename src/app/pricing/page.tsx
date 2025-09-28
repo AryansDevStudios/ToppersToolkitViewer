@@ -24,13 +24,41 @@ export default function PricingPage() {
     const [isStartingDemo, setIsStartingDemo] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
+    const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
     useEffect(() => {
-        // If user already has a full subscription, redirect them.
-        if (!authLoading && dbUser && dbUser.hasFullNotesAccess) {
+        if (!authLoading && dbUser?.hasFullNotesAccess) {
             router.replace('/');
         }
     }, [authLoading, dbUser, router]);
+    
+    useEffect(() => {
+        if (dbUser?.demoExpiresAt) {
+            const expiry = dbUser.demoExpiresAt;
+            const now = Date.now();
+
+            if (now < expiry) {
+                const updateTimer = () => {
+                    const currentNow = Date.now();
+                    const diff = expiry - currentNow;
+
+                    if (diff <= 0) {
+                        setTimeLeft("Expired");
+                        clearInterval(interval);
+                        return;
+                    }
+
+                    const minutes = Math.floor((diff / 1000 / 60) % 60);
+                    const seconds = Math.floor((diff / 1000) % 60);
+                    setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+                };
+
+                updateTimer();
+                const interval = setInterval(updateTimer, 1000);
+                return () => clearInterval(interval);
+            }
+        }
+    }, [dbUser]);
 
 
     const handleStartDemo = async () => {
@@ -57,8 +85,10 @@ export default function PricingPage() {
             setIsStartingDemo(false);
         }
     };
+    
+    const isDemoActive = dbUser?.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
 
-    if (authLoading || (dbUser && dbUser.hasFullNotesAccess)) {
+    if (authLoading) {
         return (
             <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -96,10 +126,17 @@ export default function PricingPage() {
                         </p>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full" variant="outline" onClick={handleStartDemo} disabled={isStartingDemo}>
-                            {isStartingDemo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Start 1-Hour Demo
-                        </Button>
+                         {isDemoActive && timeLeft ? (
+                             <Button className="w-full" variant="secondary" disabled>
+                                <Clock className="mr-2 h-4 w-4" />
+                                Demo active: {timeLeft} remaining
+                             </Button>
+                         ) : (
+                            <Button className="w-full" variant="outline" onClick={handleStartDemo} disabled={isStartingDemo || isDemoActive}>
+                                {isStartingDemo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Start 1-Hour Demo
+                            </Button>
+                         )}
                     </CardFooter>
                 </Card>
 
