@@ -6,11 +6,11 @@ import Link from 'next/link';
 const YoutubeIcon = iconMap['Youtube'];
 
 const subjects = [
-  { name: 'Hindi', icon: 'BookOpen', href: '#' },
-  { name: 'English', icon: 'Book', href: '#' },
-  { name: 'Math', icon: 'Calculator', href: '#' },
-  { name: 'Science', icon: 'FlaskConical', href: '#' },
-  { name: 'SST', icon: 'Landmark', href: '#' },
+  { name: 'Hindi', icon: 'BookOpen', href: '/youtube-learning/hindi' },
+  { name: 'English', icon: 'Book', href: '/youtube-learning/english' },
+  { name: 'Math', icon: 'Calculator', href: '/youtube-learning/math' },
+  { name: 'Science', icon: 'FlaskConical', href: '/youtube-learning/science' },
+  { name: 'SST', icon: 'Landmark', href: '/youtube-learning/sst' },
 ];
 
 export default function YouTubeLearningPage() {
