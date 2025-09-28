@@ -1656,6 +1656,34 @@ export async function getAllSubscriptions(): Promise<Subscription[]> {
     }
 }
 
+export async function getUserSubscriptions(userId: string): Promise<Subscription[]> {
+    noStore();
+    if (!userId) {
+        return [];
+    }
+
+    try {
+        const subsCollection = collection(db, 'subscriptions');
+        const q = query(subsCollection, where('userId', '==', userId), orderBy('createdAt', 'desc'));
+        
+        const querySnapshot = await getDocs(q);
+        
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt,
+                completedAt: data.completedAt?.toMillis ? data.completedAt.toMillis() : data.completedAt,
+            } as Subscription;
+        });
+
+    } catch (error) {
+        console.error("Error fetching user subscriptions:", error);
+        return [];
+    }
+}
+
+
 export async function completeSubscription(subscriptionId: string, userId: string): Promise<{ success: boolean; error?: string }> {
     if (!subscriptionId || !userId) {
         return { success: false, error: "Subscription ID and User ID are required." };
