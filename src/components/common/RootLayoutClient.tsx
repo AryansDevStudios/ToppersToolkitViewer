@@ -30,21 +30,6 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
       return;
     }
     
-    // Temporarily removing the redirect for expired demos.
-    // We can re-evaluate this logic later.
-    /*
-    if (user && dbUser) {
-        const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
-        const demoExpiresAt = dbUser.demoExpiresAt;
-        const hasActiveDemo = demoExpiresAt ? demoExpiresAt > Date.now() : false;
-        
-        // If user has no access and is not on a subscription or public page, redirect to pricing.
-        if (!hasActiveSubscription && !hasActiveDemo && !isSubscriptionPage && !isPublicPage) {
-            router.push('/pricing');
-        }
-    }
-    */
-
   }, [loading, user, dbUser, pathname, router]);
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
