@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { iconMap } from "./iconMap";
 import { unstable_noStore as noStore } from 'next/cache';
 import { z } from "zod";
+import { addMonths } from "date-fns";
 
 const convertToJsDelivr = (githubUrl: string): string => {
     try {
@@ -325,7 +326,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
 
         revalidatePath("/admin/notes", "layout");
         revalidatePath("/browse", "layout");
-        return { success: true, message: `Note successfully ${isNewNote ? 'created' : 'updated'}.` };
+        return { success: true, message: `Note successfully ${isNew ? 'created' : 'updated'}.` };
     } catch (e: any) {
         console.error("Error in upsertNote:", e);
         return { success: false, error: e.message || "An unknown error occurred" };
@@ -1052,7 +1053,7 @@ export async function createDoubt(userId: string, userName: string, userClassAnd
     const doubtId = uuidv4();
     const doubtDocRef = doc(db, "doubts", doubtId);
 
-    const newDoubt: Omit<Doubt, 'id'| 'createdAt'> = {
+    const newDoubt: Omit<Doubt, 'id' | 'createdAt' | 'answeredAt'> = {
         userId,
         userName,
         userClassAndSection,
@@ -1175,7 +1176,7 @@ export async function createComplaint(userId: string, userName: string, userClas
     const complaintId = uuidv4();
     const complaintDocRef = doc(db, "complaints", complaintId);
 
-    const newComplaint: Omit<Complaint, 'id' | 'createdAt'> = {
+    const newComplaint: Omit<Complaint, 'id' | 'createdAt' | 'resolvedAt'> = {
         userId,
         userName,
         userClassAndSection,
@@ -1581,7 +1582,7 @@ export async function createSubscriptionRequest(
     const subscriptionId = uuidv4();
     const subscriptionDocRef = doc(db, "subscriptions", subscriptionId);
 
-    const newSubscription: Omit<Subscription, 'id' | 'createdAt'> = {
+    const newSubscription: Omit<Subscription, 'id' | 'createdAt' | 'completedAt' | 'expiresAt'> = {
         userId,
         userName,
         userEmail,
@@ -1680,7 +1681,7 @@ export async function completeSubscription(subscriptionId: string, userId: strin
     const batch = writeBatch(db);
 
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+    const expiresAt = addMonths(now, 1);
 
     // Update subscription status
     batch.update(subscriptionDocRef, {
@@ -1698,6 +1699,7 @@ export async function completeSubscription(subscriptionId: string, userId: strin
     try {
         await batch.commit();
         revalidatePath('/admin/subscriptions');
+        revalidatePath('/admin/active-subscriptions');
         revalidatePath('/', 'layout'); // Revalidate layout to update auth context everywhere
         return { success: true };
     } catch (e: any) {
