@@ -35,6 +35,7 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
         const demoExpiresAt = dbUser.demoExpiresAt;
         const hasActiveDemo = demoExpiresAt ? demoExpiresAt > Date.now() : false;
         
+        // If user has no access and is not on a subscription or public page, redirect to pricing.
         if (!hasActiveSubscription && !hasActiveDemo && !isSubscriptionPage && !isPublicPage) {
             router.push('/pricing');
         }
