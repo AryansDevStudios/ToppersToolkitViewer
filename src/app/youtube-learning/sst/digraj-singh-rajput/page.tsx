@@ -69,7 +69,7 @@ const videoContent = {
 };
 
 const Sidebar = () => (
-    <aside className="w-full lg:w-72 lg:h-screen lg:fixed top-0 left-0 bg-card border-r p-6 box-border lg:flex flex-col hidden">
+    <aside className="w-full lg:w-72 lg:h-screen lg:fixed top-0 left-0 bg-card border-r p-6 box-border hidden lg:flex lg:flex-col">
         <div className="text-xl font-bold text-primary mb-5 pb-4 border-b">
             Class 9 SST
         </div>
@@ -170,3 +170,4 @@ export default function DigrajSinghRajputPage() {
         </div>
     );
 }
+
