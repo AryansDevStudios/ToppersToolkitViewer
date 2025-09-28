@@ -26,18 +26,14 @@ const authenticatedOpenPaths = [
     '/invite-friends',
     '/leaderboard',
     '/mcqs',
-    '/mindmap',
     '/notices',
-    '/pricing',
     '/purchase-history',
     '/puzzle-quiz',
-    '/reasoning',
     '/rules-policies',
     '/search',
     '/solve-doubts',
     '/terms',
     '/user-manual',
-    '/youtube-learning'
 ];
 
 function AuthWrapper({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
@@ -50,12 +46,31 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     if (loading) return;
 
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
-    const isOpenPage = authenticatedOpenPaths.some(path => pathname.startsWith(path));
+    const isOpenPage = authenticatedOpenPaths.some(path => pathname.startsWith(path)) || subscriptionPaths.some(path => pathname.startsWith(path));
     
-    // If not a public page and not an open page for authenticated users, check for user login
+    // If not a public page and not an open page, it's a protected page
+    const isProtectedPage = !isPublicPage && !isOpenPage;
+    
     if (!user && !isPublicPage) {
-      router.push('/login');
-      return;
+        // If user is not logged in and it's not a public page, redirect to login
+        router.push('/login');
+        return;
+    }
+
+    if (user && dbUser && isProtectedPage) {
+        // User is logged in, now check for subscription status on protected pages
+        const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
+        const isDemoActive = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
+        
+        if (!hasActiveSubscription && !isDemoActive && dbUser.role !== 'Admin') {
+            toast({
+                title: "Subscription Required",
+                description: "You need an active subscription to access this page.",
+                variant: "destructive"
+            });
+            router.push('/pricing');
+            return;
+        }
     }
     
   }, [loading, user, dbUser, pathname, router, toast]);
