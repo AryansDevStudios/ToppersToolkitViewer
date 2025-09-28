@@ -52,15 +52,14 @@ export default function SubscriptionHistoryPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (authLoading) {
-            return;
-        }
-        if (!user) {
-            setIsLoading(false);
-            return;
-        }
-
         const fetchSubscriptions = async () => {
+            if (!user) {
+                // If there's no user, we can stop loading and show the login prompt.
+                setIsLoading(false);
+                return;
+            }
+
+            // Start loading only when we know we have a user to fetch for.
             setIsLoading(true);
             try {
                 const userSubscriptions = await getUserSubscriptions(user.uid);
@@ -73,8 +72,10 @@ export default function SubscriptionHistoryPage() {
             }
         };
 
-        fetchSubscriptions();
-
+        // Only run the fetch function when the authentication state is no longer loading.
+        if (!authLoading) {
+            fetchSubscriptions();
+        }
     }, [user, authLoading]);
     
     const displayLoading = authLoading || isLoading;
