@@ -130,7 +130,7 @@ Please activate my full subscription upon verification. Thank you!`;
                                 </TabsList>
                                 <TabsContent value="upi" className="mt-6">
                                     <div className="flex flex-col items-center text-center space-y-4">
-                                        <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100. <strong className="text-destructive">After paying, you must click the "Confirm" button below.</strong></p>
+                                        <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100. <strong className="text-primary">After paying, you must click the "Confirm" button below.</strong></p>
                                         <div className="p-2 border-4 border-primary rounded-lg bg-white">
                                              <Image
                                                 src="/images/payment_qr.png"
