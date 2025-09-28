@@ -1633,7 +1633,7 @@ export async function getAllSubscriptions(): Promise<Subscription[]> {
                 ...data,
                 createdAt: data.createdAt?.toMillis() || 0,
                 completedAt: data.completedAt?.toMillis() || undefined,
-                expiresAt: data.expiresAt || undefined,
+                expiresAt: data.expiresAt || undefined, // This is a number, not a timestamp
             } as Subscription;
         });
     } catch (error) {
@@ -1701,6 +1701,22 @@ export async function completeSubscription(subscriptionId: string, userId: strin
         revalidatePath('/admin/subscriptions');
         revalidatePath('/admin/active-subscriptions');
         revalidatePath('/', 'layout'); // Revalidate layout to update auth context everywhere
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function extendUserSubscription(userId: string, newExpiryTimestamp: number): Promise<{ success: boolean; error?: string }> {
+    if (!userId || !newExpiryTimestamp) {
+        return { success: false, error: "User ID and new expiry date are required." };
+    }
+    const userDocRef = doc(db, "users", userId);
+    try {
+        await updateDoc(userDocRef, {
+            subscriptionExpiresAt: newExpiryTimestamp
+        });
+        revalidatePath('/admin/active-subscriptions');
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };

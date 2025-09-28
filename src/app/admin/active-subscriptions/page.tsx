@@ -1,6 +1,7 @@
 
+
 import { getUsers } from "@/lib/data";
-import { User, CheckCircle, Clock } from "lucide-react";
+import { CheckCircle, Clock, Edit } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { subMonths } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import { ExtendSubscriptionDialog } from "@/components/admin/subscriptions/ExtendSubscriptionDialog";
 
 export const revalidate = 0;
 
@@ -65,6 +67,7 @@ export default async function ActiveSubscriptionsPage() {
                 <TableHead className="hidden md:table-cell">Role</TableHead>
                 <TableHead className="hidden lg:table-cell">Started On</TableHead>
                 <TableHead className="text-right">Expires</TableHead>
+                <TableHead className="w-[100px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -111,12 +114,15 @@ export default async function ActiveSubscriptionsPage() {
                             )}
                         </div>
                       </TableCell>
+                       <TableCell className="text-right">
+                          <ExtendSubscriptionDialog user={user} />
+                       </TableCell>
                     </TableRow>
                   );
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     No active subscriptions found.
                   </TableCell>
                 </TableRow>
