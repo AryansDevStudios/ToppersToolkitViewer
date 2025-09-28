@@ -19,30 +19,30 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
   const pathname = usePathname();
   const router = useRouter();
 
-  const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
-  const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
-
   useEffect(() => {
     if (loading) return;
+
+    const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
+    const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
     if (!user && !isPublicPage) {
       router.push('/login');
       return;
     }
     
-    // Redirect logic for logged-in users
     if (user && dbUser) {
         const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
         const demoExpiresAt = dbUser.demoExpiresAt;
         const hasActiveDemo = demoExpiresAt ? demoExpiresAt > Date.now() : false;
         
-        // If user has no subscription and no active demo, and they are on a protected page, redirect to pricing.
         if (!hasActiveSubscription && !hasActiveDemo && !isSubscriptionPage && !isPublicPage) {
             router.push('/pricing');
         }
     }
 
-  }, [loading, user, dbUser, isPublicPage, isSubscriptionPage, router, pathname]);
+  }, [loading, user, dbUser, pathname, router]);
+
+  const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
 
   if (loading && !isPublicPage) {
     return (
@@ -52,7 +52,6 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
   
-  // If user is not logged in and not on a public page, show loader/null while redirecting
   if (!user && !isPublicPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
