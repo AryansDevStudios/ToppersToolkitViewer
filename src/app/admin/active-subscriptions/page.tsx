@@ -18,8 +18,10 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { User as UserType } from "@/lib/types";
-import { format } from "date-fns";
+import { format, formatDistanceToNowStrict } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { subMonths } from 'date-fns';
 
 export const revalidate = 0;
 
@@ -57,14 +59,20 @@ export default async function ActiveSubscriptionsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead className="text-right">Expires On</TableHead>
+                <TableHead className="hidden lg:table-cell">Class</TableHead>
+                <TableHead className="hidden md:table-cell">Role</TableHead>
+                <TableHead className="hidden lg:table-cell">Started On</TableHead>
+                <TableHead className="text-right">Expires</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {activeSubscribers.length > 0 ? (
                 activeSubscribers.map((user) => {
                   const isExpired = user.subscriptionExpiresAt ? user.subscriptionExpiresAt < Date.now() : false;
+                  const expiresAt = user.subscriptionExpiresAt ? new Date(user.subscriptionExpiresAt) : null;
+                  const startedAt = expiresAt ? subMonths(expiresAt, 1) : null;
+                  const expiresIn = expiresAt && !isExpired ? formatDistanceToNowStrict(expiresAt, { addSuffix: true }) : null;
+
                   return (
                     <TableRow key={user.id}>
                       <TableCell>
@@ -72,14 +80,30 @@ export default async function ActiveSubscriptionsPage() {
                             <Avatar>
                                 <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                             </Avatar>
-                            <span className="font-medium">{user.name}</span>
+                            <div>
+                                <span className="font-medium">{user.name}</span>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
+                            </div>
                         </div>
                       </TableCell>
-                      <TableCell>{user.email}</TableCell>
+                       <TableCell className="hidden lg:table-cell">
+                          {user.classAndSection || 'N/A'}
+                       </TableCell>
+                       <TableCell className="hidden md:table-cell">
+                          <Badge variant={user.role === 'Admin' ? 'destructive' : user.role === 'Teacher' ? 'secondary' : 'default'}>{user.role}</Badge>
+                       </TableCell>
+                       <TableCell className="hidden lg:table-cell">
+                          {startedAt ? format(startedAt, 'PP') : 'N/A'}
+                       </TableCell>
                       <TableCell className={cn("text-right font-medium", isExpired && "text-destructive")}>
-                        <div className="flex items-center justify-end gap-2">
-                            {isExpired && <Clock className="h-4 w-4" />}
-                            {user.subscriptionExpiresAt ? format(new Date(user.subscriptionExpiresAt), 'PPP') : 'N/A'}
+                        <div className="flex flex-col items-end gap-1">
+                            <div className="flex items-center justify-end gap-2">
+                                {isExpired && <Clock className="h-4 w-4" />}
+                                {expiresAt ? format(expiresAt, 'PP') : 'N/A'}
+                            </div>
+                            {expiresIn && (
+                                <p className="text-xs text-muted-foreground">{expiresIn}</p>
+                            )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -87,7 +111,7 @@ export default async function ActiveSubscriptionsPage() {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No active subscriptions found.
                   </TableCell>
                 </TableRow>
