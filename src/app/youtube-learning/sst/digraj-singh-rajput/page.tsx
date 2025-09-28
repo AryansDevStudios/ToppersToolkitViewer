@@ -69,11 +69,11 @@ const videoContent = {
 };
 
 const Sidebar = () => (
-    <aside className="w-full lg:w-72 bg-card border-b lg:border-b-0 lg:border-r p-6 box-border">
+    <aside className="w-full lg:w-72 bg-card border-b lg:border-b-0 lg:border-r p-6 box-border lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)]">
         <div className="text-xl font-bold text-primary mb-5 pb-4 border-b">
             Class 9 SST
         </div>
-        <ScrollArea className="lg:h-[calc(100vh-12rem)]">
+        <ScrollArea className="h-full">
             <nav>
                 <ul>
                     {subjects.map(subject => (
@@ -164,5 +164,6 @@ export default function DigrajSinghRajputPage() {
         </div>
     );
 }
+
 
 
