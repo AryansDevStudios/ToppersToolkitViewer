@@ -18,7 +18,7 @@ const includedFeatures = [
     'Priority Support',
 ];
 
-const UPI_ID = "kuldeepsingh012011@oksbi";
+const UPI_ID = "nitish545454@ybl";
 const OWNER_WHATSAPP_NUMBER = "917754000411";
 
 export default function SubscribePage() {
