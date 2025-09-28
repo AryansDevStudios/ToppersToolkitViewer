@@ -32,6 +32,33 @@ export default function PricingPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [isStartingDemo, setIsStartingDemo] = useState(false);
+    const [timeLeft, setTimeLeft] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!dbUser?.demoExpiresAt) {
+            setTimeLeft(null);
+            return;
+        }
+
+        const interval = setInterval(() => {
+            const now = Date.now();
+            const expiration = dbUser.demoExpiresAt!;
+            const remaining = expiration - now;
+
+            if (remaining <= 0) {
+                setTimeLeft("Expired");
+                clearInterval(interval);
+                router.refresh(); 
+            } else {
+                const minutes = Math.floor((remaining / 1000) / 60);
+                const seconds = Math.floor((remaining / 1000) % 60);
+                setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [dbUser, router]);
+
 
     const handleStartDemo = async () => {
         if (!user) {
@@ -57,8 +84,10 @@ export default function PricingPage() {
         );
     }
     
-    // Determine if the user is eligible for a demo
+    // Determine user eligibility for different states
     const isDemoEligible = dbUser && !dbUser.hasFullNotesAccess && !dbUser.demoExpiresAt;
+    const isDemoActive = dbUser && !dbUser.hasFullNotesAccess && dbUser.demoExpiresAt && timeLeft && timeLeft !== "Expired";
+
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
@@ -71,6 +100,38 @@ export default function PricingPage() {
                 </p>
             </div>
             <div className="mt-12 w-full max-w-md">
+
+                {isDemoActive && (
+                    <>
+                        <Card className="mb-8 border-dashed border-primary">
+                             <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-primary">
+                                    <Clock className="h-6 w-6"/>
+                                    Demo Active
+                                </CardTitle>
+                                <CardDescription>
+                                   Your full access trial is currently running.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="text-center">
+                                <p className="text-sm text-muted-foreground">Time Remaining:</p>
+                                <p className="text-4xl font-bold">{timeLeft}</p>
+                            </CardContent>
+                        </Card>
+
+                        <div className="relative my-8 text-center">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                OR
+                                </span>
+                            </div>
+                        </div>
+                    </>
+                )}
+
 
                 {isDemoEligible && (
                     <>
@@ -148,3 +209,4 @@ export default function PricingPage() {
         </div>
     );
 }
+
