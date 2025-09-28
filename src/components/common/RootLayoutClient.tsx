@@ -13,7 +13,7 @@ import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { useToast } from '@/hooks/use-toast';
 import { SubscriptionStatusDialog } from './SubscriptionStatusDialog';
 
-const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results', '/mindmap', '/reasoning', '/youtube-learning'];
+const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results'];
 const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
 
 // Pages accessible to any logged-in user, regardless of subscription
