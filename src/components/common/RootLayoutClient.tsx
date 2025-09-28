@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from 'react';
@@ -28,13 +29,14 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
       router.push('/login');
       return;
     }
-
+    
+    // Redirect logic for logged-in users
     if (user && dbUser) {
         const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
         const demoExpiresAt = dbUser.demoExpiresAt;
         const hasActiveDemo = demoExpiresAt ? demoExpiresAt > Date.now() : false;
         
-        // If user's access has expired (no sub and no active demo), and they are not on a page that is public or related to subscribing, redirect them.
+        // If user has no subscription and no active demo, and they are on a protected page, redirect to pricing.
         if (!hasActiveSubscription && !hasActiveDemo && !isSubscriptionPage && !isPublicPage) {
             router.push('/pricing');
         }
