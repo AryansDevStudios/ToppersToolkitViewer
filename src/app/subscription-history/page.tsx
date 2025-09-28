@@ -1,15 +1,15 @@
 
-"use client";
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { History, Clock, CheckCircle, Star, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { History, Clock, CheckCircle, Star } from 'lucide-react';
 import { getUserSubscriptions } from '@/lib/data';
-import { useAuth } from '@/hooks/use-auth';
 import type { Subscription } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { getUser } from '@/lib/auth-server';
+import { redirect } from 'next/navigation';
+
+export const revalidate = 0;
 
 const SubscriptionCard = ({ subscription }: { subscription: Subscription }) => {
     const statusConfig = {
@@ -46,39 +46,14 @@ const SubscriptionCard = ({ subscription }: { subscription: Subscription }) => {
 };
 
 
-export default function SubscriptionHistoryPage() {
-    const { user, loading: authLoading } = useAuth();
-    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+export default async function SubscriptionHistoryPage() {
+    const user = await getUser();
 
-    useEffect(() => {
-        const fetchSubscriptions = async () => {
-            if (!user) {
-                // If there's no user, we can stop loading and show the login prompt.
-                setIsLoading(false);
-                return;
-            }
+    if (!user) {
+        redirect('/login');
+    }
 
-            // Start loading only when we know we have a user to fetch for.
-            setIsLoading(true);
-            try {
-                const userSubscriptions = await getUserSubscriptions(user.uid);
-                setSubscriptions(userSubscriptions);
-            } catch (error) {
-                console.error("Failed to fetch subscriptions:", error);
-                setSubscriptions([]);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        // Only run the fetch function when the authentication state is no longer loading.
-        if (!authLoading) {
-            fetchSubscriptions();
-        }
-    }, [user, authLoading]);
-    
-    const displayLoading = authLoading || isLoading;
+    const subscriptions = await getUserSubscriptions(user.id);
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -94,32 +69,15 @@ export default function SubscriptionHistoryPage() {
         </p>
       </header>
       <main className="max-w-4xl mx-auto">
-        {displayLoading ? (
-            <div className="flex justify-center items-center py-20">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        {subscriptions.length > 0 ? (
+            <div className="space-y-6">
+                {subscriptions.map(sub => <SubscriptionCard key={sub.id} subscription={sub} />)}
             </div>
-        ) : !user ? (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Please Log In</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground text-center py-8">
-                        You need to be logged in to view your subscription history.
-                    </p>
-                </CardContent>
-            </Card>
         ) : (
-            subscriptions.length > 0 ? (
-                <div className="space-y-6">
-                    {subscriptions.map(sub => <SubscriptionCard key={sub.id} subscription={sub} />)}
-                </div>
-            ) : (
-                <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
-                  <h2 className="text-xl font-semibold">No Subscription History</h2>
-                  <p className="mt-2">You haven't made any subscription requests yet.</p>
-                </div>
-            )
+            <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
+              <h2 className="text-xl font-semibold">No Subscription History</h2>
+              <p className="mt-2">You haven't made any subscription requests yet.</p>
+            </div>
         )}
       </main>
     </div>
