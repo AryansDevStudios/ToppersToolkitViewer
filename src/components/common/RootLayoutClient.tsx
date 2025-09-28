@@ -11,6 +11,7 @@ import { AppHeader } from '@/components/common/Header';
 import { Footer } from '@/components/common/Footer';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { useToast } from '@/hooks/use-toast';
+import { SubscriptionStatusDialog } from './SubscriptionStatusDialog';
 
 const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results'];
 const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
@@ -132,6 +133,7 @@ export function RootLayoutClient({
           <main className="flex-1 flex flex-col">
             {children}
           </main>
+          <SubscriptionStatusDialog />
           {!isAuthPage && !isDoubtSolverPage && !isSubscriptionPage && <Footer />}
           {!isAuthPage && !isSubscriptionPage && <MobileBottomNav />}
         </div>
