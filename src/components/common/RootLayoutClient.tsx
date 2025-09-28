@@ -31,10 +31,11 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
 
     if (user && dbUser) {
         const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
-        const hasActiveDemo = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
+        const demoExpiresAt = dbUser.demoExpiresAt;
+        const hasActiveDemo = demoExpiresAt ? demoExpiresAt > Date.now() : false;
         
-        // If user has no access and is on a page that requires a subscription, redirect them.
-        if (!hasActiveSubscription && !hasActiveDemo && !isSubscriptionPage && !isPublicPage && pathname !== '/') {
+        // If user's access has expired (no sub and no active demo), and they are not on a page that is public or related to subscribing, redirect them.
+        if (!hasActiveSubscription && !hasActiveDemo && !isSubscriptionPage && !isPublicPage) {
             router.push('/pricing');
         }
     }

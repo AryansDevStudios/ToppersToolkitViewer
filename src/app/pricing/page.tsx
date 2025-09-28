@@ -34,11 +34,12 @@ export default function PricingPage() {
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
     useEffect(() => {
-        // If the user *has* full access, they don't need to be on the pricing page. Redirect them away.
-        if (!authLoading && dbUser?.hasFullNotesAccess) {
+        // If a logged-in user with full access lands here, redirect them to the homepage.
+        // Guests or users without full access should be able to see this page.
+        if (!authLoading && user && dbUser?.hasFullNotesAccess) {
              router.replace('/');
         }
-    }, [authLoading, dbUser, router]);
+    }, [authLoading, user, dbUser, router]);
     
     useEffect(() => {
         if (dbUser?.demoExpiresAt) {
