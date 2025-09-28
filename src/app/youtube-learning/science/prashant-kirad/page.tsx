@@ -54,7 +54,7 @@ const videoContent = {
     'phy-ch9': { title: '9. Gravitation', videos: [{ src: "https://www.youtube.com/embed/yeFQ2Ce_nKo", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/8-rsy2zSj28", caption: "Rapid Revision" }] },
     'phy-ch10': { title: '10. Work and Energy', videos: [{ src: "https://www.youtube.com/embed/bGFE2Z-VVM8", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/j_kavOBi2aI", caption: "Rapid Revision" }] },
     'phy-ch11': { title: '11. Sound', videos: [{ src: "https://www.youtube.com/embed/UpXKKEbCByA", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/wL3y41Tsoc4", caption: "Rapid Revision" }] },
-    'bio-ch12': { title: '12. Improvement in Food Resources', videos: [{ src: "https://www.youtube.com/embed/py7rvl_znRs", caption: "One Shot Lecture" }] },
+    'bio-ch12': { title: '12. Improvement in Food Resources', videos: [{ src: "https://www.youtube.com/embed/py7rvl_znRs", caption: "One Shot Lecture" }, { src: "https://www.youtube.com/embed/gE7nxVX2xn4", caption: "Rapid Revision" }] },
 };
 
 const SidebarMenu = () => {
