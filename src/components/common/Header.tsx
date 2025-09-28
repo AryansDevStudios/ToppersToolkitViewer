@@ -64,7 +64,6 @@ function DemoTimer() {
             if (remaining <= 0) {
                 setTimeLeft("Expired");
                 clearInterval(interval);
-                 // No auto-reload to prevent loops
             } else {
                 const minutes = Math.floor((remaining / 1000) / 60);
                 const seconds = Math.floor((remaining / 1000) % 60);
@@ -80,10 +79,10 @@ function DemoTimer() {
     }
 
     return (
-        <div className="hidden md:flex items-center gap-2 text-sm font-medium bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md">
+        <Link href="/pricing" className="hidden md:flex items-center gap-2 text-sm font-medium bg-destructive text-destructive-foreground px-3 py-1.5 rounded-md hover:bg-destructive/90 transition-colors">
             <Clock className="h-4 w-4" />
             <span>Demo: {timeLeft}</span>
-        </div>
+        </Link>
     );
 }
 

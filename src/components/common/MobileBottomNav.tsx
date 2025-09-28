@@ -72,10 +72,10 @@ function DemoTimerMobile() {
     }
 
     return (
-        <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1 text-xs font-medium bg-secondary text-secondary-foreground px-2 py-1 rounded-full shadow-md">
+        <Link href="/pricing" className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1 text-xs font-medium bg-destructive text-destructive-foreground px-2 py-1 rounded-full shadow-md">
             <Clock className="h-3 w-3" />
             <span>Demo: {timeLeft}</span>
-        </div>
+        </Link>
     );
 }
 
