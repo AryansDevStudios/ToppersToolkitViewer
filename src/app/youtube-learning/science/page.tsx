@@ -38,7 +38,7 @@ export default function ScienceYoutubePage() {
                 <CardContent className="flex flex-col md:flex-row items-center gap-6">
                     <div className="md:w-1/3">
                         <Image 
-                            src="https://yt3.googleusercontent.com/ytc/AIdro_n0aUIJ2NeTYJqM5CVT_y-revv2yNlCTJpG00yP1A=s900-c-k-c0x00ffffff-no-rj"
+                            src="https://yt3.googleusercontent.com/zN1pXrwKEusunmJZnBABoXxgILwD1QEfPoEITT6d6FFcfHaLpxrRpN5s2PZDsyCKIQmKPTtCuw=s900-c-k-c0x00ffffff-no-rj"
                             alt="Photo of Prashant Kirad"
                             width={400}
                             height={400}
