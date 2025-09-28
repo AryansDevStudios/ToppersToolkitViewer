@@ -118,7 +118,7 @@ I have completed the payment of ₹100. Please activate my account. Thank you!`;
                                         <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100.</p>
                                         <div className="p-2 border-4 border-primary rounded-lg bg-white">
                                              <Image
-                                                src="https://raw.githubusercontent.com/AryansDevStudios/ToppersToolkitE-Materials/main/images/QR.png"
+                                                src="/images/payment_qr.png"
                                                 alt="UPI QR Code"
                                                 width={200}
                                                 height={200}
