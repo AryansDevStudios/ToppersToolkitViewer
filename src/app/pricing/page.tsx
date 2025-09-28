@@ -16,6 +16,7 @@ const includedFeatures = [
     'Access to All Notes',
     'AI Doubt Solver',
     'MCQ Practice Sets',
+    'Priority Support',
 ];
 
 export default function PricingPage() {
@@ -25,8 +26,8 @@ export default function PricingPage() {
     const { toast } = useToast();
 
     useEffect(() => {
-        // If user already has a subscription or an active demo, redirect them
-        if (!authLoading && dbUser && (dbUser.hasFullNotesAccess || (dbUser.demoExpiresAt && dbUser.demoExpiresAt > Date.now()))) {
+        // If user already has a full subscription, redirect them.
+        if (!authLoading && dbUser && dbUser.hasFullNotesAccess) {
             router.replace('/');
         }
     }, [authLoading, dbUser, router]);
@@ -57,7 +58,7 @@ export default function PricingPage() {
         }
     };
 
-    if (authLoading || (dbUser && (dbUser.hasFullNotesAccess || (dbUser.demoExpiresAt && dbUser.demoExpiresAt > Date.now())))) {
+    if (authLoading || (dbUser && dbUser.hasFullNotesAccess)) {
         return (
             <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
