@@ -20,8 +20,6 @@ const chapters = [
     { id: 'ch8', title: '8. Quadrilaterals' },
     { id: 'ch9', title: '9. Circles' },
     { id: 'ch10', title: '10. Heron\'s Formula' },
-    { id: 'ch11', title: '11. Surface Areas and Volumes' },
-    { id: 'ch12', title: '12. Statistics' },
 ];
 
 const videoContent = {
@@ -35,8 +33,6 @@ const videoContent = {
     'ch8': { title: '8. Quadrilaterals', description: "Explore the different types of quadrilaterals and their unique properties, from parallelograms to trapezoids.", videos: [{ src: "https://cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fwww.youtube.com%2Fembed%2FSTrfPXdTzUA%3Ffeature%3Doembed&display_name=YouTube&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DSTrfPXdTzUA&image=https%3A%2F%2Fi.ytimg.com%2Fvi%2FSTrfPXdTzUA%2Fhqdefault.jpg&key=YOUR_API_KEY&type=text%2Fhtml&schema=youtube", caption: "One Shot Lecture" }] },
     'ch9': { title: '9. Circles', description: "Learn about the various parts of a circle, their properties, and theorems related to chords, arcs, and angles.", videos: [{ src: "https://cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fwww.youtube.com%2Fembed%2FmCWjZ5q58u8%3Ffeature%3Doembed&display_name=YouTube&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DmCWjZ5q58u8&image=https%3A%2F%2Fi.ytimg.com%2Fvi%2FmCWjZ5q58u8%2Fhqdefault.jpg&key=YOUR_API_KEY&type=text%2Fhtml&schema=youtube", caption: "One Shot Lecture" }] },
     'ch10': { title: '10. Heron\'s Formula', description: "Discover a powerful formula to find the area of a triangle when the lengths of all three sides are known.", videos: [{ src: "https://cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fwww.youtube.com%2Fembed%2FxovtUr4TN6Y%3Ffeature%3Doembed&display_name=YouTube&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DxovtUr4TN6Y&image=https%3A%2F%2Fi.ytimg.com%2Fvi%2FxovtUr4TN6Y%2Fhqdefault.jpg&key=YOUR_API_KEY&type=text%2Fhtml&schema=youtube", caption: "One Shot Lecture" }] },
-    'ch11': { title: '11. Surface Areas and Volumes', description: "Calculate the surface areas and volumes of various 3D shapes like cubes, cuboids, cylinders, cones, and spheres.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=B5e7S4Z-l_k_jV9W&amp;list=PL4AiseKN0xx-f2v3S0W-Iu_S-wA6rTfG6", caption: "One Shot Lecture" }] },
-    'ch12': { title: '12. Statistics', description: "Learn how to collect, present, and analyze data using various graphical representations and measures of central tendency.", videos: [{ src: "https://www.youtube.com/embed/videoseries?si=A-s8s8S7b4Z-k_jV&amp;list=PL4AiseKN0xx-f2v3S0W-Iu_S-wA6rTfG6", caption: "One Shot Lecture" }] },
 };
 
 const SidebarMenu = () => {
@@ -120,3 +116,6 @@ export default function ShobhitNirwanMathPage() {
 }
     
 
+
+
+    
