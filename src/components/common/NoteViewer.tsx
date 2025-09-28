@@ -1,11 +1,10 @@
 
-
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Loader2, Image as ImageIcon, FileText, Maximize, Minimize, Printer } from "lucide-react";
+import { ShieldAlert, Loader2, Image as ImageIcon, FileText, Maximize, Minimize, Printer, Star } from "lucide-react";
 import { getUserById, getNoteById as fetchNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo, useRef, useCallback } from "react";
@@ -25,15 +24,22 @@ const PdfViewerWrapper = dynamic(() => import('@/components/common/PdfViewerWrap
 });
 
 
-const AccessDenied = () => (
+const AccessDenied = ({ isDemoExpired }: { isDemoExpired?: boolean}) => (
     <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
         <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
-        <h2 className="text-2xl font-bold text-destructive">Access Denied</h2>
+        <h2 className="text-2xl font-bold text-destructive">
+             {isDemoExpired ? "Demo Expired" : "Access Denied"}
+        </h2>
         <p className="mt-2 text-muted-foreground max-w-md">
-            You do not have permission to view this document. Please contact an administrator to request access.
+            {isDemoExpired
+                ? "Your 1-hour free demo has ended. Please subscribe to continue."
+                : "You do not have permission to view this document. Please subscribe to get access."}
         </p>
         <Button asChild className="mt-6">
-            <Link href="/browse">Back to Browse</Link>
+            <Link href="/pricing">
+                <Star className="mr-2 h-4 w-4"/>
+                View Subscription Plans
+            </Link>
         </Button>
     </div>
 );
@@ -53,9 +59,10 @@ interface NoteViewerProps {
 }
 
 const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
-    const { user, dbUser, loading: authLoading } = useAuth();
+    const { user, dbUser, loading: authLoading } = useAuth(null);
     const router = useRouter();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+    const [isDemoExpired, setIsDemoExpired] = useState(false);
     const [note, setNote] = useState<Note | null>(null);
     const [isLoadingNote, setIsLoadingNote] = useState(true);
 
@@ -112,15 +119,21 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
         
         setHasAccess(null); // Reset for re-check
 
-        async function checkAccess() {
-            if (dbUser.role === 'Admin' || note?.isPublic || dbUser.hasFullNotesAccess || dbUser.noteAccess?.includes(noteId)) {
-                setHasAccess(true);
-            } else {
-                setHasAccess(false);
+        const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
+        const demoExpiresAt = dbUser.demoExpiresAt;
+        const hasActiveDemo = demoExpiresAt ? demoExpiresAt > Date.now() : false;
+        
+        const canAccess = hasActiveSubscription || hasActiveDemo || note.isPublic || dbUser.role === 'Admin';
+        
+        if (canAccess) {
+            setHasAccess(true);
+        } else {
+            setHasAccess(false);
+            if (demoExpiresAt) { // Check if a demo *was* active
+                setIsDemoExpired(true);
             }
         }
 
-        checkAccess();
     }, [authLoading, user, dbUser, noteId, router, note, isLoadingNote]);
     
     // Determine content type, defaulting to 'pdf' for backward compatibility
@@ -133,7 +146,7 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
         }
 
         if (hasAccess === false) {
-            return <AccessDenied />;
+            return <AccessDenied isDemoExpired={isDemoExpired} />;
         }
         
         if (hasAccess && contentUrl) {
@@ -175,13 +188,33 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
     return (
         <div className="space-y-6">
             {renderContent()}
-            <Card className="bg-primary/5 border-primary/20 shadow-lg">
+             {(hasAccess && !dbUser?.hasFullNotesAccess) && (
+                 <Card className="bg-primary/5 border-primary/20 shadow-lg">
+                    <CardHeader className="flex flex-row items-center gap-4">
+                        <div className="bg-primary/10 text-primary p-3 rounded-full">
+                            <Star className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-xl text-primary">Enjoying the Demo?</CardTitle>
+                            <CardDescription>
+                                Get unlimited access to all notes and features by subscribing.
+                            </CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild>
+                            <Link href="/pricing">Upgrade to Full Access</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+             )}
+            <Card className="bg-muted/50">
                 <CardHeader className="flex flex-row items-center gap-4">
                     <div className="bg-primary/10 text-primary p-3 rounded-full">
                         <Printer className="h-6 w-6" />
                     </div>
                     <div>
-                        <CardTitle className="text-xl text-primary">Need a Printed Copy?</CardTitle>
+                        <CardTitle className="text-xl">Need a Printed Copy?</CardTitle>
                         <CardDescription>
                             If you like our notes and would like a printed version, we can help.
                         </CardDescription>

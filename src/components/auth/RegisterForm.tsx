@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -228,9 +227,9 @@ export function RegisterForm() {
 
       toast({
         title: "Registration Successful",
-        description: "Welcome! Redirecting you now...",
+        description: "Welcome! Please choose your plan.",
       });
-      router.push("/");
+      router.push("/pricing");
     } catch (error: any) {
        if (error.code === 'auth/email-already-in-use') {
         form.setError('email', {

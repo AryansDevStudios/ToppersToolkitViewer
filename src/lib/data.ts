@@ -1,5 +1,3 @@
-
-
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint } from "./types";
@@ -743,6 +741,23 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
         await setDoc(userDocRef, { loginLogs: arrayUnion(newLog) }, { merge: true });
         return { success: true };
     } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+};
+
+export const startDemo = async (userId: string) => {
+    if (!userId) {
+        return { success: false, error: "User ID is required." };
+    }
+    const userDocRef = doc(db, 'users', userId);
+    const demoDuration = 60 * 60 * 1000; // 1 hour in milliseconds
+    const expiresAt = Date.now() + demoDuration;
+
+    try {
+        await updateDoc(userDocRef, { demoExpiresAt: expiresAt });
+        revalidatePath('/', 'layout');
+        return { success: true };
+    } catch(e: any) {
         return { success: false, error: e.message };
     }
 };

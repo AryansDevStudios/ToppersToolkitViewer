@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect } from 'react';
@@ -12,25 +11,44 @@ import { Footer } from '@/components/common/Footer';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 
 const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results'];
+const subscriptionPaths = ['/pricing', '/subscribe'];
 
 function AuthWrapper({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
-  const { user, loading } = useAuth(initialUser);
+  const { user, dbUser, loading } = useAuth(initialUser);
   const pathname = usePathname();
   const router = useRouter();
 
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
-  
+  const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
+
   useEffect(() => {
-    // This effect handles client-side redirection for users who log out
-    // or whose sessions expire.
     if (!loading && !user && !isPublicPage) {
       router.push('/login');
     }
-  }, [loading, user, isPublicPage, router]);
 
-  // While the initial auth state is being determined on the client for the very first time,
-  // and we are not on a public page, show a loader. `initialUser` from SSR prevents this on first load.
-  if (loading && !isPublicPage) {
+    // Subscription enforcement logic
+    if (!loading && user && dbUser) {
+        const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
+        const hasActiveDemo = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
+        
+        if (!hasActiveSubscription && !hasActiveDemo && !isSubscriptionPage && !isPublicPage && pathname !== '/') {
+            // Allow access to home, but redirect from other protected pages
+             router.push('/pricing');
+        }
+    }
+
+  }, [loading, user, dbUser, isPublicPage, isSubscriptionPage, router, pathname]);
+
+  if (loading && !isPublicPage && !isSubscriptionPage) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+  
+  // If user is not logged in and not on a public page, show loader/null while redirecting
+  if (!user && !isPublicPage) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -38,11 +56,6 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
 
-  // If we've determined the user is not authenticated and it's a protected page, render null.
-  // The useEffect above will handle the redirect. This prevents showing protected content.
-  if (!user && !isPublicPage) {
-    return null; 
-  }
 
   return <>{children}</>;
 }
@@ -58,6 +71,7 @@ export function RootLayoutClient({
   const pathname = usePathname();
   const isAuthPage = pathname === '/login' || pathname === '/register';
   const isDoubtSolverPage = pathname === '/solve-doubts';
+  const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
   useEffect(() => {
     const faviconUrl = "/favicon.ico";
@@ -79,12 +93,12 @@ export function RootLayoutClient({
     >
       <AuthWrapper initialUser={user}>
         <div className="relative flex min-h-screen flex-col">
-          {!isAuthPage && <AppHeader />}
+          {!isAuthPage && !isSubscriptionPage && <AppHeader />}
           <main className="flex-1 flex flex-col">
             {children}
           </main>
-          {!isAuthPage && !isDoubtSolverPage && <Footer />}
-          {!isAuthPage && <MobileBottomNav />}
+          {!isAuthPage && !isDoubtSolverPage && !isSubscriptionPage && <Footer />}
+          {!isAuthPage && !isSubscriptionPage && <MobileBottomNav />}
         </div>
       </AuthWrapper>
     </ThemeProvider>
