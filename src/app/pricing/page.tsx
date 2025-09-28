@@ -35,28 +35,25 @@ export default function PricingPage() {
     useEffect(() => {
         if (dbUser?.demoExpiresAt) {
             const expiry = dbUser.demoExpiresAt;
-            const now = Date.now();
+            
+            const updateTimer = () => {
+                const currentNow = Date.now();
+                const diff = expiry - currentNow;
 
-            if (now < expiry) {
-                const updateTimer = () => {
-                    const currentNow = Date.now();
-                    const diff = expiry - currentNow;
+                if (diff <= 0) {
+                    setTimeLeft("Expired");
+                    // No need for interval if it's already expired
+                    return;
+                }
 
-                    if (diff <= 0) {
-                        setTimeLeft("Expired");
-                        clearInterval(interval);
-                        return;
-                    }
+                const minutes = Math.floor((diff / 1000 / 60) % 60);
+                const seconds = Math.floor((diff / 1000) % 60);
+                setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+            };
 
-                    const minutes = Math.floor((diff / 1000 / 60) % 60);
-                    const seconds = Math.floor((diff / 1000) % 60);
-                    setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-                };
-
-                updateTimer();
-                const interval = setInterval(updateTimer, 1000);
-                return () => clearInterval(interval);
-            }
+            updateTimer(); // Initial call
+            const interval = setInterval(updateTimer, 1000);
+            return () => clearInterval(interval);
         }
     }, [dbUser]);
 
@@ -87,6 +84,8 @@ export default function PricingPage() {
     };
     
     const isDemoActive = dbUser?.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
+    const hasUsedDemo = !!dbUser?.demoExpiresAt;
+
 
     if (authLoading) {
         return (
@@ -132,9 +131,9 @@ export default function PricingPage() {
                                 Demo active: {timeLeft} remaining
                              </Button>
                          ) : (
-                            <Button className="w-full" variant="outline" onClick={handleStartDemo} disabled={isStartingDemo || isDemoActive}>
+                            <Button className="w-full" variant="outline" onClick={handleStartDemo} disabled={isStartingDemo || hasUsedDemo}>
                                 {isStartingDemo && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Start 1-Hour Demo
+                                {hasUsedDemo ? 'Demo Period Finished' : 'Start 1-Hour Demo'}
                             </Button>
                          )}
                     </CardFooter>
@@ -149,8 +148,10 @@ export default function PricingPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex-1 space-y-4">
-                        <div className="text-4xl font-bold">
-                            ₹100 <span className="text-xl font-normal text-muted-foreground">/month</span>
+                        <div className="flex items-baseline gap-2">
+                           <span className="text-2xl font-bold text-muted-foreground line-through">₹999</span>
+                           <span className="text-4xl font-bold">₹100</span>
+                           <span className="text-xl font-normal text-muted-foreground">/month</span>
                         </div>
                         <ul className="space-y-3 text-sm">
                             {includedFeatures.map((feature) => (
