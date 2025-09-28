@@ -1,11 +1,14 @@
 
 
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Book, Globe, Landmark, DollarSign, ArrowLeft, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useState } from 'react';
 
 const subjects = [
     {
@@ -69,44 +72,47 @@ const videoContent = {
     'eco-ch3': { title: "16. Food Security in India", description: "Explores food security and the various factors revolving around it, explained through story examples.", videos: [{src: "https://www.youtube.com/embed/2oCsMusryJo?list=PLKrMFg1EPRmGZ48Ko9xVUQ6Bs4Wgfgiav", caption: "New One Shot Video"}, {src: "https://www.youtube.com/embed/JpKo_WNRtfQ?list=PLKrMFg1EPRmGZmO3Fb44uEupYKdxyhlFU", caption: "Rapid Revision Video"}] },
 };
 
-const SidebarMenu = () => (
-    <Sheet>
-        <SheetTrigger asChild>
-            <Button variant="default" size="icon" className="fixed bottom-4 left-4 z-50 h-12 w-12 rounded-full shadow-lg">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Open Chapter Menu</span>
-            </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="p-0">
-            <SheetHeader className="p-6 pb-2">
-                <SheetTitle className="text-xl font-bold text-primary">Class 9 SST Chapters</SheetTitle>
-            </SheetHeader>
-            <ScrollArea className="h-[calc(100%-4rem)]">
-                <nav className="p-6">
-                    <ul>
-                        {subjects.map(subject => (
-                            <li key={subject.name} className="mb-4">
-                                <div className="font-semibold text-lg flex items-center mb-2">
-                                    <subject.icon className="mr-3 h-5 w-5" />
-                                    {subject.name}
-                                </div>
-                                <ul className="space-y-1">
-                                    {subject.chapters.map(chapter => (
-                                        <li key={chapter.id}>
-                                            <a href={`#${chapter.id}`} className="block text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md p-2 transition-colors text-sm">
-                                                {chapter.title}
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </ScrollArea>
-        </SheetContent>
-    </Sheet>
-);
+const SidebarMenu = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+                <Button variant="default" size="icon" className="fixed bottom-4 left-4 z-50 h-12 w-12 rounded-full shadow-lg">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Open Chapter Menu</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0">
+                <SheetHeader className="p-6 pb-2">
+                    <SheetTitle className="text-xl font-bold text-primary">Class 9 SST Chapters</SheetTitle>
+                </SheetHeader>
+                <ScrollArea className="h-[calc(100%-4rem)]">
+                    <nav className="p-6">
+                        <ul>
+                            {subjects.map(subject => (
+                                <li key={subject.name} className="mb-4">
+                                    <div className="font-semibold text-lg flex items-center mb-2">
+                                        <subject.icon className="mr-3 h-5 w-5" />
+                                        {subject.name}
+                                    </div>
+                                    <ul className="space-y-1">
+                                        {subject.chapters.map(chapter => (
+                                            <li key={chapter.id}>
+                                                <a href={`#${chapter.id}`} onClick={() => setIsOpen(false)} className="block text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md p-2 transition-colors text-sm">
+                                                    {chapter.title}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+                </ScrollArea>
+            </SheetContent>
+        </Sheet>
+    )
+};
 
 
 const VideoCard = ({ chapterId }: { chapterId: keyof typeof videoContent }) => {
@@ -174,4 +180,3 @@ export default function DigrajSinghRajputPage() {
         </div>
     );
 }
-
