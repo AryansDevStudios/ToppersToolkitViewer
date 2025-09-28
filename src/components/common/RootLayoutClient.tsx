@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldAlert, Star } from 'lucide-react';
 import type { User } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { ThemeProvider } from '@/components/common/ThemeProvider';
@@ -12,6 +12,8 @@ import { Footer } from '@/components/common/Footer';
 import { MobileBottomNav } from '@/components/common/MobileBottomNav';
 import { useToast } from '@/hooks/use-toast';
 import { SubscriptionStatusDialog } from './SubscriptionStatusDialog';
+import { Button } from '../ui/button';
+import Link from 'next/link';
 
 const publicPaths = [
     '/login', 
@@ -23,7 +25,6 @@ const publicPaths = [
 ];
 const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
 
-// Pages accessible to any logged-in user, regardless of subscription
 const authenticatedOpenPaths = [
     '/',
     '/browse',
@@ -38,28 +39,48 @@ const authenticatedOpenPaths = [
     '/search',
 ];
 
+const AccessDenied = () => (
+    <div className="container mx-auto px-4 py-8">
+        <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
+            <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+            <h2 className="text-2xl font-bold text-destructive">
+                 Access Denied
+            </h2>
+            <p className="mt-2 text-muted-foreground max-w-md">
+                You do not have permission to view this page. An active subscription is required.
+            </p>
+            <Button asChild className="mt-6">
+                <Link href="/pricing">
+                    <Star className="mr-2 h-4 w-4"/>
+                    View Subscription Plans
+                </Link>
+            </Button>
+        </div>
+    </div>
+);
+
 function AuthWrapper({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
   const { user, dbUser, loading } = useAuth(initialUser);
   const pathname = usePathname();
   const router = useRouter();
-  const { toast } = useToast();
-  const [isAccessChecked, setIsAccessChecked] = useState(false);
+  const [accessState, setAccessState] = useState<'loading' | 'granted' | 'denied'>('loading');
 
   useEffect(() => {
     if (loading) {
+      setAccessState('loading');
       return;
     }
 
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
     if (isPublicPage) {
-      setIsAccessChecked(true);
+      setAccessState('granted');
       return; 
     }
 
     if (!user || !dbUser) {
       router.push('/login');
-      // Access check is "complete" in the sense that a redirect is happening
-      // We don't set to true, to avoid a flash of the login page behind the loader
+      // While redirecting, keep it in a loading-like state.
+      setAccessState('loading'); 
       return;
     }
     
@@ -75,27 +96,16 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
       const finalAccessStatus = hasActiveSubscription && !isSubExpired;
 
       if (!isAdmin && !finalAccessStatus && !isDemoActive) {
-        toast({
-            title: "Subscription Required",
-            description: "You need an active subscription to access this page.",
-            variant: "destructive"
-        });
-        router.push('/pricing');
-        // Redirecting, so access check is "done" for this path.
-        // We don't set to true, to avoid flash of content on the pricing page.
+        setAccessState('denied');
         return;
       }
     }
     
-    // If we reach here, the user has access to the page.
-    setIsAccessChecked(true);
+    setAccessState('granted');
     
-  }, [loading, user, dbUser, pathname, router, toast]);
+  }, [loading, user, dbUser, pathname, router]);
 
-  const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
-
-  // If the page isn't public and we haven't finished the access check, show a loader.
-  if (!isPublicPage && !isAccessChecked) {
+  if (accessState === 'loading') {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -103,7 +113,10 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     );
   }
 
-  // Render children only if access is checked and granted, or if it's a public page.
+  if (accessState === 'denied') {
+    return <AccessDenied />;
+  }
+
   return <>{children}</>;
 }
 
