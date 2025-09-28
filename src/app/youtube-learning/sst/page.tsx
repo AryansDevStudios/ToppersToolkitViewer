@@ -1,9 +1,10 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { iconMap } from '@/lib/iconMap';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Youtube } from 'lucide-react';
+import Image from 'next/image';
 
 const SstIcon = iconMap['Landmark'];
 
@@ -27,15 +28,34 @@ export default function SstYoutubePage() {
           Curated YouTube videos to help you with your Social Studies.
         </p>
       </header>
-      <main className="max-w-2xl mx-auto">
+      <main className="max-w-4xl mx-auto">
         <Card>
             <CardHeader>
-                <CardTitle>Coming Soon</CardTitle>
+                <CardTitle className="text-2xl">Digraj Singh Rajput</CardTitle>
+                <CardDescription>A popular educator for Social Studies, making learning engaging and fun.</CardDescription>
             </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground">
-                    We are currently selecting the best videos for this subject. Please check back later!
-                </p>
+            <CardContent className="flex flex-col md:flex-row items-center gap-6">
+                <div className="md:w-1/3">
+                    <Image 
+                        src="https://picsum.photos/seed/digraj/400/400"
+                        alt="Photo of Digraj Singh Rajput"
+                        width={400}
+                        height={400}
+                        className="rounded-lg object-cover"
+                        data-ai-hint="male teacher portrait"
+                    />
+                </div>
+                <div className="md:w-2/3 space-y-4">
+                    <p className="text-muted-foreground">
+                        Digraj Singh Rajput is well-known for his unique teaching style that simplifies complex topics in History, Geography, Civics, and Economics. His videos are a great resource for students looking to build a strong foundation in Social Studies.
+                    </p>
+                    <Button asChild>
+                        <a href="https://www.youtube.com/@digrajsinghrajput" target="_blank" rel="noopener noreferrer">
+                            <Youtube className="mr-2 h-4 w-4" />
+                            Visit Channel
+                        </a>
+                    </Button>
+                </div>
             </CardContent>
         </Card>
       </main>
