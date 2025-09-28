@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription } from "./types";
@@ -1631,7 +1632,7 @@ export async function getAllSubscriptions(): Promise<Subscription[]> {
                 ...data,
                 createdAt: data.createdAt?.toMillis() || 0,
                 completedAt: data.completedAt?.toMillis() || undefined,
-                expiresAt: data.expiresAt?.toMillis() || undefined,
+                expiresAt: data.expiresAt || undefined,
             } as Subscription;
         });
     } catch (error) {
