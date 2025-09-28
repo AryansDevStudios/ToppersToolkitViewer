@@ -129,7 +129,7 @@ export default function DigrajSinghRajputPage() {
     return (
         <div className="flex flex-col lg:flex-row bg-background">
             <Sidebar />
-            <main className="flex-1 p-4 md:p-10 space-y-8">
+            <main className="flex-1 p-4 md:p-10 space-y-8 pb-24">
                  <Button asChild variant="outline" size="sm" className="mb-4">
                     <Link href="/youtube-learning/sst">
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -164,6 +164,4 @@ export default function DigrajSinghRajputPage() {
         </div>
     );
 }
-
-
 
