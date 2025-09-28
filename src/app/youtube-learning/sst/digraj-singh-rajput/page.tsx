@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,7 +76,7 @@ const SidebarMenu = () => {
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-                <Button variant="default" size="icon" className="fixed bottom-4 left-4 z-50 h-12 w-12 rounded-full shadow-lg">
+                <Button variant="default" size="icon" className="fixed bottom-20 left-4 z-50 h-12 w-12 rounded-full shadow-lg">
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Open Chapter Menu</span>
                 </Button>
@@ -180,3 +179,5 @@ export default function DigrajSinghRajputPage() {
         </div>
     );
 }
+
+    
