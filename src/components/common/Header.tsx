@@ -46,46 +46,6 @@ function ThemeToggle() {
   );
 }
 
-const DemoTimer = () => {
-    const { dbUser } = useAuth(null);
-    const [timeLeft, setTimeLeft] = useState("");
-
-    useEffect(() => {
-        if (dbUser?.demoExpiresAt) {
-            const interval = setInterval(() => {
-                const now = Date.now();
-                const expiry = dbUser.demoExpiresAt!;
-                if (now > expiry) {
-                    setTimeLeft("Expired");
-                    clearInterval(interval);
-                    // Optionally force a page reload to trigger access checks
-                    window.location.reload();
-                    return;
-                }
-                const diff = expiry - now;
-                const minutes = Math.floor((diff / 1000 / 60) % 60);
-                const seconds = Math.floor((diff / 1000) % 60);
-                setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-            }, 1000);
-            return () => clearInterval(interval);
-        }
-    }, [dbUser]);
-
-    if (!dbUser?.demoExpiresAt || dbUser.hasFullNotesAccess) return null;
-
-    const hasExpired = Date.now() > dbUser.demoExpiresAt;
-
-    return (
-        <Button variant="destructive" size="sm" asChild>
-            <Link href="/pricing">
-                <Clock className="mr-2 h-4 w-4" />
-                {hasExpired ? "Demo Expired" : `Demo: ${timeLeft}`}
-            </Link>
-        </Button>
-    );
-};
-
-
 export function AppHeader() {
   const { user, role, loading } = useAuth(null);
   const [mounted, setMounted] = useState(false);
@@ -108,7 +68,6 @@ export function AppHeader() {
         </div>
         
         <div className="flex flex-1 items-center justify-end gap-2">
-           <DemoTimer />
            {mounted && user && role === 'Admin' && (
               <Button variant="ghost" asChild className="hidden md:flex">
                   <Link href="/admin">Admin Panel</Link>

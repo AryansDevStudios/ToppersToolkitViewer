@@ -58,9 +58,7 @@ export default function BrowseAllNotesPage() {
       return;
     }
 
-    const isDemoActive = currentUser.demoExpiresAt ? currentUser.demoExpiresAt > Date.now() : false;
-
-    if (role === 'Admin' || currentUser.hasFullNotesAccess || isDemoActive) {
+    if (role === 'Admin' || currentUser.hasFullNotesAccess) {
       setFilteredNotes(allNotes);
       return;
     }
@@ -83,8 +81,7 @@ export default function BrowseAllNotesPage() {
   }
 
   const displayLoading = isLoading;
-  const isDemoActive = currentUser?.demoExpiresAt ? currentUser.demoExpiresAt > Date.now() : false;
-  const isFullAccessUser = role === 'Admin' || currentUser?.hasFullNotesAccess || isDemoActive;
+  const isFullAccessUser = role === 'Admin' || currentUser?.hasFullNotesAccess;
 
   return (
     <div className="container mx-auto px-4 py-8">

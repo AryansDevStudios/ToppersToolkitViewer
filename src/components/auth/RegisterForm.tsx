@@ -164,8 +164,6 @@ export function RegisterForm() {
 
       await updateProfile(user, { displayName: name });
       
-      const demoDuration = 60 * 60 * 1000; // 1 hour
-
       const userData: Omit<User, 'id'> = {
         name,
         email,
@@ -174,7 +172,6 @@ export function RegisterForm() {
         role,
         createdAt: Date.now(),
         hasAiAccess: true, // Grant AI access to new users by default
-        demoExpiresAt: Date.now() + demoDuration,
       };
 
       if (role === 'Student') {
@@ -220,9 +217,9 @@ export function RegisterForm() {
 
       toast({
         title: "Registration Successful!",
-        description: "Welcome! Your 1-hour free demo has started.",
+        description: "Welcome! Please subscribe to get access to notes.",
       });
-      router.push("/");
+      router.push("/pricing");
     } catch (error: any) {
        if (error.code === 'auth/email-already-in-use') {
         form.setError('email', {

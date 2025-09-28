@@ -746,23 +746,6 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
     }
 };
 
-export const startDemo = async (userId: string) => {
-    if (!userId) {
-        return { success: false, error: "User ID is required." };
-    }
-    const userDocRef = doc(db, 'users', userId);
-    const demoDuration = 60 * 60 * 1000; // 1 hour in milliseconds
-    const expiresAt = Date.now() + demoDuration;
-
-    try {
-        await updateDoc(userDocRef, { demoExpiresAt: expiresAt });
-        revalidatePath('/', 'layout');
-        return { success: true };
-    } catch(e: any) {
-        return { success: false, error: e.message };
-    }
-};
-
 // --- Question of the Day ---
 
 export async function getQuestionsOfTheDay(): Promise<QuestionOfTheDay[]> {
@@ -1702,8 +1685,7 @@ export async function completeSubscription(subscriptionId: string, userId: strin
 
     // Update user's access rights
     batch.update(userDocRef, {
-        hasFullNotesAccess: true,
-        demoExpiresAt: null // Remove demo access if it exists
+        hasFullNotesAccess: true
     });
 
     try {

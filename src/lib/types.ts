@@ -150,7 +150,6 @@ export interface User {
   score?: number;
   showOnLeaderboard?: boolean;
   attemptedQuizzes?: string[];
-  demoExpiresAt?: number;
 }
 
 export interface Notice {

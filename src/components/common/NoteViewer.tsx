@@ -24,16 +24,14 @@ const PdfViewerWrapper = dynamic(() => import('@/components/common/PdfViewerWrap
 });
 
 
-const AccessDenied = ({ isDemoExpired }: { isDemoExpired?: boolean}) => (
+const AccessDenied = () => (
     <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
         <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
         <h2 className="text-2xl font-bold text-destructive">
-             {isDemoExpired ? "Demo Expired" : "Access Denied"}
+             Access Denied
         </h2>
         <p className="mt-2 text-muted-foreground max-w-md">
-            {isDemoExpired
-                ? "Your 1-hour free demo has ended. Please subscribe to continue."
-                : "You do not have permission to view this document. Please subscribe to get access."}
+            You do not have permission to view this document. Please subscribe to get access.
         </p>
         <Button asChild className="mt-6">
             <Link href="/pricing">
@@ -62,7 +60,6 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
     const { user, dbUser, loading: authLoading } = useAuth(null);
     const router = useRouter();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
-    const [isDemoExpired, setIsDemoExpired] = useState(false);
     const [note, setNote] = useState<Note | null>(null);
     const [isLoadingNote, setIsLoadingNote] = useState(true);
 
@@ -120,19 +117,10 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
         setHasAccess(null); // Reset for re-check
 
         const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
-        const demoExpiresAt = dbUser.demoExpiresAt;
-        const hasActiveDemo = demoExpiresAt ? demoExpiresAt > Date.now() : false;
         
-        const canAccess = hasActiveSubscription || hasActiveDemo || note.isPublic || dbUser.role === 'Admin';
+        const canAccess = hasActiveSubscription || note.isPublic || dbUser.role === 'Admin';
         
-        if (canAccess) {
-            setHasAccess(true);
-        } else {
-            setHasAccess(false);
-            if (demoExpiresAt && Date.now() > demoExpiresAt) { // Check if a demo *was* active and is now expired
-                setIsDemoExpired(true);
-            }
-        }
+        setHasAccess(canAccess);
 
     }, [authLoading, user, dbUser, noteId, router, note, isLoadingNote]);
     
@@ -146,7 +134,7 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
         }
 
         if (hasAccess === false) {
-            return <AccessDenied isDemoExpired={isDemoExpired} />;
+            return <AccessDenied />;
         }
         
         if (hasAccess && contentUrl) {
@@ -195,7 +183,7 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
                             <Star className="h-6 w-6" />
                         </div>
                         <div>
-                            <CardTitle className="text-xl text-primary">Enjoying the Demo?</CardTitle>
+                            <CardTitle className="text-xl text-primary">Need Full Access?</CardTitle>
                             <CardDescription>
                                 Get unlimited access to all notes and features by subscribing.
                             </CardDescription>
