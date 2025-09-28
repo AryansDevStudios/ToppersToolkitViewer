@@ -55,6 +55,7 @@ export interface Subscription {
   status: 'pending' | 'completed';
   createdAt: number;
   completedAt?: number;
+  expiresAt?: number;
 }
 
 
@@ -151,6 +152,7 @@ export interface User {
   showOnLeaderboard?: boolean;
   attemptedQuizzes?: string[];
   demoExpiresAt?: number;
+  subscriptionExpiresAt?: number;
 }
 
 export interface Notice {

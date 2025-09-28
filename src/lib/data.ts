@@ -1631,6 +1631,7 @@ export async function getAllSubscriptions(): Promise<Subscription[]> {
                 ...data,
                 createdAt: data.createdAt?.toMillis() || 0,
                 completedAt: data.completedAt?.toMillis() || undefined,
+                expiresAt: data.expiresAt?.toMillis() || undefined,
             } as Subscription;
         });
     } catch (error) {
@@ -1677,15 +1678,20 @@ export async function completeSubscription(subscriptionId: string, userId: strin
 
     const batch = writeBatch(db);
 
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+
     // Update subscription status
     batch.update(subscriptionDocRef, {
         status: 'completed',
-        completedAt: serverTimestamp()
+        completedAt: serverTimestamp(),
+        expiresAt: expiresAt.getTime(),
     });
 
     // Update user's access rights
     batch.update(userDocRef, {
-        hasFullNotesAccess: true
+        hasFullNotesAccess: true,
+        subscriptionExpiresAt: expiresAt.getTime(),
     });
 
     try {

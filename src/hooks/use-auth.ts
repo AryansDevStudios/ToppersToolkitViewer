@@ -43,7 +43,14 @@ export function useAuth(initialUser: User | null) {
   // server-fetched `initialUser` is immediately reflected.
   useEffect(() => {
     if (initialUser) {
-      setDbUser(initialUser);
+      const isSubExpired = initialUser.subscriptionExpiresAt ? initialUser.subscriptionExpiresAt < Date.now() : false;
+      
+      const updatedUser = {
+        ...initialUser,
+        hasFullNotesAccess: isSubExpired ? false : initialUser.hasFullNotesAccess,
+      };
+      
+      setDbUser(updatedUser);
     }
   }, [initialUser]);
 
