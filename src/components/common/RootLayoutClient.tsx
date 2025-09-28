@@ -16,6 +16,30 @@ import { SubscriptionStatusDialog } from './SubscriptionStatusDialog';
 const publicPaths = ['/login', '/register', '/terms', '/user-manual', '/quiz-results'];
 const subscriptionPaths = ['/pricing', '/subscribe', '/subscription-confirmation'];
 
+// Pages accessible to any logged-in user, regardless of subscription
+const authenticatedOpenPaths = [
+    '/',
+    '/browse',
+    '/about-us',
+    '/complaints',
+    '/doubt-box',
+    '/invite-friends',
+    '/leaderboard',
+    '/mcqs',
+    '/mindmap',
+    '/notices',
+    '/pricing',
+    '/purchase-history',
+    '/puzzle-quiz',
+    '/reasoning',
+    '/rules-policies',
+    '/search',
+    '/solve-doubts',
+    '/terms',
+    '/user-manual',
+    '/youtube-learning'
+];
+
 function AuthWrapper({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
   const { user, dbUser, loading } = useAuth(initialUser);
   const pathname = usePathname();
@@ -26,7 +50,9 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     if (loading) return;
 
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
+    const isOpenPage = authenticatedOpenPaths.some(path => pathname.startsWith(path));
     
+    // If not a public page and not an open page for authenticated users, check for user login
     if (!user && !isPublicPage) {
       router.push('/login');
       return;
