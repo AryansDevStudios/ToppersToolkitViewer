@@ -25,25 +25,10 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     if (loading) return;
 
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
-    const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
-
+    
     if (!user && !isPublicPage) {
       router.push('/login');
       return;
-    }
-    
-    if (user && dbUser) {
-        // If user is not subscribed and demo has expired, redirect to pricing
-        const isDemoExpired = dbUser.demoExpiresAt ? dbUser.demoExpiresAt < Date.now() : false;
-
-        if (!dbUser.hasFullNotesAccess && isDemoExpired && !isSubscriptionPage && !isPublicPage) {
-            toast({
-                title: "Demo Expired",
-                description: "Your free demo has ended. Please subscribe for full access.",
-                variant: "destructive"
-            });
-            router.push('/pricing');
-        }
     }
     
   }, [loading, user, dbUser, pathname, router, toast]);
