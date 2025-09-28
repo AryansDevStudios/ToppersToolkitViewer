@@ -22,6 +22,7 @@ import { format, formatDistanceToNowStrict } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { subMonths } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 export const revalidate = 0;
 
@@ -36,6 +37,7 @@ const getInitials = (name: string | null | undefined): string => {
 
 export default async function ActiveSubscriptionsPage() {
   const allUsers = await getUsers();
+  const timeZone = 'Asia/Kolkata';
   
   const activeSubscribers = allUsers
     .filter(user => user.hasFullNotesAccess && user.subscriptionExpiresAt)
@@ -73,6 +75,9 @@ export default async function ActiveSubscriptionsPage() {
                   const startedAt = expiresAt ? subMonths(expiresAt, 1) : null;
                   const expiresIn = expiresAt && !isExpired ? formatDistanceToNowStrict(expiresAt, { addSuffix: true }) : null;
 
+                  const zonedExpiresAt = expiresAt ? toZonedTime(expiresAt, timeZone) : null;
+                  const zonedStartedAt = startedAt ? toZonedTime(startedAt, timeZone) : null;
+
                   return (
                     <TableRow key={user.id}>
                       <TableCell>
@@ -93,13 +98,13 @@ export default async function ActiveSubscriptionsPage() {
                           <Badge variant={user.role === 'Admin' ? 'destructive' : user.role === 'Teacher' ? 'secondary' : 'default'}>{user.role}</Badge>
                        </TableCell>
                        <TableCell className="hidden lg:table-cell">
-                          {startedAt ? format(startedAt, 'PP') : 'N/A'}
+                          {zonedStartedAt ? format(zonedStartedAt, 'Pp') : 'N/A'}
                        </TableCell>
                       <TableCell className={cn("text-right font-medium", isExpired && "text-destructive")}>
                         <div className="flex flex-col items-end gap-1">
                             <div className="flex items-center justify-end gap-2">
                                 {isExpired && <Clock className="h-4 w-4" />}
-                                {expiresAt ? format(expiresAt, 'PP') : 'N/A'}
+                                {zonedExpiresAt ? format(zonedExpiresAt, 'Pp') : 'N/A'}
                             </div>
                             {expiresIn && (
                                 <p className="text-xs text-muted-foreground">{expiresIn}</p>
