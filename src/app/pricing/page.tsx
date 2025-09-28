@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Clock, Star } from 'lucide-react';
+import { Check, Clock, Star, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
@@ -87,6 +87,7 @@ export default function PricingPage() {
     // Determine user eligibility for different states
     const isDemoEligible = dbUser && !dbUser.hasFullNotesAccess && !dbUser.demoExpiresAt;
     const isDemoActive = dbUser && !dbUser.hasFullNotesAccess && dbUser.demoExpiresAt && timeLeft && timeLeft !== "Expired";
+    const isDemoExpired = dbUser && !dbUser.hasFullNotesAccess && dbUser.demoExpiresAt && timeLeft === "Expired";
 
 
     return (
@@ -119,6 +120,35 @@ export default function PricingPage() {
                             </CardContent>
                         </Card>
 
+                        <div className="relative my-8 text-center">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">
+                                OR
+                                </span>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {isDemoExpired && (
+                    <>
+                        <Card className="mb-8 border-dashed border-destructive">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-destructive">
+                                    <ShieldAlert className="h-6 w-6"/>
+                                    Demo Expired
+                                </CardTitle>
+                                <CardDescription>
+                                    Your full access trial has ended.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-center text-muted-foreground">To continue enjoying all features, please subscribe.</p>
+                            </CardContent>
+                        </Card>
                         <div className="relative my-8 text-center">
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t" />
@@ -209,4 +239,3 @@ export default function PricingPage() {
         </div>
     );
 }
-
