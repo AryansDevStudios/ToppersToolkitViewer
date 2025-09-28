@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -150,7 +151,7 @@ export default function PricingPage() {
                     <CardContent className="flex-1 space-y-4">
                         <div className="flex items-baseline gap-2">
                            <span className="text-2xl font-bold text-muted-foreground line-through">₹999</span>
-                           <span className="text-4xl font-bold">₹100</span>
+                           <span className="text-4xl font-bold bg-gradient-to-r from-green-400 to-teal-500 bg-clip-text text-transparent">₹100</span>
                            <span className="text-xl font-normal text-muted-foreground">/month</span>
                         </div>
                         <ul className="space-y-3 text-sm">
