@@ -52,7 +52,10 @@ export default function SubscriptionHistoryPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (authLoading) return;
+        if (authLoading) {
+            setIsLoading(true);
+            return;
+        }
         if (!user) {
             setIsLoading(false);
             return;
