@@ -126,7 +126,7 @@ export default function PricingPage() {
                     </CardContent>
                     <CardFooter>
                          {isDemoActive && timeLeft ? (
-                             <Button className="w-full" variant="secondary" disabled>
+                             <Button className="w-full" variant="destructive" disabled>
                                 <Clock className="mr-2 h-4 w-4" />
                                 Demo active: {timeLeft} remaining
                              </Button>
@@ -175,4 +175,3 @@ export default function PricingPage() {
         </div>
     );
 }
-
