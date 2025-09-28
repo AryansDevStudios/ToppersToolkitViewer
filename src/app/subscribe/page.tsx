@@ -51,7 +51,7 @@ export default function SubscribePage() {
         });
     };
 
-    const handleProceedToWhatsApp = () => {
+    const handleConfirmSubscription = () => {
         if (!user || !dbUser) {
             toast({ title: "Please Log In", description: "You must be logged in to subscribe.", variant: "destructive" });
             router.push('/login');
@@ -68,30 +68,12 @@ export default function SubscribePage() {
                 paymentMethod: paymentMethodFormatted,
             });
 
-            if (!result.success) {
+            if (result.success && result.subscriptionId) {
+                toast({ title: "Request Sent!", description: "Your subscription request has been sent to the admin." });
+                router.push(`/subscription-confirmation/${result.subscriptionId}`);
+            } else {
                 toast({ title: "Order Failed", description: result.error || "Could not save your subscription request.", variant: "destructive" });
-                return;
             }
-
-            const paymentDetails = paymentMethod === 'upi'
-                ? "I have completed the payment of ₹100 via UPI. Please find the transaction details attached after this message."
-                : "I would like to pay ₹100 in cash. Please let me know when and where we can meet to complete the transaction.";
-
-            const message = `Hello! I want to subscribe to Topper's Toolkit.
-
-*My Details:*
-*Name:* ${dbUser.name}
-*Email:* ${dbUser.email}
-*User ID:* ${user.uid}
-
-*Payment Method Chosen: ${paymentMethodFormatted}*
-
-${paymentDetails}
-
-Please activate my full subscription upon verification. Thank you!`;
-
-            const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
         });
     };
 
@@ -184,10 +166,9 @@ Please activate my full subscription upon verification. Thank you!`;
                             <p className="text-sm text-muted-foreground text-center">
                                 After payment, click below to send a confirmation message on WhatsApp. Your subscription will be activated shortly after verification.
                             </p>
-                            <Button className="w-full" onClick={handleProceedToWhatsApp} disabled={isPending}>
+                            <Button className="w-full" onClick={handleConfirmSubscription} disabled={isPending}>
                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                               {isPending ? 'Processing...' : 'Confirm on WhatsApp'}
-                               {!isPending && <ExternalLink className="ml-2 h-4 w-4" />}
+                               {isPending ? 'Processing...' : 'Confirm Subscription'}
                             </Button>
                         </CardFooter>
                     </Card>

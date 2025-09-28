@@ -1588,7 +1588,7 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<{ 
 
 export async function createSubscriptionRequest(
     data: Pick<Subscription, 'userId' | 'userName' | 'userEmail' | 'paymentMethod'>
-): Promise<{ success: boolean, error?: string }> {
+): Promise<{ success: boolean; error?: string, subscriptionId?: string }> {
     const { userId, userName, userEmail, paymentMethod } = data;
     if (!userId || !userName || !userEmail || !paymentMethod) {
         return { success: false, error: "Missing required fields for subscription request." };
@@ -1608,12 +1608,32 @@ export async function createSubscriptionRequest(
     try {
         await setDoc(subscriptionDocRef, { ...newSubscription, id: subscriptionId, createdAt: serverTimestamp() });
         revalidatePath('/admin/subscriptions');
-        return { success: true };
+        return { success: true, subscriptionId };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
 }
 
+
+export async function getSubscriptionById(subscriptionId: string): Promise<Subscription | null> {
+    noStore();
+    if (!subscriptionId) return null;
+    const subscriptionDocRef = doc(db, 'subscriptions', subscriptionId);
+    try {
+        const docSnap = await getDoc(subscriptionDocRef);
+        if (docSnap.exists()) {
+             const data = docSnap.data();
+             return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+             } as Subscription;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching subscription by ID:", error);
+        return null;
+    }
+}
 
 export async function getAllSubscriptions(): Promise<Subscription[]> {
     noStore();
