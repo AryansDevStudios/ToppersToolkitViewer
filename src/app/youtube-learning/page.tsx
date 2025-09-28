@@ -1,8 +1,17 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { iconMap } from '@/lib/iconMap';
+import Link from 'next/link';
 
 const YoutubeIcon = iconMap['Youtube'];
+
+const subjects = [
+  { name: 'Hindi', icon: 'BookOpen', href: '#' },
+  { name: 'English', icon: 'Book', href: '#' },
+  { name: 'Math', icon: 'Calculator', href: '#' },
+  { name: 'Science', icon: 'FlaskConical', href: '#' },
+  { name: 'SST', icon: 'Landmark', href: '#' },
+];
 
 export default function YouTubeLearningPage() {
   return (
@@ -15,20 +24,29 @@ export default function YouTubeLearningPage() {
           Learn from YouTube
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Hand-picked educational videos to supplement your learning.
+          Hand-picked educational videos to supplement your learning. Select a subject to begin.
         </p>
       </header>
       <main>
-        <Card>
-          <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              This section is under construction. We're curating the best educational YouTube content for you!
-            </p>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-5xl mx-auto">
+          {subjects.map((subject) => {
+            const Icon = iconMap[subject.icon as keyof typeof iconMap] || YoutubeIcon;
+            return (
+              <Link href={subject.href} key={subject.name} className="group block">
+                <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 group-hover:border-primary/50">
+                  <CardContent className="p-4 flex flex-col items-center justify-center aspect-square">
+                    <div className="bg-primary/10 text-primary p-4 rounded-lg mb-4">
+                      <Icon className="h-8 w-8" />
+                    </div>
+                    <CardTitle className="text-base font-semibold text-center">
+                      {subject.name}
+                    </CardTitle>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
       </main>
     </div>
   );
