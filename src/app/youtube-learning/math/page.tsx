@@ -38,7 +38,7 @@ export default function MathYoutubePage() {
                 <CardContent className="flex flex-col md:flex-row items-center gap-6">
                     <div className="md:w-1/3">
                         <Image 
-                            src="https://yt3.googleusercontent.com/UIltNoensB4So-fCgNlpG1pLz17c9Hdj2y-m7-2F3mIAnis_F-2b-n8rmU9-4kX1jb8b-8A=s900-c-k-c0x00ffffff-no-rj"
+                            src="https://yt3.googleusercontent.com/tFOJTMY0iI_SJHIp3-sa21Hnf1rOMf6q-dfS0R2gOfRWOpQbd2wBVPZUppFunNKTRC-avbVYtw=s900-c-k-c0x00ffffff-no-rj"
                             alt="Photo of Shobhit Nirwan"
                             width={400}
                             height={400}
