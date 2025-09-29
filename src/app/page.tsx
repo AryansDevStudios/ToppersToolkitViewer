@@ -4,7 +4,7 @@ import { FeatureGrid } from "@/components/home/FeatureGrid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Mail, Send, Smartphone, Instagram } from "lucide-react";
+import { Mail, Send, Smartphone, Instagram, ArrowRight } from "lucide-react";
 import { Testimonials } from "@/components/home/Testimonials";
 
 export const revalidate = 0;
@@ -34,35 +34,38 @@ function ContactSection() {
 
   return (
     <section className="w-full py-12 md:py-16">
-        <div className="container px-4">
-            <div className="max-w-3xl mx-auto text-center">
-                <h2 className="text-3xl font-bold tracking-tight">Contact Us</h2>
-                <p className="mt-2 text-muted-foreground">Have questions? We're here to help.</p>
-            </div>
-            <div className="mt-8 max-w-lg mx-auto grid grid-cols-3 sm:grid-cols-6 gap-3">
-                {contactMethods.map((method) => {
-                    const Icon = method.icon;
-                    return (
-                        <a
-                          key={method.name}
-                          href={method.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block group"
-                        >
-                            <Card className="hover:bg-accent hover:border-primary/50 transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
-                                <CardContent className="p-3 flex flex-col items-center justify-center aspect-square">
-                                    <div className="bg-primary/10 text-primary p-3 rounded-lg mb-2">
-                                      <Icon className="h-6 w-6" />
-                                    </div>
-                                    <p className="font-semibold text-xs text-center">{method.name}</p>
-                                </CardContent>
-                            </Card>
-                        </a>
-                    )
-                })}
-            </div>
+      <div className="container px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold tracking-tight">Contact Us</h2>
+          <p className="mt-2 text-muted-foreground">Have questions? We're here to help.</p>
         </div>
+        <div className="mt-8 max-w-xl mx-auto space-y-4">
+          {contactMethods.map((method) => {
+            const Icon = method.icon;
+            return (
+              <a
+                key={method.name}
+                href={method.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block group"
+              >
+                <Card className="hover:bg-accent hover:border-primary/50 transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-primary/10 text-primary p-3 rounded-lg">
+                          <Icon className="h-6 w-6" />
+                        </div>
+                        <p className="font-semibold text-base">{method.name}</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </CardContent>
+                </Card>
+              </a>
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 }
