@@ -25,7 +25,7 @@ const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
 function ContactSection() {
   const contactMethods = [
     { name: 'YouTube', href: 'https://youtube.com/@toppers_toolkit?si=pepc5bT3zMCULfGY', icon: YoutubeIcon },
-    { name: 'Whatsapp Channel', href: 'https://whatsapp.com/channel/your_channel_id', icon: Smartphone },
+    { name: 'Whatsapp Channel', href: 'https://www.whatsapp.com/channel/0029Vb6gXP37j6gDDkugNS2L', icon: Smartphone },
     { name: 'Instagram', href: 'https://instagram.com/your_handle', icon: Instagram },
     { name: 'Telegram Group', href: 'https://t.me/+BP99uVTapfw3YmY1', icon: Send },
     { name: 'Telegram Channel', href: 'https://t.me/ToppersToolkit', icon: Send },
