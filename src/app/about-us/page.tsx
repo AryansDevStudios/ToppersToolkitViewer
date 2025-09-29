@@ -56,9 +56,27 @@ const PlatformCard = () => (
 );
 
 const teamMembers = [
-  { name: "Kuldeep Singh", role: "Owner & Founder", icon: User },
-  { name: "Aryan Gupta", role: "Developer", icon: Code },
-  { name: "Ishan Jaiswal", role: "Manager", icon: Shield },
+  { 
+    name: "Kuldeep Singh", 
+    role: "Owner & Founder", 
+    imgSrc: "/images/KuldeepsImage.png?v=2", 
+    description: "The visionary behind Topper's Toolkit, Kuldeep ensures that all content is of the highest quality and directly meets the needs of students.",
+    "data-ai-hint": "male student portrait"
+  },
+  { 
+    name: "Aryan Gupta", 
+    role: "Developer", 
+    imgSrc: "/images/AryansImage.png", 
+    description: "The architect of the platform, Aryan brings the vision to life with his expertise in web development and passion for creating user-friendly experiences.",
+    "data-ai-hint": "male student glasses"
+  },
+  { 
+    name: "Ishan Jaiswal", 
+    role: "Manager", 
+    imgSrc: "/images/IshansImage.png", 
+    description: "Ishan manages the project's operations, ensuring a smooth experience for all users and coordinating between the team and the student community.",
+    "data-ai-hint": "male student happy"
+  },
 ];
 
 const TeamCard = () => (
@@ -75,19 +93,26 @@ const TeamCard = () => (
             </p>
         </CardHeader>
         <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {teamMembers.map(member => {
-                    const Icon = member.icon;
-                    return (
-                        <div key={member.name} className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border">
-                            <Icon className="h-6 w-6 text-primary" />
-                            <div>
-                                <h4 className="font-semibold">{member.name}</h4>
-                                <p className="text-sm text-muted-foreground">{member.role}</p>
-                            </div>
-                        </div>
-                    )
-                })}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {teamMembers.map(member => (
+                    <Card key={member.name} className="overflow-hidden text-center">
+                        <CardContent className="p-6">
+                             <Image
+                                src={member.imgSrc}
+                                alt={`Photo of ${member.name}`}
+                                width={120}
+                                height={120}
+                                className="rounded-full mx-auto mb-4 border-4 border-primary/20"
+                                data-ai-hint={member['data-ai-hint']}
+                            />
+                            <h4 className="font-bold text-xl">{member.name}</h4>
+                            <p className="text-sm font-semibold text-primary mb-2">{member.role}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {member.description}
+                            </p>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         </CardContent>
     </Card>
@@ -159,18 +184,14 @@ export default function AboutUsPage() {
           <Users className="h-12 w-12" />
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-2">
-          The Team Behind Topper's Toolkit
+          About Topper's Toolkit
         </h1>
         <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-          Meet the minds dedicated to creating a better learning experience for students everywhere.
+          Meet the team, understand our mission, and see what makes our platform special.
         </p>
       </header>
       
       <main className="space-y-16">
-        <section>
-            <TeamCard />
-        </section>
-        
         <section>
             <PlatformCard />
         </section>
@@ -181,6 +202,10 @@ export default function AboutUsPage() {
         
         <section>
             <StudentContributorsCard />
+        </section>
+
+        <section>
+            <TeamCard />
         </section>
       </main>
     </div>
