@@ -98,7 +98,7 @@ export function MobileBottomNav() {
     return (
         <nav className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
             <DemoTimerMobile />
-            <div className="container grid h-16 max-w-lg items-center p-0 grid-cols-6">
+            <div className="container grid h-16 max-w-lg items-center p-0 grid-cols-5">
                 {navItems.map((item) => {
                     const isActive = (item.href === "/" && pathname === "/") || (item.href !== "/" && pathname.startsWith(item.href));
                     return (
@@ -112,16 +112,6 @@ export function MobileBottomNav() {
                        />
                     );
                 })}
-                { user ? (
-                    <UserProfileMenu isMobile />
-                ) : (
-                    <NavItem 
-                        href="/login"
-                        icon={LogIn}
-                        label="Login"
-                        isActive={false}
-                    />
-                )}
             </div>
         </nav>
     );
