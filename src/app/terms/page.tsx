@@ -1,3 +1,4 @@
+
 import { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -37,7 +38,7 @@ export default function TermsAndConditionsPage() {
                 <SectionTitle>1. Parties Involved</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 not-prose">
                     <div className="text-sm p-4 rounded-lg border bg-card">
-                        <h3 className="font-semibold text-lg text-card-foreground">Site Owner</h3>
+                        <h3 className="font-semibold text-lg text-card-foreground">Developer</h3>
                         <p className="text-muted-foreground">Aryan Gupta (AryansDevStudios)</p>
                         <a href="mailto:aryan0106gupta@gmail.com" className="text-primary hover:underline block mt-2">aryan0106gupta@gmail.com</a>
                         <a href="https://wa.me/919838040111" className="text-primary hover:underline block">WhatsApp: +91 98380 40111</a>
