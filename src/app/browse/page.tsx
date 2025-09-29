@@ -17,15 +17,31 @@ import { Separator } from '@/components/ui/separator';
 
 type NoteItem = (Note & { subject: string; chapter: string; chapterId: string; slug: string });
 
+const LOCAL_STORAGE_KEY = 'toppers-toolkit-show-all-notes';
+
 export default function BrowseAllNotesPage() {
   const [allNotes, setAllNotes] = useState<NoteItem[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<NoteItem[]>([]);
-  const [showAllNotes, setShowAllNotes] = useState(false);
+  const [showAllNotes, setShowAllNotes] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const { user, role, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    // Load preference from localStorage on mount
+    const savedPreference = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedPreference !== null) {
+      setShowAllNotes(JSON.parse(savedPreference));
+    }
+  }, []);
+
+  useEffect(() => {
+    // Save preference to localStorage whenever it changes
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(showAllNotes));
+  }, [showAllNotes]);
+
 
   useEffect(() => {
     if (!authLoading && !user) {
