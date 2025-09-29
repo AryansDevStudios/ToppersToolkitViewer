@@ -29,10 +29,12 @@ const mainNavLinks = [
   { title: 'AI Help', icon: 'Bot', href: '/solve-doubts' },
   { title: 'Doubt Box', icon: 'MessageSquare', href: '/doubt-box' },
   { title: 'About Us', icon: 'Users', href: '/about-us' },
+  { title: 'Our Teachers', icon: 'Users', href: '/our-teachers' },
   { title: 'Telegram Chat', icon: 'Send', href: 'https://t.me/+BP99uVTapfw3YmY1', isExternal: true },
   { title: 'GS MCQs', icon: 'BookCheck', href: '/mcqs' },
   { title: 'Mindmap', icon: 'BrainCircuit', href: '/mindmap' },
   { title: 'Current Affairs', icon: 'Newspaper', href: '/current-affairs' },
+  { title: 'Learn from YouTube', icon: 'Youtube', href: '/youtube-learning' },
 ];
 
 const secondaryNavLinks = [
@@ -42,6 +44,10 @@ const secondaryNavLinks = [
     { title: 'Invite Friends', icon: 'Gift', href: '/invite-friends' },
     { title: 'Complaints', icon: 'FileQuestion', href: '/complaints' },
 ];
+
+const userNavLinks = [
+    { title: 'Subscription History', icon: 'Star', href: '/subscription-history' },
+]
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -97,6 +103,10 @@ export function SidebarNav() {
             </nav>
             {user && (
               <>
+                <Separator />
+                 <nav className="space-y-1">
+                    {userNavLinks.map(renderNavLink)}
+                 </nav>
                 <Separator />
                 <Button variant="ghost" className="w-full justify-start gap-4 p-3 text-base font-medium" onClick={handleLogout}>
                   <LogOut className="h-5 w-5" />
