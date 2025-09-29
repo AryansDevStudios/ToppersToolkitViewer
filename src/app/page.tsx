@@ -53,8 +53,8 @@ function ContactSection() {
                 >
                     <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
                     <CardContent className="p-2 md:p-2 flex flex-col items-center justify-center aspect-square">
-                        <div className="bg-primary/10 text-primary p-2 rounded-lg mb-1 md:p-2">
-                            <Icon className="h-5 w-5 md:h-6 md:w-6" />
+                        <div className="bg-primary/10 text-primary p-3 rounded-lg mb-1 md:p-3">
+                            <Icon className="h-6 w-6 md:h-8 md:w-8" />
                         </div>
                         <p className="text-xs md:text-sm font-semibold text-center">
                             {method.title}
