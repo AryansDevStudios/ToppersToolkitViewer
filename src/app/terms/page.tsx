@@ -22,7 +22,7 @@ export default function TermsAndConditionsPage() {
                 <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-2">
                     Terms and Conditions
                 </h1>
-                <p className="text-muted-foreground">Last Updated: 10-08-2025</p>
+                <p className="text-muted-foreground">Last Updated: 29-9-2025</p>
             </header>
 
             <div className="prose prose-lg dark:prose-invert max-w-none">
