@@ -1,4 +1,3 @@
-
 import { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -32,7 +31,7 @@ export default function TermsAndConditionsPage() {
                         https://topperstoolkitviewer.netlify.app
                     </Link>
                     ), operated by <strong>Kuldeep Singh</strong>.
-                    By accessing purchased notes on this platform, you agree to the following Terms.
+                    By creating an account and accessing content on this platform, you agree to the following Terms.
                 </p>
 
                 <SectionTitle>1. Parties Involved</SectionTitle>
@@ -51,16 +50,15 @@ export default function TermsAndConditionsPage() {
                     </div>
                 </div>
 
-                <SectionTitle>2. Access Rights</SectionTitle>
+                <SectionTitle>2. Access Rights &amp; Subscriptions</SectionTitle>
                 <ul>
                     <ListItem>
-                        Access is granted <strong>only to verified purchasers</strong> from{' '}
-                        <Link href="https://topperstoolkit.netlify.app" className="text-primary hover:underline" target="_blank">
-                            Topper’s Toolkit Shop
-                        </Link>.
+                        Full access to all notes and features is granted to users with an <strong>active, paid subscription</strong> or a <strong>valid demo period</strong>.
                     </ListItem>
-                    <ListItem>Your account is for <strong>personal use only</strong>.</ListItem>
+                     <ListItem>Subscriptions are activated after payment confirmation via WhatsApp, which may take <strong>1-2 hours</strong> depending on seller availability.</ListItem>
+                    <ListItem>Your account is for <strong>personal, non-commercial use only</strong>.</ListItem>
                     <ListItem>You do <strong>not</strong> own the content you view — all rights remain with <strong>Kuldeep Singh</strong>.</ListItem>
+                    <ListItem>When your subscription or demo period expires, your access to premium content will be automatically revoked.</ListItem>
                 </ul>
 
                 <SectionTitle>3. Restrictions on Use</SectionTitle>
@@ -68,7 +66,7 @@ export default function TermsAndConditionsPage() {
                 <ul>
                     <ListItem>Downloading, saving, or copying any notes.</ListItem>
                     <ListItem>Taking screenshots or screen recordings.</ListItem>
-                    <ListItem>Printing any part of the notes.</ListItem>
+                    <ListItem>Printing any part of the notes (unless using the official "Print Order" feature).</ListItem>
                     <ListItem>Sharing your account login with others.</ListItem>
                     <ListItem>Selling, redistributing, or publishing the content.</ListItem>
                 </ul>
@@ -94,20 +92,14 @@ export default function TermsAndConditionsPage() {
                     <ListItem>Access is usually provided continuously.</ListItem>
                     <ListItem>In rare situations, the site may be offline for up to <strong>1 hour</strong> for maintenance or technical issues.</ListItem>
                 </ul>
-
-                <SectionTitle>7. Access Timing</SectionTitle>
-                <ul>
-                    <ListItem>Note access is activated only after transaction verification on the Purchase Site.</ListItem>
-                    <ListItem>This process may take <strong>1–2 hours</strong>, depending on seller availability.</ListItem>
-                </ul>
                 
-                <SectionTitle>8. Agreement Requirement</SectionTitle>
+                <SectionTitle>7. Agreement Requirement</SectionTitle>
                 <p>
                     You must explicitly agree to these Terms when registering or logging into your account. Use of this platform implies full acceptance.
                 </p>
 
 
-                <SectionTitle>9. Contact</SectionTitle>
+                <SectionTitle>8. Contact</SectionTitle>
                 <p>For any questions regarding these Terms, please contact the relevant party listed in Section 1.</p>
 
             </div>
