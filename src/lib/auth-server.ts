@@ -4,8 +4,10 @@ import { cookies } from 'next/headers';
 import { auth } from './firebase-admin';
 import { getUserById } from './data';
 import type { User } from './types';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export async function getUser(): Promise<User | null> {
+  noStore();
   const cookieStore = cookies();
   const sessionCookie = cookieStore.get('session')?.value;
   if (!sessionCookie) return null;
