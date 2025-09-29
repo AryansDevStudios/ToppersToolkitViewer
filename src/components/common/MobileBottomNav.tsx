@@ -110,8 +110,6 @@ export function MobileBottomNav() {
       { href: "/current-affairs", icon: Newspaper, label: "Affairs" },
     ];
     
-    const quizItem = { href: "/puzzle-quiz", icon: Puzzle, label: "Quiz" };
-
     const renderAuthSlot = () => {
       if (loading && !mounted) {
          return (
@@ -121,19 +119,15 @@ export function MobileBottomNav() {
             </div>
         )
       }
-      if (user) {
-        const isActive = pathname.startsWith(quizItem.href);
-        return <NavItem {...quizItem} isActive={isActive} />;
-      } else {
-        return (
-          <Link href="/login" className="flex items-center justify-center w-full h-full p-1">
-             <div className="flex flex-col items-center justify-center gap-1 text-xs font-medium w-full h-full bg-primary text-primary-foreground rounded-md">
-                 <LogIn className="h-6 w-6" />
-                 <span>Login</span>
-             </div>
-          </Link>
-        )
-      }
+      
+      const quizItem = {
+          href: user ? "/puzzle-quiz" : "/login",
+          icon: Puzzle,
+          label: "Quiz"
+      };
+      
+      const isActive = pathname.startsWith("/puzzle-quiz");
+      return <NavItem {...quizItem} isActive={isActive} />;
     };
     
     const gridColsClass = 'grid-cols-5';
