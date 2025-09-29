@@ -102,7 +102,7 @@ const TeamCard = () => (
                                 alt={`Photo of ${member.name}`}
                                 width={120}
                                 height={120}
-                                className="rounded-full mx-auto mb-4 border-4 border-primary/20"
+                                className="rounded-lg mx-auto mb-4 border-4 border-primary/20"
                                 data-ai-hint={member['data-ai-hint']}
                             />
                             <h4 className="font-bold text-xl">{member.name}</h4>
