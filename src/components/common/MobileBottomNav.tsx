@@ -62,16 +62,16 @@ function DemoTimerMobile() {
 
     if (timeLeft === "Expired") {
         return (
-            <Link href="/pricing" className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1 text-xs font-medium bg-destructive text-destructive-foreground px-2 py-1 rounded-full shadow-md">
-                <ShieldAlert className="h-3 w-3" />
+            <Link href="/pricing" className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-sm font-medium bg-destructive text-destructive-foreground px-3 py-1.5 rounded-full shadow-lg">
+                <ShieldAlert className="h-4 w-4" />
                 <span>Demo Expired</span>
             </Link>
         )
     }
 
     return (
-        <Link href="/pricing" className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1 text-xs font-medium bg-destructive text-destructive-foreground px-2 py-1 rounded-full shadow-md">
-            <Clock className="h-3 w-3" />
+        <Link href="/pricing" className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-sm font-medium bg-destructive text-destructive-foreground px-3 py-1.5 rounded-full shadow-lg">
+            <Clock className="h-4 w-4" />
             <span>Demo: {timeLeft}</span>
         </Link>
     );
