@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Mail, Send, Smartphone, Instagram, ArrowRight } from "lucide-react";
 import { Testimonials } from "@/components/home/Testimonials";
+import { iconMap } from "@/lib/iconMap";
+import { cn } from "@/lib/utils";
 
-export const revalidate = 0;
 
 const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -24,46 +25,45 @@ const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 function ContactSection() {
   const contactMethods = [
-    { name: 'YouTube', href: 'https://youtube.com/@toppers_toolkit?si=pepc5bT3zMCULfGY', icon: YoutubeIcon },
-    { name: 'Whatsapp Channel', href: 'https://www.whatsapp.com/channel/0029Vb6gXP37j6gDDkugNS2L', icon: Smartphone },
-    { name: 'Instagram', href: 'https://www.instagram.com/toppers_toolkit.adi/', icon: Instagram },
-    { name: 'Telegram Group', href: 'https://t.me/+BP99uVTapfw3YmY1', icon: Send },
-    { name: 'Telegram Channel', href: 'https://t.me/ToppersToolkit', icon: Send },
-    { name: 'Email', href: 'mailto:kuldeepsingh012011@gmail.com', icon: Mail },
+    { title: 'YouTube', href: 'https://youtube.com/@toppers_toolkit?si=pepc5bT3zMCULfGY', icon: 'Youtube' },
+    { title: 'Whatsapp Channel', href: 'https://www.whatsapp.com/channel/0029Vb6gXP37j6gDDkugNS2L', icon: 'Smartphone' },
+    { title: 'Instagram', href: 'https://www.instagram.com/toppers_toolkit.adi/', icon: 'Instagram' },
+    { title: 'Telegram Group', href: 'https://t.me/+BP99uVTapfw3YmY1', icon: 'Send' },
+    { title: 'Telegram Channel', href: 'https://t.me/ToppersToolkit', icon: 'Send' },
+    { title: 'Email', href: 'mailto:kuldeepsingh012011@gmail.com', icon: 'Mail' },
   ];
 
   return (
     <section className="w-full py-12 md:py-16">
       <div className="container px-4">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto text-center mb-10">
           <h2 className="text-3xl font-bold tracking-tight">Contact Us</h2>
           <p className="mt-2 text-muted-foreground">Have questions? We're here to help.</p>
         </div>
-        <div className="mt-8 max-w-xl mx-auto space-y-4">
-          {contactMethods.map((method) => {
-            const Icon = method.icon;
-            return (
-              <a
-                key={method.name}
-                href={method.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block group"
-              >
-                <Card className="hover:bg-accent hover:border-primary/50 transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-primary/10 text-primary p-3 rounded-lg">
-                          <Icon className="h-6 w-6" />
+        <div className="grid grid-cols-3 gap-3 max-w-4xl mx-auto md:gap-4 lg:gap-6">
+            {contactMethods.map((method) => {
+                const Icon = iconMap[method.icon as keyof typeof iconMap] || Mail;
+                return (
+                <a
+                    key={method.title}
+                    href={method.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block"
+                >
+                    <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
+                    <CardContent className="p-3 md:p-4 flex flex-col items-center justify-center aspect-square">
+                        <div className="bg-primary/10 text-primary p-3 rounded-lg mb-2 md:p-4">
+                            <Icon className="h-8 w-8 md:h-10 md:w-10" />
                         </div>
-                        <p className="font-semibold text-base">{method.name}</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </CardContent>
-                </Card>
-              </a>
-            );
-          })}
+                        <p className="text-xs md:text-sm font-semibold text-center">
+                            {method.title}
+                        </p>
+                    </CardContent>
+                    </Card>
+                </a>
+                );
+            })}
         </div>
       </div>
     </section>
