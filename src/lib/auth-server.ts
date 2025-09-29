@@ -8,8 +8,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 
 export async function getUser(): Promise<User | null> {
   noStore();
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('session')?.value;
+  const sessionCookie = cookies().get('session')?.value;
   if (!sessionCookie) return null;
 
   try {
@@ -23,3 +22,4 @@ export async function getUser(): Promise<User | null> {
     return null;
   }
 }
+
