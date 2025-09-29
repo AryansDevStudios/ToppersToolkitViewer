@@ -2,7 +2,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BookUser, ShoppingCart, LogIn, Search, ShieldCheck, ShieldQuestion } from 'lucide-react';
+import { BookUser, UserPlus, Star, Search, ShieldCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: "User Manual - Topper's Toolkit",
@@ -44,25 +44,29 @@ export default function UserManualPage() {
                     <CardTitle className="text-2xl">Step-by-Step Guide</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-8">
-                    <ManualStep icon={ShoppingCart} title="Step 1: Buy Notes from the Shop">
-                        <p>This website is for viewing notes you have already bought.</p>
-                        <p>First, you must buy the notes from our main shop website.</p>
+                    <ManualStep icon={UserPlus} title="Step 1: Create Your Account">
+                        <p>First, you need to create an account to access the platform.</p>
+                        <p>Click on <strong>'Login'</strong> and then choose the <strong>'Register'</strong> tab. Fill in your details to sign up. If you already have an account, you can simply log in.</p>
                         <p>
-                            <Link href="https://topperstoolkit.netlify.app" className="text-primary font-semibold hover:underline" target="_blank">
-                                Click here to go to the Topper's Toolkit Shop &rarr;
+                            <Link href="/login" className="text-primary font-semibold hover:underline">
+                                Click here to go to the Login/Register page &rarr;
                             </Link>
                         </p>
                     </ManualStep>
 
-                    <ManualStep icon={LogIn} title="Step 2: Create Your Account Here">
-                         <p>After you buy the notes, come back to this website.</p>
-                         <p>Click on <strong>'Register'</strong>. Use the <strong>same email address</strong> you used for your purchase.</p>
-                         <p>This is very important so we know which notes to give you access to!</p>
+                    <ManualStep icon={Star} title="Step 2: Get Full Access">
+                         <p>Once you register, you can get full access to all content and features.</p>
+                         <p>You have two options: start a <strong>free 1-hour demo</strong> to explore everything, or purchase a <strong>full subscription</strong> for unlimited access.</p>
+                         <p>
+                            <Link href="/pricing" className="text-primary font-semibold hover:underline">
+                                View our pricing and demo options &rarr;
+                            </Link>
+                        </p>
                     </ManualStep>
 
                     <ManualStep icon={Search} title="Step 3: Find and Read Your Notes">
-                         <p>Once you are logged in, you can click on <strong>'Browse'</strong> to see all the subjects and notes.</p>
-                         <p>You will only be able to open the notes that you have purchased.</p>
+                         <p>Once you have an active subscription or demo, you can click on <strong>'Browse'</strong> to see all the subjects and notes.</p>
+                         <p>With full access, you can open and view any document on the platform instantly.</p>
                     </ManualStep>
                 </CardContent>
             </Card>
@@ -79,7 +83,7 @@ export default function UserManualPage() {
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm">
                     <p>
-                        The notes you buy are for your personal use only. You do not own them.
+                        The notes you access are for your personal use only. You do not own them.
                     </p>
                     <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
                         <li>
