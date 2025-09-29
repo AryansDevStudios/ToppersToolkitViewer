@@ -37,7 +37,11 @@ const authenticatedOpenPaths = [
     '/puzzle-quiz',
     '/rules-policies',
     '/search',
-    '/pricing'
+    '/pricing',
+    '/our-teachers',
+    '/youtube-learning',
+    '/current-affairs',
+    '/subscription-history',
 ];
 
 const AccessDenied = () => (
