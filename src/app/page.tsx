@@ -4,7 +4,7 @@ import { FeatureGrid } from "@/components/home/FeatureGrid";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Mail, Send, Smartphone } from "lucide-react";
+import { Mail, Send, Smartphone, Instagram } from "lucide-react";
 import { Testimonials } from "@/components/home/Testimonials";
 
 export const revalidate = 0;
@@ -13,25 +13,23 @@ const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
+    fill="currentColor"
+    stroke="none"
     {...props}
   >
-    <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
-    <path d="m10 12 5-3-5-3z" />
+    <path d="M10.8,8.2V15c0,0.4,0.5,0.6,0.8,0.4l5.4-3.4c0.3-0.2,0.3-0.6,0-0.8l-5.4-3.4C11.3,7.6,10.8,7.9,10.8,8.2z M21.7,8.1 c-0.2-0.8-0.8-1.4-1.6-1.6C18.6,6,12,6,12,6s-6.6,0-8.1,0.5C3.1,6.7,2.5,7.3,2.3,8.1C1.8,9.7,1.8,12,1.8,12s0,2.3,0.5,3.9 c0.2,0.8,0.8,1.4,1.6,1.6C5.4,18,12,18,12,18s6.6,0,8.1-0.5c0.8-0.2,1.4-0.8,1.6-1.6c0.5-1.6,0.5-3.9,0.5-3.9S22.2,9.7,21.7,8.1z"/>
   </svg>
 );
 
 
 function ContactSection() {
   const contactMethods = [
+    { name: 'YouTube', href: 'https://youtube.com/@toppers_toolkit?si=pepc5bT3zMCULfGY', icon: YoutubeIcon },
+    { name: 'WhatsApp', href: 'https://whatsapp.com/channel/your_channel_id', icon: Smartphone },
+    { name: 'Instagram', href: 'https://instagram.com/your_handle', icon: Instagram },
+    { name: 'Telegram Group', href: 'https://t.me/+BP99uVTapfw3YmY1', icon: Send },
+    { name: 'Telegram', href: 'https://t.me/your_telegram_account', icon: Send },
     { name: 'Email', href: 'mailto:kuldeepsingh012011@gmail.com', icon: Mail },
-    { name: 'WhatsApp', href: 'https://wa.me/917754000411', icon: Smartphone },
-    { name: 'Telegram', href: 'https://t.me/+BP99uVTapfw3YmY1', icon: Send },
-    { name: 'YouTube', href: 'https://youtube.com/@toppers_toolkit?si=pepc5bT3zMCULfGY', icon: YoutubeIcon }
   ];
 
   return (
@@ -41,7 +39,7 @@ function ContactSection() {
                 <h2 className="text-3xl font-bold tracking-tight">Contact Us</h2>
                 <p className="mt-2 text-muted-foreground">Have questions? We're here to help.</p>
             </div>
-            <div className="mt-8 max-w-md mx-auto grid grid-cols-4 gap-3">
+            <div className="mt-8 max-w-lg mx-auto grid grid-cols-3 sm:grid-cols-6 gap-3">
                 {contactMethods.map((method) => {
                     const Icon = method.icon;
                     return (
