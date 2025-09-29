@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Lightbulb, Code, BookCopy, UserPlus } from 'lucide-react';
+import { Users, Lightbulb, Code, BookCopy, UserPlus, User, Shield } from 'lucide-react';
 import Image from 'next/image';
 import { iconMap } from '@/lib/iconMap';
 import type { LucideIcon } from 'lucide-react';
@@ -54,6 +54,45 @@ const PlatformCard = () => (
         </CardContent>
     </Card>
 );
+
+const teamMembers = [
+  { name: "Kuldeep Singh", role: "Owner & Founder", icon: User },
+  { name: "Aryan Gupta", role: "Developer", icon: Code },
+  { name: "Ishan Jaiswal", role: "Manager", icon: Shield },
+];
+
+const TeamCard = () => (
+    <Card>
+        <CardHeader>
+             <div className="flex items-center gap-3">
+                <div className="bg-primary/10 text-primary p-3 rounded-full">
+                    <Users className="h-6 w-6" />
+                </div>
+                <CardTitle className="text-2xl">Our Team</CardTitle>
+            </div>
+            <p className="text-muted-foreground pt-2">
+                The core team behind the Topper's Toolkit project.
+            </p>
+        </CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {teamMembers.map(member => {
+                    const Icon = member.icon;
+                    return (
+                        <div key={member.name} className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border">
+                            <Icon className="h-6 w-6 text-primary" />
+                            <div>
+                                <h4 className="font-semibold">{member.name}</h4>
+                                <p className="text-sm text-muted-foreground">{member.role}</p>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+        </CardContent>
+    </Card>
+);
+
 
 const MissionCard = () => (
     <Card className="bg-primary/5 border-primary/20 shadow-lg">
@@ -128,6 +167,10 @@ export default function AboutUsPage() {
       </header>
       
       <main className="space-y-16">
+        <section>
+            <TeamCard />
+        </section>
+        
         <section>
             <PlatformCard />
         </section>
