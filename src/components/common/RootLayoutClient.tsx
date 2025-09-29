@@ -20,6 +20,8 @@ const publicPaths = [
     '/register', 
     '/terms', 
     '/user-manual',
+    '/about-us',
+    '/quiz-results',
 ];
 const subscriptionPaths = ['/subscribe', '/subscription-confirmation', '/pricing'];
 
