@@ -20,54 +20,14 @@ const publicPaths = [
     '/register', 
     '/terms', 
     '/user-manual',
-    '/quiz-results',
-    '/about-us',
 ];
-const subscriptionPaths = ['/subscribe', '/subscription-confirmation'];
-
-const authenticatedOpenPaths = [
-    '/',
-    '/browse',
-    '/complaints',
-    '/doubt-box',
-    '/invite-friends',
-    '/leaderboard',
-    '/notices',
-    '/purchase-history',
-    '/puzzle-quiz',
-    '/rules-policies',
-    '/search',
-    '/pricing',
-    '/youtube-learning',
-    '/current-affairs',
-    '/subscription-history',
-];
-
-const AccessDenied = () => (
-    <div className="container mx-auto px-4 py-8">
-        <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
-            <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
-            <h2 className="text-2xl font-bold text-destructive">
-                 Access Denied
-            </h2>
-            <p className="mt-2 text-muted-foreground max-w-md">
-                You do not have permission to view this page. An active subscription is required.
-            </p>
-            <Button asChild className="mt-6">
-                <Link href="/pricing">
-                    <Star className="mr-2 h-4 w-4"/>
-                    View Subscription Plans
-                </Link>
-            </Button>
-        </div>
-    </div>
-);
+const subscriptionPaths = ['/subscribe', '/subscription-confirmation', '/pricing'];
 
 function AuthWrapper({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
   const { user, dbUser, loading } = useAuth(initialUser);
   const pathname = usePathname();
   const router = useRouter();
-  const [accessState, setAccessState] = useState<'loading' | 'granted' | 'denied'>('loading');
+  const [accessState, setAccessState] = useState<'loading' | 'granted' | 'redirecting'>('loading');
 
   useEffect(() => {
     if (loading) {
@@ -75,48 +35,43 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
       return;
     }
 
+    // 1. Allow access to public pages for everyone
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
     if (isPublicPage) {
       setAccessState('granted');
       return; 
     }
 
+    // 2. Redirect unauthenticated users to login
     if (!user || !dbUser) {
       router.push('/login');
-      setAccessState('loading'); 
+      setAccessState('redirecting'); 
       return;
     }
-    
-    const isOpenPage = authenticatedOpenPaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path))) || subscriptionPaths.some(path => pathname.startsWith(path));
-    const isProtectedPage = !isOpenPage;
 
-    if (isProtectedPage) {
-      const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
-      const isDemoActive = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
-      const isAdmin = dbUser.role === 'Admin';
-      
-      const hasAccess = hasActiveSubscription || isDemoActive || isAdmin;
+    // 3. Handle new users who haven't selected a plan
+    const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
+    const hasDemo = !!dbUser.demoExpiresAt;
+    const isNewUserWithoutPlan = !hasActiveSubscription && !hasDemo;
+    const isSubscriptionPage = subscriptionPaths.some(path => pathname.startsWith(path));
 
-      if (!hasAccess) {
-        setAccessState('denied');
+    if (isNewUserWithoutPlan && !isSubscriptionPage) {
+        router.push('/pricing');
+        setAccessState('redirecting');
         return;
-      }
     }
     
+    // 4. If all checks pass, grant access
     setAccessState('granted');
     
   }, [loading, user, dbUser, pathname, router]);
 
-  if (accessState === 'loading') {
+  if (accessState === 'loading' || accessState === 'redirecting') {
     return (
       <div className="flex h-[calc(100vh-8rem)] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
-  }
-
-  if (accessState === 'denied') {
-    return <AccessDenied />;
   }
 
   return <>{children}</>;
