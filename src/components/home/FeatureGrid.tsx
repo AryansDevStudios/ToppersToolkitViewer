@@ -44,7 +44,7 @@ export function FeatureGrid() {
                 <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
                   <CardContent className="p-3 md:p-4 flex flex-col items-center justify-center aspect-square">
                     <div className={cn("bg-primary/10 text-primary p-3 rounded-lg mb-2 md:p-4", feature.iconClassName?.includes('orange') && 'bg-orange-500/10')}>
-                      <Icon className={cn("h-6 w-6 md:h-8 md:w-8", feature.iconClassName)} />
+                      <Icon className={cn("h-8 w-8 md:h-10 md:w-10", feature.iconClassName)} />
                     </div>
                     <CardTitle className="text-xs md:text-sm font-semibold text-center truncate">
                       {feature.title}
