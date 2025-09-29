@@ -89,7 +89,7 @@ export function MobileBottomNav() {
     
     const navItems = [
       { href: "/", icon: Home, label: "Home" },
-      { href: "/browse", icon: Compass, label: "Browse" },
+      { href: "/browse", icon: Compass, label: "Notes" },
       { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-500" },
       { href: "/current-affairs", icon: Newspaper, label: "Affairs" },
       { href: "/puzzle-quiz", icon: Puzzle, label: "Quiz" },
