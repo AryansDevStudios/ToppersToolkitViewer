@@ -173,7 +173,7 @@ export function LoginForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input placeholder="name@example.com" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -191,6 +191,7 @@ export function LoginForm() {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <Button
@@ -199,6 +200,7 @@ export function LoginForm() {
                       size="icon"
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={isSubmitting}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -228,6 +230,7 @@ export function LoginForm() {
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
