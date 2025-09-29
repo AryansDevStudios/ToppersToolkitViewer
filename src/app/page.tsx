@@ -7,6 +7,8 @@ import Link from "next/link";
 import { Mail, Send, Smartphone } from "lucide-react";
 import { Testimonials } from "@/components/home/Testimonials";
 
+export const revalidate = 0;
+
 const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"

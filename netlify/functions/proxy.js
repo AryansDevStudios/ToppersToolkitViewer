@@ -1,3 +1,4 @@
+
 // Netlify Function: Universal proxy with CORS
 // Handles PDFs, images, JS, CSS, JSON, etc.
 
@@ -38,7 +39,7 @@ export async function handler(event) {
       headers: {
         "Content-Type": contentType,
         "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "public, max-age=3600" // cache for 1 hour
+        "Cache-Control": "public, max-age=600" // cache for 10 minutes
       },
       body: Buffer.from(buffer).toString("base64"),
       isBase64Encoded: true

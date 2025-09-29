@@ -7,8 +7,6 @@ import { getUser } from '@/lib/auth-server';
 import { RootLayoutClient } from '@/components/common/RootLayoutClient';
 import './globals.css';
 
-export const dynamic = 'force-dynamic'
-
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',

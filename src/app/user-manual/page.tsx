@@ -9,8 +9,6 @@ export const metadata: Metadata = {
     description: "A simple guide to using the Topper's Toolkit.",
 };
 
-export const revalidate = 0;
-
 const ManualStep = ({ icon: Icon, title, children }: { icon: React.ElementType, title: string, children: React.ReactNode }) => (
     <div className="flex items-start gap-4">
         <div className="flex-shrink-0">
