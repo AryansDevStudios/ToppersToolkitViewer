@@ -44,7 +44,7 @@ export default function TermsAndConditionsPage() {
                         <a href="https://wa.me/919838040111" className="text-primary hover:underline block">WhatsApp: +91 98380 40111</a>
                     </div>
                      <div className="text-sm p-4 rounded-lg border bg-card">
-                        <h3 className="font-semibold text-lg text-card-foreground">Seller</h3>
+                        <h3 className="font-semibold text-lg text-card-foreground">Owner</h3>
                         <p className="text-muted-foreground">Kuldeep Singh</p>
                          <a href="mailto:kuldeepsingh012011@gmail.com" className="text-primary hover:underline block mt-2">kuldeepsingh012011@gmail.com</a>
                          <a href="https://wa.me/917754000411" className="text-primary hover:underline block">WhatsApp: +91 77540 00411</a>
