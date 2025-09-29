@@ -29,6 +29,7 @@ import { Checkbox } from "../ui/checkbox";
 import Link from "next/link";
 import { useState } from "react";
 import { Loader2, Eye, EyeOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -133,9 +134,17 @@ export function LoginForm() {
         title: "Login Successful",
         description: "Redirecting you to the dashboard.",
       });
-      router.push("/");
+
+      // Instead of immediate redirect, we let the auth state settle.
+      // This prevents the redirect loop.
+      // The isSubmitting state will keep the loader active.
+      setTimeout(() => {
+          router.push("/");
+      }, 500);
+
 
     } catch (error: any) {
+      setIsSubmitting(false); // Only set submitting to false on error
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email' || error.code === 'auth/invalid-credential') {
         form.setError('email', {
             type: 'manual',
@@ -156,16 +165,21 @@ export function LoginForm() {
             message: error.message
         });
       }
-    } finally {
-        setIsSubmitting(false);
     }
+    // No finally block, so isSubmitting stays true on success
   }
 
   return (
-    <Card>
+    <Card className="relative">
+       {isSubmitting && (
+         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-lg">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="mt-4 text-sm font-semibold">Signing in...</p>
+         </div>
+       )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4 pt-6">
+          <CardContent className={cn("space-y-4 pt-6", isSubmitting && "opacity-50")}>
             <FormField
               control={form.control}
               name="email"
@@ -258,7 +272,6 @@ export function LoginForm() {
           </CardContent>
           <CardFooter className="flex-col gap-4">
             <Button type="submit" className="w-full" disabled={!form.watch('agreeToTerms') || isSubmitting}>
-               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                {isSubmitting ? "Signing In..." : "Sign In"}
             </Button>
           </CardFooter>
