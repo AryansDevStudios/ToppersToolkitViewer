@@ -28,7 +28,7 @@ function ContactSection() {
     { name: 'WhatsApp', href: 'https://whatsapp.com/channel/your_channel_id', icon: Smartphone },
     { name: 'Instagram', href: 'https://instagram.com/your_handle', icon: Instagram },
     { name: 'Telegram Group', href: 'https://t.me/+BP99uVTapfw3YmY1', icon: Send },
-    { name: 'Telegram Chat', href: 'https://t.me/your_telegram_account', icon: Send },
+    { name: 'Telegram Channel', href: 'https://t.me/your_telegram_account', icon: Send },
     { name: 'Email', href: 'mailto:kuldeepsingh012011@gmail.com', icon: Mail },
   ];
 
