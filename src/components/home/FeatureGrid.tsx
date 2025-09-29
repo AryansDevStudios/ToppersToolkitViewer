@@ -1,91 +1,38 @@
 
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import {
-  Swords,
-  Puzzle,
-  ClipboardList,
-  MessageSquare,
-  Users,
-  Bot,
-  Send,
-  BrainCircuit,
-  FileQuestion,
-  BookCheck,
-} from 'lucide-react';
 import { iconMap } from '@/lib/iconMap';
+import { cn } from '@/lib/utils';
 
 const features = [
-  {
-    title: 'Leaderboard',
-    icon: 'Swords',
-    href: '/leaderboard',
-  },
-  {
-    title: 'Puzzle & Quiz',
-    icon: 'Puzzle',
-    href: '/puzzle-quiz',
-  },
-  {
-    title: 'Notices',
-    icon: 'ClipboardList',
-    href: '/notices',
-  },
-  {
-    title: 'AI Help',
-    icon: 'Bot',
-    href: '/solve-doubts',
-  },
-  {
-    title: 'Doubt Box',
-    icon: 'MessageSquare',
-    href: '/doubt-box',
-  },
-  {
-    title: 'About Us',
-    icon: 'Users',
-    href: '/about-us',
-  },
-  {
-    title: 'Telegram Chat',
-    icon: 'Send',
-    href: 'https://t.me/+BP99uVTapfw3YmY1',
-    isExternal: true,
-  },
-  {
-    title: 'GS MCQs',
-    icon: 'BookCheck',
-    href: '/mcqs',
-  },
-  {
-    title: 'Mindmap',
-    icon: 'BrainCircuit',
-    href: '/mindmap',
-  },
-    {
-    title: 'Learn from YouTube',
-    icon: 'Youtube',
-    href: '/youtube-learning',
-  },
-  {
-    title: 'Complaints',
-    icon: 'FileQuestion',
-    href: '/complaints',
-  },
-  {
-    title: 'Reasoning',
-    icon: 'BrainCircuit',
-    href: '/reasoning',
-  },
+  { title: 'Notices', icon: 'ClipboardList', href: '/notices' },
+  { title: 'AI Help', icon: 'Bot', href: '/solve-doubts', iconClassName: 'text-orange-500' },
+  { title: 'Notes', icon: 'Compass', href: '/browse' },
+  
+  { title: 'Leaderboard', icon: 'Swords', href: '/leaderboard' },
+  { title: 'Daily Quiz', icon: 'Puzzle', href: '/puzzle-quiz' },
+  { title: 'Mindmap', icon: 'BrainCircuit', href: '/mindmap' },
+
+  { title: 'MCQs', icon: 'BookCheck', href: '/mcqs' },
+  { title: 'Reasoning', icon: 'BrainCircuit', href: '/reasoning' },
+  { title: 'Current Affairs', icon: 'Newspaper', href: '/current-affairs' },
+
+  { title: 'Learn from YouTube', icon: 'Youtube', href: '/youtube-learning' },
+  { title: 'Doubt Box', icon: 'MessageSquare', href: '/doubt-box' },
+  { title: 'Complaints', icon: 'FileQuestion', href: '/complaints' },
+  
+  { title: 'About Us', icon: 'Users', href: '/about-us' },
+  { title: 'User Manual', icon: 'BookUser', href: '/user-manual' },
+  { title: 'Rules', icon: 'Gavel', href: '/terms' },
 ];
 
 export function FeatureGrid() {
   return (
     <section className="w-full py-12">
       <div className="container px-4">
-        <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto md:gap-6 lg:gap-8">
+        <div className="grid grid-cols-3 gap-3 max-w-4xl mx-auto md:gap-4 lg:gap-6">
           {features.map((feature) => {
-            const Icon = iconMap[feature.icon] || Puzzle;
+            const Icon = iconMap[feature.icon] || iconMap['Puzzle'];
             const LinkComponent = feature.isExternal ? 'a' : Link;
             return (
               <LinkComponent
@@ -95,11 +42,11 @@ export function FeatureGrid() {
                 className="group block"
               >
                 <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
-                  <CardContent className="p-4 flex flex-col items-center justify-center aspect-square">
-                    <div className="bg-primary/10 text-primary p-4 rounded-lg mb-3 md:p-5">
-                      <Icon className="h-8 w-8 md:h-10 md:w-10" />
+                  <CardContent className="p-3 md:p-4 flex flex-col items-center justify-center aspect-square">
+                    <div className={cn("bg-primary/10 text-primary p-3 rounded-lg mb-2 md:p-4", feature.iconClassName?.includes('orange') && 'bg-orange-500/10')}>
+                      <Icon className={cn("h-6 w-6 md:h-8 md:w-8", feature.iconClassName)} />
                     </div>
-                    <CardTitle className="text-sm md:text-base font-semibold text-center truncate">
+                    <CardTitle className="text-xs md:text-sm font-semibold text-center truncate">
                       {feature.title}
                     </CardTitle>
                   </CardContent>

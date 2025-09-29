@@ -24,7 +24,7 @@ const mainNavLinks = [
   { title: 'Home', icon: 'Home', href: '/' },
   { title: 'Browse', icon: 'Compass', href: '/browse' },
   { title: 'Leaderboard', icon: 'Swords', href: '/leaderboard' },
-  { title: 'Puzzle & Quiz', icon: 'Puzzle', href: '/puzzle-quiz' },
+  { title: 'Daily Quiz', icon: 'Puzzle', href: '/puzzle-quiz' },
   { title: 'Notices', icon: 'ClipboardList', href: '/notices' },
   { title: 'AI Help', icon: 'Bot', href: '/solve-doubts' },
   { title: 'Doubt Box', icon: 'MessageSquare', href: '/doubt-box' },
@@ -32,6 +32,7 @@ const mainNavLinks = [
   { title: 'Telegram Chat', icon: 'Send', href: 'https://t.me/+BP99uVTapfw3YmY1', isExternal: true },
   { title: 'GS MCQs', icon: 'BookCheck', href: '/mcqs' },
   { title: 'Mindmap', icon: 'BrainCircuit', href: '/mindmap' },
+  { title: 'Current Affairs', icon: 'Newspaper', href: '/current-affairs' },
 ];
 
 const secondaryNavLinks = [
