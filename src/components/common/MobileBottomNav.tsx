@@ -28,17 +28,6 @@ const NavItem = ({ href, icon: Icon, label, isActive, isExternal, className, ico
     )
 };
 
-const MobileNavSkeleton = () => (
-    <div className="container grid h-16 max-w-lg items-center p-0 grid-cols-5">
-        {[...Array(5)].map((_, i) => (
-             <div key={i} className="flex flex-col items-center justify-center gap-1 w-full h-full">
-                <Skeleton className="h-7 w-7 rounded-full" />
-                <Skeleton className="h-2 w-10 rounded-sm" />
-            </div>
-        ))}
-    </div>
-);
-
 function DemoTimerMobile() {
     const { dbUser } = useAuth(null);
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
@@ -91,11 +80,6 @@ function DemoTimerMobile() {
 export function MobileBottomNav() {
     const pathname = usePathname();
     const { user, loading } = useAuth();
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const isDoubtSolverPage = pathname === '/solve-doubts';
 
@@ -108,34 +92,13 @@ export function MobileBottomNav() {
       { href: "/browse", icon: Compass, label: "Browse" },
       { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-500" },
       { href: "/current-affairs", icon: Newspaper, label: "Affairs" },
+      { href: "/puzzle-quiz", icon: Puzzle, label: "Quiz" },
     ];
     
-    const renderAuthSlot = () => {
-      if (loading && !mounted) {
-         return (
-            <div className="flex flex-col items-center justify-center gap-1 w-full h-full">
-                <Skeleton className="h-7 w-7 rounded-full" />
-                <Skeleton className="h-2 w-10 rounded-sm" />
-            </div>
-        )
-      }
-      
-      const quizItem = {
-          href: user ? "/puzzle-quiz" : "/login",
-          icon: Puzzle,
-          label: "Quiz"
-      };
-      
-      const isActive = pathname.startsWith("/puzzle-quiz");
-      return <NavItem {...quizItem} isActive={isActive} />;
-    };
-    
-    const gridColsClass = 'grid-cols-5';
-
     return (
         <nav className="mobile-bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur">
             <DemoTimerMobile />
-            <div className={cn("container grid h-16 max-w-lg items-center p-0", gridColsClass)}>
+            <div className="container grid h-16 max-w-lg items-center p-0 grid-cols-6">
                 {navItems.map((item) => {
                     const isActive = (item.href === "/" && pathname === "/") || (item.href !== "/" && pathname.startsWith(item.href));
                     return (
@@ -145,12 +108,20 @@ export function MobileBottomNav() {
                          icon={item.icon}
                          label={item.label}
                          isActive={isActive}
-                         isExternal={item.isExternal}
                          iconClassName={item.iconClassName}
                        />
                     );
                 })}
-                {renderAuthSlot()}
+                { user ? (
+                    <UserProfileMenu isMobile />
+                ) : (
+                    <NavItem 
+                        href="/login"
+                        icon={LogIn}
+                        label="Login"
+                        isActive={false}
+                    />
+                )}
             </div>
         </nav>
     );
