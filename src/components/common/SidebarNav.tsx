@@ -22,7 +22,7 @@ import { ScrollArea } from "../ui/scroll-area";
 
 const mainNavLinks = [
   { title: 'Home', icon: 'Home', href: '/' },
-  { title: 'Browse', icon: 'Compass', href: '/browse' },
+  { title: 'Notes', icon: 'Compass', href: '/browse' },
   { title: 'Leaderboard', icon: 'Swords', href: '/leaderboard' },
   { title: 'Daily Quiz', icon: 'Puzzle', href: '/puzzle-quiz' },
   { title: 'Notices', icon: 'ClipboardList', href: '/notices' },
