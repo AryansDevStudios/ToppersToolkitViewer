@@ -19,6 +19,8 @@ import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { differenceInDays, formatDistanceToNowStrict } from 'date-fns';
+import { useState, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserProfileMenuProps {
   isMobile?: boolean;
@@ -62,6 +64,9 @@ const SubscriptionStatus = () => {
 export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
   const { user, dbUser, role, loading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
+  const [clickCount, setClickCount] = useState(0);
+  const clickTimeout = useRef<NodeJS.Timeout | null>(null);
 
   if (loading || !user) return null;
 
@@ -70,6 +75,54 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
     await fetch('/api/auth/session', { method: 'DELETE' });
     router.push('/login');
   };
+
+  const handleClearCache = async () => {
+     try {
+        localStorage.clear();
+        sessionStorage.clear();
+
+        if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(key => caches.delete(key)));
+        }
+
+        toast({
+        title: "Cache Cleared",
+        description: "All site data cleared. Reloading...",
+        });
+
+        setTimeout(() => {
+        window.location.reload();
+        }, 1500);
+
+    } catch (error) {
+        toast({
+        title: "Error",
+        description: "Could not clear all caches.",
+        variant: "destructive",
+        });
+    }
+  }
+
+  const handleAvatarClick = (e: React.MouseEvent) => {
+    if (clickTimeout.current) {
+      clearTimeout(clickTimeout.current);
+    }
+
+    const newClickCount = clickCount + 1;
+    setClickCount(newClickCount);
+
+    if (newClickCount === 3) {
+      e.preventDefault();
+      handleClearCache();
+      setClickCount(0);
+    } else {
+        clickTimeout.current = setTimeout(() => {
+            setClickCount(0);
+        }, 1500); // Reset after 1.5 seconds
+    }
+  };
+
 
   const getInitials = (name: string | null | undefined): string => {
     if (!name) return 'U';
@@ -108,7 +161,7 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
                 <span>Profile</span>
             </div>
          ) : (
-            <Button variant="ghost" className={triggerClasses}>
+            <Button variant="ghost" className={triggerClasses} onClick={handleAvatarClick}>
                 <Avatar className={cn(avatarClasses, mobileRingClasses)}>
                     <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
                     <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
