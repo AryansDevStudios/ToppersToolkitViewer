@@ -16,15 +16,20 @@ type TeamMember = {
 };
 
 const features: { title: string; icon: keyof typeof iconMap; description: string }[] = [
-  { title: "Leaderboard", icon: "Swords", description: "Compete with peers and track your progress. Stay motivated by climbing ranks as you solve quizzes, puzzles, and practice tests." },
-  { title: "Puzzle & Quiz", icon: "Puzzle", description: "Sharpen your mind with interactive puzzles and quizzes. A fun way to learn, test knowledge, and boost problem-solving skills." },
-  { title: "Notices", icon: "ClipboardList", description: "Stay updated with important announcements, events, and academic reminders — all in one place." },
-  { title: "AI Help", icon: "Bot", description: "Get instant answers and explanations powered by AI. Perfect for quick clarifications and 24/7 study support." },
-  { title: "Doubt Box", icon: "MessageSquare", description: "Ask your questions directly and get reliable answers from admins or mentors. A safe space to clear academic doubts." },
-  { title: "About Us", icon: "Users", description: "Learn about our mission to simplify learning and provide quality study materials for every student." },
-  { title: "Telegram Chat", icon: "Send", description: "Join the student community on Telegram. Discuss topics, share knowledge, and stay connected with peers." },
-  { title: "GS MCQs", icon: "BookCheck", description: "Practice multiple-choice questions across subjects. Build accuracy and confidence for exams with instant feedback." },
-  { title: "Mindmaps", icon: "BrainCircuit", description: "Visualize topics with better retention. A powerful tool to organize and revise complex concepts easily." },
+  { title: "Notes", icon: "Compass", description: "Browse a comprehensive library of notes across all your subjects, organized by chapter for easy access." },
+  { title: "AI Help", icon: "Bot", description: "Get instant answers and explanations for your questions 24/7, powered by cutting-edge AI." },
+  { title: "MCQs", icon: "BookCheck", description: "Practice multiple-choice questions to build accuracy and confidence for exams with instant feedback." },
+  { title: "Daily Quiz", icon: "Puzzle", description: "Sharpen your mind daily with interactive puzzles and quizzes to test your knowledge and problem-solving skills." },
+  { title: "Leaderboard", icon: "Swords", description: "Compete with peers and track your progress. Stay motivated by climbing the ranks as you master topics." },
+  { title: "Mind Maps", icon: "BrainCircuit", description: "Visualize complex topics with intuitive mind maps for better retention and revision." },
+  { title: "YouTube Learning", icon: "Youtube", description: "Access hand-picked educational videos from the best creators to supplement your learning." },
+  { title: "Notices", icon: "ClipboardList", description: "Stay updated with important announcements, events, and academic reminders all in one place." },
+  { title: "Current Affairs", icon: "Newspaper", description: "Keep up-to-date with the latest news and events, essential for general knowledge and exams." },
+  { title: "Reasoning", icon: "BrainCircuit", description: "Enhance your logical and analytical skills with our dedicated reasoning practice section." },
+  { title: "Doubt Box", icon: "MessageSquare", description: "Ask your questions directly to our mentors and get reliable, expert answers to clear your academic doubts." },
+  { title: "Complaints", icon: "FileQuestion", description: "Have an issue? Submit a complaint directly to our admin team for a quick resolution." },
+  { title: "Telegram Chat", icon: "Send", description: "Join the student community on Telegram to discuss topics, share knowledge, and stay connected with peers." },
+  { title: "About Us", icon: "Users", description: "Learn about our mission to simplify learning and the passionate team behind Topper's Toolkit." },
 ];
 
 const contributors: { name: string; subject: string; icon: keyof typeof iconMap }[] = [
