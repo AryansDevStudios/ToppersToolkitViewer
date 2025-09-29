@@ -194,12 +194,6 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
             <span>Print Order History</span>
           </Link>
         </DropdownMenuItem>
-         <DropdownMenuItem asChild>
-          <Link href="/subscription-history">
-            <Star className="mr-2 h-4 w-4" />
-            <span>Subscription History</span>
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />

@@ -44,8 +44,7 @@ const secondaryNavLinks = [
     { title: 'Complaints', icon: 'FileQuestion', href: '/complaints' },
 ];
 
-const userNavLinks = [
-    { title: 'Subscription History', icon: 'Star', href: '/subscription-history' },
+const userNavLinks: any[] = [
 ]
 
 export function SidebarNav() {
