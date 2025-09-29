@@ -9,7 +9,7 @@ const testimonials = [
     name: "Kuldeep Singh",
     achievement: "Owner & Founder",
     quote: "I'm delighted to see our high-quality notes helping so many students achieve their goals. It's what Topper's Toolkit is all about!",
-    imgSrc: "/images/KuldeepsImage.png",
+    imgSrc: "/images/KuldeepsImage.png?v=2",
   },
   {
     name: "Aryan Gupta",
@@ -92,6 +92,7 @@ export function Testimonials() {
 
 
     
+
 
 
 
