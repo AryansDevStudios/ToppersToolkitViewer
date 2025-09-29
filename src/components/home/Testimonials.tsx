@@ -33,7 +33,7 @@ const testimonials = [
     name: "Vatsal Upadhaya",
     achievement: "Student",
     quote: "I'm very satisfied with the quality of the material. It's well-organized and covers everything I need.",
-    imgSrc: "/images/VatsalsImage.png",
+    imgSrc: "/images/VatsalsImage.png?v=2",
   },
     {
     name: "Aditi Tripathi",
@@ -92,6 +92,7 @@ export function Testimonials() {
 
 
     
+
 
 
 
