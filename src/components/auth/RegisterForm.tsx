@@ -37,6 +37,7 @@ import { logUserLogin } from "@/lib/data";
 import type { LoginLog, User } from "@/lib/types";
 import { useState } from "react";
 import { Loader2, Eye, EyeOff } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
@@ -171,7 +172,8 @@ export function RegisterForm() {
         whatsappNumber,
         role,
         createdAt: Date.now(),
-        hasAiAccess: true, // Grant AI access to new users by default
+        hasAiAccess: false,
+        hasFullNotesAccess: false,
       };
 
       if (role === 'Student') {
@@ -217,10 +219,11 @@ export function RegisterForm() {
 
       toast({
         title: "Registration Successful!",
-        description: "Welcome! Please subscribe to get access to notes.",
+        description: "Welcome! Please subscribe or start a demo to get access.",
       });
       router.push("/pricing");
     } catch (error: any) {
+       setIsSubmitting(false);
        if (error.code === 'auth/email-already-in-use') {
         form.setError('email', {
           type: 'manual',
@@ -232,16 +235,20 @@ export function RegisterForm() {
             message: error.message
         });
        }
-    } finally {
-        setIsSubmitting(false);
     }
   }
 
   return (
-    <Card>
+    <Card className="relative">
+      {isSubmitting && (
+         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-lg">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="mt-4 text-sm font-semibold">Creating your account...</p>
+         </div>
+       )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4 pt-6">
+          <CardContent className={cn("space-y-4 pt-6", isSubmitting && "opacity-50")}>
              <FormField
               control={form.control}
               name="name"
@@ -249,7 +256,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Aryan Gupta" {...field} />
+                    <Input placeholder="Aryan Gupta" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -266,6 +273,7 @@ export function RegisterForm() {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       className="flex flex-wrap gap-4"
+                      disabled={isSubmitting}
                     >
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
@@ -295,7 +303,7 @@ export function RegisterForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Class</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                                         <FormControl>
                                             <SelectTrigger><SelectValue placeholder="Class" /></SelectTrigger>
                                         </FormControl>
@@ -315,7 +323,7 @@ export function RegisterForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Section</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!studentClass}>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={!studentClass || isSubmitting}>
                                         <FormControl>
                                             <SelectTrigger><SelectValue placeholder="Section" /></SelectTrigger>
                                         </FormControl>
@@ -340,7 +348,7 @@ export function RegisterForm() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Gender</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                                 <FormControl>
                                     <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
                                 </FormControl>
@@ -362,7 +370,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input placeholder="name@example.com" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -375,7 +383,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>WhatsApp Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="+91 12345 67890" {...field} />
+                    <Input placeholder="+91 12345 67890" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -393,6 +401,7 @@ export function RegisterForm() {
                         type={showPassword ? "text" : "password"}
                         placeholder="•••••••••"
                         {...field}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <Button
@@ -401,6 +410,7 @@ export function RegisterForm() {
                       size="icon"
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={isSubmitting}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -430,6 +440,7 @@ export function RegisterForm() {
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">

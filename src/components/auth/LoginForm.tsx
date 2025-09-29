@@ -132,16 +132,11 @@ export function LoginForm() {
 
       toast({
         title: "Login Successful",
-        description: "Redirecting you to the dashboard.",
+        description: "Redirecting you to the homepage.",
       });
-
-      // Instead of immediate redirect, we let the auth state settle.
-      // This prevents the redirect loop.
-      // The isSubmitting state will keep the loader active.
-      setTimeout(() => {
-          router.push("/");
-      }, 500);
-
+      
+      // The router.push will happen, and the isSubmitting overlay will hide it
+      router.push("/");
 
     } catch (error: any) {
       setIsSubmitting(false); // Only set submitting to false on error
@@ -166,7 +161,6 @@ export function LoginForm() {
         });
       }
     }
-    // No finally block, so isSubmitting stays true on success
   }
 
   return (

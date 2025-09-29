@@ -1693,6 +1693,7 @@ export async function completeSubscription(subscriptionId: string, userId: strin
     // Update user's access rights
     batch.update(userDocRef, {
         hasFullNotesAccess: true,
+        hasAiAccess: true,
         subscriptionExpiresAt: expiresAt.getTime(),
     });
 
@@ -1731,6 +1732,7 @@ export const startUserDemo = async (userId: string) => {
     try {
         await updateDoc(userDocRef, {
             demoExpiresAt: Date.now() + 60 * 60 * 1000, // 1 hour from now
+            hasAiAccess: true,
         });
         revalidatePath('/', 'layout');
         return { success: true };
