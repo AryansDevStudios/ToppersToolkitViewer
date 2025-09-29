@@ -38,7 +38,6 @@ const authenticatedOpenPaths = [
     '/rules-policies',
     '/search',
     '/pricing',
-    '/our-teachers',
     '/youtube-learning',
     '/current-affairs',
     '/subscription-history',
