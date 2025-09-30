@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { DeleteReasoningDialog } from "./DeleteReasoningDialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const singleMcqObjectSchema = z.object({
   id: z.string().optional(),
@@ -213,9 +214,18 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
                                     {fields.map((mcqField, mcqIndex) => (
                                         <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative bg-card">
                                             <div className="absolute top-2 right-2 flex gap-1">
-                                                <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => setPreviewQuestionIndex(mcqIndex)}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => setPreviewQuestionIndex(mcqIndex)}>
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Preview this question</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
                                                 <Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={() => remove(mcqIndex)}>
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -347,5 +357,3 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
     </Card>
   );
 }
-
-    
