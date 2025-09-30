@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, UserCog, History, Star, ShieldCheck } from "lucide-react";
+import { LogOut, UserCog, History, Star, ShieldCheck, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -192,6 +192,12 @@ export function UserProfileMenu({ isMobile = false }: UserProfileMenuProps) {
           <Link href="/purchase-history">
             <History className="mr-2 h-4 w-4" />
             <span>Print Order History</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/invite-friends">
+            <Gift className="mr-2 h-4 w-4" />
+            <span>Invite Friends</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
