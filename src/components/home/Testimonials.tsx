@@ -27,7 +27,7 @@ const testimonials = [
     name: "Jaynand Pratap Yadav",
     achievement: "Student",
     quote: "I really like the notes provided. They are clear, concise, and have helped me a lot in my studies.",
-    imgSrc: "https://cdn-icons-png.flaticon.com/512/1144/1144760.png",
+    imgSrc: "/images/JaynandsImage.jpg",
   },
     {
     name: "Vatsal Upadhaya",
@@ -80,6 +80,7 @@ export function Testimonials() {
 
 
     
+
 
 
 
