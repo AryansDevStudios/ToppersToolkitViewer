@@ -125,11 +125,27 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
   const [previewIndex, setPreviewIndex] = useState(0);
   const isEditing = !!set;
 
+  // Sanitize incoming set data to ensure no undefined values for controlled components
+  const sanitizedMcqs = useMemo(() => {
+    if (!set?.mcqs || set.mcqs.length === 0) {
+      return [defaultMcqValue];
+    }
+    return set.mcqs.map(mcq => ({
+      ...mcq,
+      question: mcq.question ?? "",
+      imageUrl: mcq.imageUrl ?? "",
+      options: (mcq.options || []).map(opt => ({
+        text: opt.text ?? "",
+        imageUrl: opt.imageUrl ?? "",
+      })),
+    }));
+  }, [set]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: set?.name || "",
-      mcqs: set?.mcqs && set.mcqs.length > 0 ? set.mcqs : [defaultMcqValue],
+      mcqs: sanitizedMcqs,
     },
     mode: "onBlur",
   });
@@ -380,3 +396,5 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
     </Card>
   );
 }
+
+    
