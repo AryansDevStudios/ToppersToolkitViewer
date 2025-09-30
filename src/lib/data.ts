@@ -2,7 +2,7 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription, CurrentAffairsSet } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, type WriteBatch } from "firebase/firestore";
@@ -1754,5 +1754,66 @@ export async function revokeUserFullAccess(userId: string): Promise<{ success: b
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };
+    }
+}
+
+// --- Current Affairs Management ---
+
+export async function upsertCurrentAffairsSet(set: Omit<CurrentAffairsSet, 'createdAt'>): Promise<{ success: boolean, error?: string }> {
+    const isNew = !set.id;
+    const setId = isNew ? uuidv4() : set.id;
+    const docRef = doc(db, 'current_affairs', setId);
+    
+    const setToSave: Omit<CurrentAffairsSet, 'createdAt'> & {createdAt?: any} = {
+        ...set,
+        id: setId,
+        mcqs: set.mcqs.map(mcq => ({ ...mcq, id: mcq.id || uuidv4() }))
+    };
+
+    try {
+        if (isNew) {
+            setToSave.createdAt = serverTimestamp();
+            await setDoc(docRef, setToSave);
+        } else {
+            await updateDoc(docRef, setToSave);
+        }
+        revalidatePath('/admin/current-affairs');
+        revalidatePath('/current-affairs');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteCurrentAffairsSet(setId: string): Promise<{ success: boolean, error?: string }> {
+    if (!setId) return { success: false, error: 'Set ID is required.' };
+    const docRef = doc(db, 'current_affairs', setId);
+    try {
+        await deleteDoc(docRef);
+        revalidatePath('/admin/current-affairs');
+        revalidatePath('/current-affairs');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function getCurrentAffairsSets(): Promise<CurrentAffairsSet[]> {
+    noStore();
+    const setsCollection = collection(db, 'current_affairs');
+    const q = query(setsCollection, orderBy('createdAt', 'desc'));
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toMillis() || 0,
+            } as CurrentAffairsSet;
+        });
+    } catch (error) {
+        console.error("Error fetching current affairs sets:", error);
+        return [];
     }
 }
