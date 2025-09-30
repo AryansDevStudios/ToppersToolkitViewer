@@ -68,6 +68,16 @@ const demoJson = JSON.stringify([
   }
 ], null, 2);
 
+const isValidUrl = (url: string | undefined): url is string => {
+    if (!url) return false;
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
 const PreviewQuestion = ({ question }: { question: ReasoningMCQ | undefined }) => {
     if (!question) {
         return <div className="text-center text-muted-foreground p-8">Select a question to preview</div>;
@@ -75,7 +85,7 @@ const PreviewQuestion = ({ question }: { question: ReasoningMCQ | undefined }) =
     return (
         <div className="space-y-4">
             {question.question && <h4 className="font-semibold text-lg">{question.question}</h4>}
-            {question.imageUrl && (
+            {isValidUrl(question.imageUrl) && (
                 <div className="relative h-48 w-full bg-muted rounded-md overflow-hidden border">
                     <Image src={question.imageUrl} alt="Question visual" layout="fill" objectFit="contain" />
                 </div>
@@ -86,7 +96,7 @@ const PreviewQuestion = ({ question }: { question: ReasoningMCQ | undefined }) =
                         "border p-2 rounded-md space-y-2",
                         index === question.correctOptionIndex && "border-green-500 ring-2 ring-green-500/50"
                     )}>
-                        {opt.imageUrl && (
+                        {isValidUrl(opt.imageUrl) && (
                             <div className="relative h-24 w-full bg-muted rounded-sm overflow-hidden">
                                 <Image src={opt.imageUrl} alt={`Option ${index + 1}`} layout="fill" objectFit="contain" />
                             </div>
@@ -337,3 +347,5 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
     </Card>
   );
 }
+
+    
