@@ -79,6 +79,26 @@ export interface CurrentAffairsSet {
   createdAt: number;
 }
 
+export interface ReasoningOption {
+  text?: string;
+  imageUrl?: string;
+}
+
+export interface ReasoningMCQ {
+  id: string;
+  question: string;
+  imageUrl?: string;
+  options: ReasoningOption[];
+  correctOptionIndex: number;
+}
+
+export interface ReasoningSet {
+  id: string;
+  name: string;
+  mcqs: ReasoningMCQ[];
+  createdAt: number;
+}
+
 export interface AnswerRecord {
   mcqId: string;
   question: string;
