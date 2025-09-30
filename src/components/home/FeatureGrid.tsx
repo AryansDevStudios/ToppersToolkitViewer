@@ -38,7 +38,7 @@ export function FeatureGrid() {
               <LinkComponent
                 key={feature.title}
                 href={feature.href}
-                {...(feature.isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                {...(feature.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className="group block"
               >
                 <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
