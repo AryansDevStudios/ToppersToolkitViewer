@@ -21,9 +21,10 @@ import { Trash2 } from "lucide-react";
 
 interface DeleteReasoningDialogProps {
   setId: string;
+  isTriggerButton?: boolean;
 }
 
-export function DeleteReasoningDialog({ setId }: DeleteReasoningDialogProps) {
+export function DeleteReasoningDialog({ setId, isTriggerButton = false }: DeleteReasoningDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -34,7 +35,11 @@ export function DeleteReasoningDialog({ setId }: DeleteReasoningDialogProps) {
       const result = await deleteReasoningSet(setId);
       if (result.success) {
         toast({ title: "Set Deleted", description: "The Reasoning set has been removed." });
-        router.refresh();
+        if (isTriggerButton) {
+            router.push('/admin/reasoning');
+        } else {
+            router.refresh();
+        }
         setIsOpen(false);
       } else {
         toast({
@@ -46,12 +51,21 @@ export function DeleteReasoningDialog({ setId }: DeleteReasoningDialogProps) {
     });
   };
 
+  const TriggerComponent = isTriggerButton ? (
+     <Button type="button" variant="destructive" onClick={() => setIsOpen(true)}>
+        <Trash2 className="mr-2 h-4 w-4" />
+        Delete Set
+      </Button>
+  ) : (
+     <Button variant="destructive" size="sm" onClick={() => setIsOpen(true)}>
+        <Trash2 className="mr-2 h-4 w-4" /> Delete
+     </Button>
+  )
+
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
-          <Trash2 className="mr-2 h-4 w-4" /> Delete
-        </Button>
+        {TriggerComponent}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

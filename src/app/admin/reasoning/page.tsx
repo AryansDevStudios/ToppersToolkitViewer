@@ -9,34 +9,33 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, BrainCircuit, Edit, ClipboardCheck, Eye, User, BookCopy } from "lucide-react";
-import { ReasoningForm } from "@/components/admin/reasoning/ReasoningForm";
-import { DeleteReasoningDialog } from "@/components/admin/reasoning/DeleteReasoningDialog";
+import { PlusCircle, BrainCircuit, Edit, ClipboardCheck } from "lucide-react";
 import { format } from 'date-fns';
 import type { ReasoningSet } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
+import { DeleteReasoningDialog } from "@/components/admin/reasoning/DeleteReasoningDialog";
 
 export const revalidate = 0;
 
 const ManageSetsTab = async ({ sets }: { sets: ReasoningSet[] }) => (
     <>
       <div className="flex justify-end mb-6">
-        <ReasoningForm>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add New Set
-          </Button>
-        </ReasoningForm>
+        <Button asChild>
+            <Link href="/admin/reasoning/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add New Set
+            </Link>
+        </Button>
       </div>
       {sets.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-lg">
           <BrainCircuit className="h-16 w-16 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">No Reasoning Sets Found</h2>
           <p className="mb-6">Get started by creating your first quiz set.</p>
-          <ReasoningForm>
-            <Button>Create Your First Set</Button>
-          </ReasoningForm>
+           <Button asChild>
+            <Link href="/admin/reasoning/new">Create Your First Set</Link>
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -54,11 +53,11 @@ const ManageSetsTab = async ({ sets }: { sets: ReasoningSet[] }) => (
                   </p>
               </CardContent>
               <CardFooter className="flex justify-end gap-2 bg-muted/30 p-3">
-                <ReasoningForm set={set}>
-                  <Button variant="outline" size="sm">
-                    <Edit className="mr-2 h-4 w-4" /> Edit
-                  </Button>
-                </ReasoningForm>
+                <Button asChild variant="outline" size="sm">
+                    <Link href={`/admin/reasoning/edit/${set.id}`}>
+                        <Edit className="mr-2 h-4 w-4" /> Edit
+                    </Link>
+                </Button>
                 <DeleteReasoningDialog setId={set.id} />
               </CardFooter>
             </Card>
