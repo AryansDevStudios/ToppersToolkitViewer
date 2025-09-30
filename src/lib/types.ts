@@ -86,7 +86,7 @@ export interface ReasoningOption {
 
 export interface ReasoningMCQ {
   id: string;
-  question: string;
+  question?: string;
   imageUrl?: string;
   options: ReasoningOption[];
   correctOptionIndex: number;
