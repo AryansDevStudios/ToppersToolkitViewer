@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { BrainCircuit, RefreshCcw } from 'lucide-react';
+import { BrainCircuit, RefreshCcw, ArrowLeft } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { ReasoningSet } from '@/lib/types';
@@ -55,6 +55,10 @@ export default function ReasoningPage() {
     if (selectedSet) {
         return (
              <div className="container mx-auto px-4 py-12">
+                <Button variant="outline" size="sm" onClick={() => setSelectedSet(null)} className="mb-8 flex items-center gap-2">
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Quizzes
+                </Button>
                  <ReasoningPlayer
                     mcqs={selectedSet.mcqs}
                     setId={selectedSet.id}
@@ -115,3 +119,4 @@ export default function ReasoningPage() {
     </div>
   );
 }
+
