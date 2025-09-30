@@ -52,7 +52,12 @@ interface ReasoningFormProps {
 const defaultMcqValue: Omit<ReasoningMCQ, 'id'> = { 
   question: "", 
   imageUrl: "", 
-  options: [{text: ""}, {text: ""}, {text: ""}, {text: ""}], 
+  options: [
+    { text: "", imageUrl: "" },
+    { text: "", imageUrl: "" },
+    { text: "", imageUrl: "" },
+    { text: "", imageUrl: "" }
+  ], 
   correctOptionIndex: -1 
 };
 
