@@ -107,6 +107,15 @@ export interface AnswerRecord {
   selectedOptionIndex: number | null; // null if not answered
 }
 
+export interface ReasoningAnswerRecord {
+  mcqId: string;
+  question?: string;
+  imageUrl?: string;
+  options: ReasoningOption[];
+  correctOptionIndex: number;
+  selectedOptionIndex: number | null;
+}
+
 export interface QuizAttempt {
     id: string;
     userId: string;
@@ -116,6 +125,18 @@ export interface QuizAttempt {
     score: number;
     totalQuestions: number;
     answers: AnswerRecord[];
+    createdAt: number;
+}
+
+export interface ReasoningQuizAttempt {
+    id: string;
+    userId: string;
+    userName: string;
+    setId: string;
+    setName: string;
+    score: number;
+    totalQuestions: number;
+    answers: ReasoningAnswerRecord[];
     createdAt: number;
 }
 
@@ -179,6 +200,7 @@ export interface User {
   showOnLeaderboard?: boolean;
   attemptedQuizzes?: string[];
   attemptedCurrentAffairs?: string[];
+  attemptedReasoning?: string[];
   demoExpiresAt?: number;
   subscriptionExpiresAt?: number;
 }

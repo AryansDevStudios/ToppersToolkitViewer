@@ -1,5 +1,5 @@
 
-import { getReasoningSets } from "@/lib/data";
+import { getReasoningSets, getAllReasoningQuizAttempts } from "@/lib/data";
 import {
   Card,
   CardContent,
@@ -9,12 +9,16 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, BrainCircuit, Edit, ClipboardCheck } from "lucide-react";
+import { PlusCircle, BrainCircuit, Edit, ClipboardCheck, BookCopy, User, Eye } from "lucide-react";
 import { format } from 'date-fns';
-import type { ReasoningSet } from "@/lib/types";
+import type { ReasoningSet, ReasoningQuizAttempt } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { DeleteReasoningDialog } from "@/components/admin/reasoning/DeleteReasoningDialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { toZonedTime } from "date-fns-tz";
+
 
 export const revalidate = 0;
 
@@ -67,21 +71,138 @@ const ManageSetsTab = async ({ sets }: { sets: ReasoningSet[] }) => (
     </>
 );
 
-// TODO: Implement attempt tracking and viewing for Reasoning quizzes
-const ViewAttemptsTab = async () => (
-    <Card>
-        <CardHeader>
-            <CardTitle>View Attempts</CardTitle>
-            <CardDescription>Review user attempts for reasoning quizzes.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <p className="text-center text-muted-foreground py-16">Attempt tracking for reasoning quizzes is coming soon.</p>
-        </CardContent>
-    </Card>
-);
+const groupAttemptsBySet = (attempts: ReasoningQuizAttempt[]) => {
+    return attempts.reduce((acc, attempt) => {
+        if (!acc[attempt.setId]) {
+            acc[attempt.setId] = { setName: attempt.setName, attempts: [] };
+        }
+        acc[attempt.setId].attempts.push(attempt);
+        return acc;
+    }, {} as Record<string, { setName: string; attempts: ReasoningQuizAttempt[] }>);
+};
+
+const groupAttemptsByUser = (attempts: ReasoningQuizAttempt[]) => {
+    return attempts.reduce((acc, attempt) => {
+        if (!acc[attempt.userId]) {
+            acc[attempt.userId] = { userName: attempt.userName, attempts: [] };
+        }
+        acc[attempt.userId].attempts.push(attempt);
+        return acc;
+    }, {} as Record<string, { userName: string; attempts: ReasoningQuizAttempt[] }>);
+};
+
+const ViewAttemptsTab = async ({ attempts }: { attempts: ReasoningQuizAttempt[] }) => {
+    const timeZone = 'Asia/Kolkata';
+
+    const attemptsBySet = groupAttemptsBySet(attempts);
+    const attemptsByUser = groupAttemptsByUser(attempts);
+
+    const sortedSets = Object.values(attemptsBySet).sort((a,b) => a.setName.localeCompare(b.setName));
+    const sortedUsers = Object.values(attemptsByUser).sort((a,b) => a.userName.localeCompare(b.userName));
+
+    return (
+        <Tabs defaultValue="set">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="set"><BookCopy className="mr-2 h-4 w-4" />Set Perspective</TabsTrigger>
+                <TabsTrigger value="user"><User className="mr-2 h-4 w-4" />User Perspective</TabsTrigger>
+            </TabsList>
+            <TabsContent value="set" className="mt-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Attempts by Quiz Set</CardTitle>
+                        <CardDescription>Each quiz and all the users who attempted it.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Accordion type="multiple" className="w-full">
+                            {sortedSets.map(({ setName, attempts: setAttempts }) => (
+                                <AccordionItem value={setName} key={setName}>
+                                    <AccordionTrigger className="text-lg font-semibold">{setName} ({setAttempts.length} attempts)</AccordionTrigger>
+                                    <AccordionContent>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>User</TableHead>
+                                                    <TableHead className="text-center">Score</TableHead>
+                                                    <TableHead>Date</TableHead>
+                                                    <TableHead className="text-right">Actions</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {setAttempts.sort((a, b) => b.createdAt - a.createdAt).map(attempt => (
+                                                    <TableRow key={attempt.id}>
+                                                        <TableCell>{attempt.userName}</TableCell>
+                                                        <TableCell className="text-center">{attempt.score}/{attempt.totalQuestions}</TableCell>
+                                                        <TableCell>{format(toZonedTime(new Date(attempt.createdAt), timeZone), 'PPP p')}</TableCell>
+                                                        <TableCell className="text-right">
+                                                            <Button asChild variant="outline" size="sm">
+                                                                <Link href={`/reasoning-results/${attempt.id}`} target="_blank"><Eye className="mr-2 h-4 w-4" />View</Link>
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                        {sortedSets.length === 0 && <p className="text-center text-muted-foreground py-16">No quiz attempts found.</p>}
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="user" className="mt-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Attempts by User</CardTitle>
+                        <CardDescription>Each user and all the quizzes they've attempted.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Accordion type="multiple" className="w-full">
+                            {sortedUsers.map(({ userName, attempts: userAttempts }) => (
+                                <AccordionItem value={userName} key={userName}>
+                                    <AccordionTrigger className="text-lg font-semibold">{userName} ({userAttempts.length} attempts)</AccordionTrigger>
+                                    <AccordionContent>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Quiz</TableHead>
+                                                    <TableHead className="text-center">Score</TableHead>
+                                                    <TableHead>Date</TableHead>
+                                                    <TableHead className="text-right">Actions</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {userAttempts.sort((a,b) => b.createdAt - a.createdAt).map(attempt => (
+                                                    <TableRow key={attempt.id}>
+                                                        <TableCell>{attempt.setName}</TableCell>
+                                                        <TableCell className="text-center">{attempt.score}/{attempt.totalQuestions}</TableCell>
+                                                        <TableCell>{format(toZonedTime(new Date(attempt.createdAt), timeZone), 'PPP p')}</TableCell>
+                                                        <TableCell className="text-right">
+                                                            <Button asChild variant="outline" size="sm">
+                                                                <Link href={`/reasoning-results/${attempt.id}`} target="_blank"><Eye className="mr-2 h-4 w-4" />View</Link>
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                        {sortedUsers.length === 0 && <p className="text-center text-muted-foreground py-16">No quiz attempts found.</p>}
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
+    )
+};
 
 export default async function AdminReasoningPage() {
-  const sets = await getReasoningSets();
+  const [sets, allAttempts] = await Promise.all([
+    getReasoningSets(),
+    getAllReasoningQuizAttempts(),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -104,7 +225,7 @@ export default async function AdminReasoningPage() {
               <ManageSetsTab sets={sets} />
           </TabsContent>
            <TabsContent value="attempts" className="mt-6">
-              <ViewAttemptsTab />
+              <ViewAttemptsTab attempts={allAttempts} />
           </TabsContent>
       </Tabs>
     </div>
