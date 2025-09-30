@@ -1824,7 +1824,7 @@ export async function getReasoningSets(): Promise<ReasoningSet[]> {
     const setsCollection = collection(db, 'reasoning');
     const q = query(setsCollection, orderBy('createdAt', 'desc'));
     try {
-        const querySnapshot = await getDocs(q, { cache: 'no-store' });
+        const querySnapshot = await getDocs(q);
         return querySnapshot.docs.map(doc => {
             const data = doc.data();
             return {

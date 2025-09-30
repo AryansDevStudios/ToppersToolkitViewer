@@ -27,8 +27,7 @@ export default function ReasoningPage() {
         fetchSets();
     }, []);
 
-    // TODO: Implement attempt tracking for reasoning quizzes
-    const attemptedQuizzes: string[] = [];
+    const attemptedQuizzes = dbUser?.attemptedReasoning || [];
 
     if (loading) {
         return (
