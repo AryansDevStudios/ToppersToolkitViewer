@@ -59,10 +59,10 @@ const demoJson = JSON.stringify([
     "question": "Which pattern is next in the sequence?",
     "imageUrl": "https://picsum.photos/seed/seq1/400/200",
     "options": [
-      { "imageUrl": "https://picsum.photos/seed/opt1/150/150" },
-      { "imageUrl": "https://picsum.photos/seed/opt2/150/150" },
-      { "imageUrl": "https://picsum.photos/seed/opt3/150/150" },
-      { "imageUrl": "https://picsum.photos/seed/opt4/150/150" }
+      { "text": "Option A", "imageUrl": "https://picsum.photos/seed/opt1/150/150" },
+      { "text": "Option B", "imageUrl": "https://picsum.photos/seed/opt2/150/150" },
+      { "text": "Option C", "imageUrl": "https://picsum.photos/seed/opt3/150/150" },
+      { "text": "Option D", "imageUrl": "https://picsum.photos/seed/opt4/150/150" }
     ],
     "correctOptionIndex": 2
   }
