@@ -24,7 +24,6 @@ import type { MCQ, CurrentAffairsSet } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { PlusCircle, Trash2, Copy, AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { debounce } from "lodash";
 import { cn } from "@/lib/utils";
 
 
@@ -87,7 +86,7 @@ export function CurrentAffairsForm({ set, children }: CurrentAffairsFormProps) {
   const mcqsValue = form.watch('mcqs');
   const [jsonText, setJsonText] = useState(() => JSON.stringify(mcqsValue, null, 2));
 
-   const debouncedUpdateForm = useCallback(debounce((newJson: string) => {
+   const updateFormFromJson = useCallback((newJson: string) => {
     try {
         const parsed = JSON.parse(newJson);
         const validationResult = z.array(singleMcqObjectSchema).safeParse(parsed);
@@ -100,12 +99,12 @@ export function CurrentAffairsForm({ set, children }: CurrentAffairsFormProps) {
     } catch (e) {
       setJsonError("Invalid JSON syntax.");
     }
-  }, 500), [replace]);
+  }, [replace]);
   
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newJson = e.target.value;
       setJsonText(newJson);
-      debouncedUpdateForm(newJson);
+      updateFormFromJson(newJson);
   }
 
   useEffect(() => {
