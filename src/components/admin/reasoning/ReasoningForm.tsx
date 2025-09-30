@@ -255,7 +255,7 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
                         <Separator />
 
                         <h3 className="text-lg font-semibold pt-4">Questions Editor</h3>
-                        <ScrollArea className="h-[60vh] pr-4 -mr-4">
+                        <ScrollArea className="h-[70vh] pr-4 -mr-4">
                             <div className="space-y-6">
                                 {fields.map((mcqField, mcqIndex) => (
                                     <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative bg-card">
@@ -375,5 +375,3 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
     </Card>
   );
 }
-
-    
