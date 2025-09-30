@@ -1,7 +1,8 @@
 
+
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription, CurrentAffairsSet, ReasoningSet } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription, CurrentAffairsSet, ReasoningSet, ReasoningQuizAttempt, ReasoningAnswerRecord } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, type WriteBatch } from "firebase/firestore";
@@ -1874,5 +1875,76 @@ export async function deleteReasoningSet(setId: string): Promise<{ success: bool
         return { success: true };
     } catch (e: any) {
         return { success: false, error: e.message };
+    }
+}
+
+export async function markReasoningAsAttempted(userId: string, setId: string) {
+    if (!userId || !setId) {
+        return { success: false, error: "User ID and Set ID are required." };
+    }
+    const userDocRef = doc(db, "users", userId);
+    try {
+        await updateDoc(userDocRef, {
+            attemptedReasoning: arrayUnion(setId)
+        });
+        revalidatePath('/reasoning');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function saveReasoningQuizAttempt(attemptData: Omit<ReasoningQuizAttempt, 'id' | 'createdAt'>): Promise<{ success: boolean, error?: string, attemptId?: string }> {
+    const attemptId = uuidv4();
+    const attemptDocRef = doc(db, "reasoningAttempts", attemptId);
+
+    const newAttempt: Omit<ReasoningQuizAttempt, 'id'> = {
+        ...attemptData,
+    };
+
+    try {
+        await setDoc(attemptDocRef, { ...newAttempt, id: attemptId, createdAt: serverTimestamp() });
+        return { success: true, attemptId: attemptId };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function getReasoningQuizAttemptById(attemptId: string): Promise<ReasoningQuizAttempt | null> {
+    noStore();
+    if (!attemptId) return null;
+    const attemptDocRef = doc(db, 'reasoningAttempts', attemptId);
+    try {
+        const docSnap = await getDoc(attemptDocRef);
+        if (docSnap.exists()) {
+             const data = docSnap.data();
+             return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+             } as ReasoningQuizAttempt;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching reasoning quiz attempt by ID:", error);
+        return null;
+    }
+}
+
+export async function getAllReasoningQuizAttempts(): Promise<ReasoningQuizAttempt[]> {
+    noStore();
+    const attemptsCollection = collection(db, 'reasoningAttempts');
+    const q = query(attemptsCollection, orderBy('createdAt', 'desc'));
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+            } as ReasoningQuizAttempt;
+        });
+    } catch (error) {
+        console.error("Error fetching all reasoning quiz attempts:", error);
+        return [];
     }
 }
