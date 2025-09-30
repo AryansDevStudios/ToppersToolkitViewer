@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,10 @@ import { useTransition, useState, useEffect, useCallback } from "react";
 import { upsertReasoningSet } from "@/lib/data";
 import type { ReasoningMCQ, ReasoningSet } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { PlusCircle, Trash2, Image as ImageIcon, Copy, AlertTriangle } from "lucide-react";
+import { PlusCircle, Trash2, Image as ImageIcon, Copy, AlertTriangle, Eye } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const singleMcqObjectSchema = z.object({
   id: z.string().optional(),
@@ -68,6 +69,37 @@ const demoJson = JSON.stringify([
   }
 ], null, 2);
 
+const PreviewQuestion = ({ question }: { question: ReasoningMCQ | undefined }) => {
+    if (!question) {
+        return <div className="text-center text-muted-foreground p-8">Select a question to preview</div>;
+    }
+    return (
+        <div className="space-y-4">
+            {question.question && <h4 className="font-semibold text-lg">{question.question}</h4>}
+            {question.imageUrl && (
+                <div className="relative h-48 w-full bg-muted rounded-md overflow-hidden border">
+                    <Image src={question.imageUrl} alt="Question visual" layout="fill" objectFit="contain" />
+                </div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+                {question.options.map((opt, index) => (
+                    <div key={index} className={cn(
+                        "border p-2 rounded-md space-y-2",
+                        index === question.correctOptionIndex && "border-green-500 ring-2 ring-green-500/50"
+                    )}>
+                        {opt.imageUrl && (
+                            <div className="relative h-24 w-full bg-muted rounded-sm overflow-hidden">
+                                <Image src={opt.imageUrl} alt={`Option ${index + 1}`} layout="fill" objectFit="contain" />
+                            </div>
+                        )}
+                        {opt.text && <p className="text-sm text-center">{opt.text}</p>}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 export function ReasoningForm({ set, children }: ReasoningFormProps) {
   const { toast } = useToast();
   const router = useRouter();
@@ -75,6 +107,7 @@ export function ReasoningForm({ set, children }: ReasoningFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditingJson, setIsEditingJson] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
+  const [previewQuestionIndex, setPreviewQuestionIndex] = useState<number>(0);
   const isEditing = !!set;
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -91,7 +124,7 @@ export function ReasoningForm({ set, children }: ReasoningFormProps) {
     name: "mcqs",
   });
   
-  const watchedMcqs = form.watch('mcqs');
+  const watchedMcqs = useWatch({ control: form.control, name: 'mcqs' });
   const [jsonText, setJsonText] = useState(() => JSON.stringify(watchedMcqs, null, 2));
 
    const updateFormFromJson = useCallback((newJson: string) => {
@@ -130,6 +163,7 @@ export function ReasoningForm({ set, children }: ReasoningFormProps) {
       form.reset(initialValues);
       setJsonText(JSON.stringify(initialValues.mcqs, null, 2));
       setJsonError(null);
+      setPreviewQuestionIndex(0);
     }
   }, [isOpen, set, isEditing, form]);
   
@@ -161,118 +195,121 @@ export function ReasoningForm({ set, children }: ReasoningFormProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-7xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit Reasoning Set' : 'Add New Reasoning Set'}</DialogTitle>
           <DialogDescription>
-             Create a set of reasoning questions. Use the form, or paste valid JSON.
+             Use the form and JSON editor to create questions. The live preview will show your changes instantly.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-           <form id="reasoning-form" onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-y-auto -mx-6 px-6">
-               <div className="py-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex flex-col gap-4">
-                      <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                              <FormItem>
-                              <FormLabel>Set Name</FormLabel>
-                              <FormControl>
-                                  <Input placeholder="E.g., Visual Patterns - Set 1" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                              </FormItem>
-                          )}
-                      />
-                      <h3 className="text-lg font-semibold border-t pt-4">Questions</h3>
-                      <ScrollArea className="h-[55vh] pr-4">
-                          <div className="space-y-6 mt-4">
-                              {fields.map((mcqField, mcqIndex) => (
-                                  <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative bg-card">
-                                      <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => remove(mcqIndex)}>
-                                          <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                      <FormField
-                                          control={form.control}
-                                          name={`mcqs.${mcqIndex}.question`}
-                                          render={({ field }) => (
-                                              <FormItem>
-                                              <FormLabel>Question {mcqIndex + 1}</FormLabel>
-                                              <FormControl>
-                                                  <Textarea placeholder="Which shape comes next in the sequence?" {...field} />
-                                              </FormControl>
-                                              <FormMessage />
-                                              </FormItem>
-                                          )}
-                                      />
-                                      <FormField
-                                          control={form.control}
-                                          name={`mcqs.${mcqIndex}.imageUrl`}
-                                          render={({ field }) => (
-                                              <FormItem>
-                                              <FormLabel className="flex items-center gap-2"><ImageIcon className="h-4 w-4" />Question Image URL (Optional)</FormLabel>
-                                              <FormControl>
-                                                  <Input placeholder="https://example.com/image.png" {...field} />
-                                              </FormControl>
-                                              <FormMessage />
-                                              </FormItem>
-                                          )}
-                                      />
-                                      <div>
-                                          <FormLabel>Options</FormLabel>
-                                          <FormDescription className="text-xs mb-2">
-                                              Click 'Mark' to set the correct answer. You can provide text, an image URL, or both.
-                                          </FormDescription>
-                                          <div className="space-y-3">
-                                          {mcqField.options.map((_, optionIndex) => (
-                                              <div key={`${mcqField.id}-option-${optionIndex}`} className="p-3 border rounded-md bg-muted/50 space-y-2">
-                                                  <div className="flex items-center gap-2">
-                                                    <Button
-                                                        type="button"
-                                                        variant={form.watch(`mcqs.${mcqIndex}.correctOptionIndex`) === optionIndex ? 'default' : 'outline'}
-                                                        onClick={() => form.setValue(`mcqs.${mcqIndex}.correctOptionIndex`, optionIndex, { shouldValidate: true })}
-                                                        className="h-10 w-24 shrink-0"
-                                                    >
-                                                        {form.watch(`mcqs.${mcqIndex}.correctOptionIndex`) === optionIndex ? 'Correct' : 'Mark'}
-                                                    </Button>
-                                                    <FormField
-                                                      control={form.control}
-                                                      name={`mcqs.${mcqIndex}.options.${optionIndex}.text`}
-                                                      render={({ field: optionField }) => (
-                                                        <FormControl>
-                                                            <Input {...optionField} placeholder={`Option ${optionIndex + 1} Text`} />
-                                                        </FormControl>
-                                                      )}
-                                                    />
-                                                  </div>
-                                                   <FormField
-                                                      control={form.control}
-                                                      name={`mcqs.${mcqIndex}.options.${optionIndex}.imageUrl`}
-                                                      render={({ field: optionField }) => (
-                                                        <FormControl>
-                                                            <Input {...optionField} placeholder={`Option ${optionIndex + 1} Image URL`} />
-                                                        </FormControl>
-                                                      )}
-                                                    />
-                                              </div>
-                                          ))}
-                                          </div>
-                                          {form.formState.errors?.mcqs?.[mcqIndex]?.correctOptionIndex && (
-                                              <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.mcqs[mcqIndex]?.correctOptionIndex?.message}</p>
-                                          )}
-                                      </div>
-                                  </div>
-                              ))}
-                              <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => append(defaultMcqValue)}>
-                                  <PlusCircle className="mr-2 h-4 w-4" /> Add Another Question
-                              </Button>
-                          </div>
-                      </ScrollArea>
-                  </div>
-                  <div className="flex flex-col gap-4">
+           <form id="reasoning-form" onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-hidden">
+               <div className="h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-y-auto pr-2 -mr-2">
+                    <div className="flex flex-col gap-4">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Set Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="E.g., Visual Patterns - Set 1" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <h3 className="text-lg font-semibold border-t pt-4">Questions</h3>
+                        <ScrollArea className="flex-1 pr-4 -mr-4">
+                            <div className="space-y-6">
+                                {fields.map((mcqField, mcqIndex) => (
+                                    <div key={mcqField.id} className="p-4 border rounded-lg space-y-4 relative bg-card">
+                                        <div className="absolute top-2 right-2 flex gap-1">
+                                            <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => setPreviewQuestionIndex(mcqIndex)}>
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                            <Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={() => remove(mcqIndex)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <FormField
+                                            control={form.control}
+                                            name={`mcqs.${mcqIndex}.question`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel>Question {mcqIndex + 1}</FormLabel>
+                                                <FormControl>
+                                                    <Textarea placeholder="Which shape comes next?" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name={`mcqs.${mcqIndex}.imageUrl`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                <FormLabel className="flex items-center gap-2"><ImageIcon className="h-4 w-4" />Image URL</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="https://example.com/image.png" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div>
+                                            <FormLabel>Options</FormLabel>
+                                            <div className="space-y-3 mt-2">
+                                                {mcqField.options.map((_, optionIndex) => (
+                                                    <div key={`${mcqField.id}-option-${optionIndex}`} className="p-3 border rounded-md bg-muted/50 space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                type="button"
+                                                                variant={form.watch(`mcqs.${mcqIndex}.correctOptionIndex`) === optionIndex ? 'default' : 'outline'}
+                                                                onClick={() => form.setValue(`mcqs.${mcqIndex}.correctOptionIndex`, optionIndex, { shouldValidate: true })}
+                                                                className="h-9 w-20 shrink-0"
+                                                            >
+                                                                {form.watch(`mcqs.${mcqIndex}.correctOptionIndex`) === optionIndex ? 'Correct' : 'Mark'}
+                                                            </Button>
+                                                            <FormField
+                                                            control={form.control}
+                                                            name={`mcqs.${mcqIndex}.options.${optionIndex}.text`}
+                                                            render={({ field: optionField }) => (
+                                                                <FormControl>
+                                                                    <Input {...optionField} placeholder={`Opt ${optionIndex + 1} Text`} className="h-9" />
+                                                                </FormControl>
+                                                            )}
+                                                            />
+                                                        </div>
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`mcqs.${mcqIndex}.options.${optionIndex}.imageUrl`}
+                                                            render={({ field: optionField }) => (
+                                                                <FormControl>
+                                                                    <Input {...optionField} placeholder={`Opt ${optionIndex + 1} Image URL`} className="h-9" />
+                                                                </FormControl>
+                                                            )}
+                                                            />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {form.formState.errors?.mcqs?.[mcqIndex]?.correctOptionIndex && (
+                                                <p className="text-sm font-medium text-destructive mt-2">{form.formState.errors.mcqs[mcqIndex]?.correctOptionIndex?.message}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                                <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => append(defaultMcqValue)}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Add Question
+                                </Button>
+                            </div>
+                        </ScrollArea>
+                    </div>
+                    <div className="flex flex-col gap-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">JSON Editor for Questions</h3>
+                            <h3 className="text-lg font-semibold">JSON Editor</h3>
                              <Button type="button" variant="outline" size="sm" onClick={handleCopyDemo}>
                                 <Copy className="mr-2 h-4 w-4" /> Copy Demo
                             </Button>
@@ -295,6 +332,14 @@ export function ReasoningForm({ set, children }: ReasoningFormProps) {
                         </div>
                     </div>
                 </div>
+
+                <div className="lg:col-span-1 flex flex-col gap-4">
+                  <h3 className="text-lg font-semibold">Live Preview</h3>
+                   <div className="p-4 border rounded-lg bg-muted/30 flex-1">
+                        <PreviewQuestion question={watchedMcqs[previewQuestionIndex]} />
+                   </div>
+                </div>
+            </div>
            </form>
         </Form>
         <DialogFooter className="pt-6 border-t">
