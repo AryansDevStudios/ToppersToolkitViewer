@@ -325,7 +325,7 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
 
         revalidatePath("/admin/notes", "layout");
         revalidatePath("/browse", "layout");
-        return { success: true, message: `Note successfully ${isNew ? 'created' : 'updated'}.` };
+        return { success: true, message: `Note successfully ${isNewNote ? 'created' : 'updated'}.` };
     } catch (e: any) {
         console.error("Error in upsertNote:", e);
         return { success: false, error: e.message || "An unknown error occurred" };
@@ -1820,11 +1820,10 @@ export async function getCurrentAffairsSets(): Promise<CurrentAffairsSet[]> {
 // --- Reasoning Management ---
 
 export async function getReasoningSets(): Promise<ReasoningSet[]> {
-    noStore();
     const setsCollection = collection(db, 'reasoning');
     const q = query(setsCollection, orderBy('createdAt', 'desc'));
     try {
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(q, { cache: 'no-store' });
         return querySnapshot.docs.map(doc => {
             const data = doc.data();
             return {
