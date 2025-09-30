@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Check, X, ChevronsRight, RefreshCcw, Lightbulb, Share2, Loader2 } from 'lucide-react';
+import { Check, X, ChevronsRight, RefreshCcw, Lightbulb, Share2, Loader2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
 import { saveReasoningQuizAttempt, markReasoningAsAttempted } from '@/lib/data';
@@ -208,6 +208,10 @@ export function ReasoningPlayer({ mcqs, setId, setName, onFinish }: ReasoningPla
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
         <div className="flex justify-between items-center mb-2">
+             <Button variant="outline" size="sm" onClick={onFinish} className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Quizzes
+            </Button>
             <h2 className="text-sm font-medium text-primary">{setName}</h2>
             <p className="text-sm font-semibold">
                 {currentQuestionIndex + 1} / {mcqs.length}
