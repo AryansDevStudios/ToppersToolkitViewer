@@ -31,6 +31,7 @@ const mainNavLinks = [
   { title: 'About Us', icon: 'Users', href: '/about-us' },
   { title: 'Telegram Chat', icon: 'Send', href: 'https://t.me/+BP99uVTapfw3YmY1', isExternal: true },
   { title: 'GS MCQs', icon: 'BookCheck', href: '/mcqs' },
+  { title: 'Reasoning', icon: 'BrainCircuit', href: '/reasoning' },
   { title: 'Mindmap', icon: 'BrainCircuit', href: '/mindmap' },
   { title: 'Current Affairs', icon: 'Newspaper', href: '/current-affairs' },
   { title: 'Learn from YouTube', icon: 'Youtube', href: '/youtube-learning' },
