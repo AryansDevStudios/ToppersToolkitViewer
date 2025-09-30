@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useTransition, useState, useEffect, useCallback } from "react";
+import { useTransition, useState, useEffect, useCallback, useMemo } from "react";
 import { upsertReasoningSet } from "@/lib/data";
 import type { ReasoningMCQ, ReasoningSet } from "@/lib/types";
 import { PlusCircle, Trash2, Image as ImageIcon, Copy, AlertTriangle, Eye, ChevronLeft, ChevronRight, Code } from "lucide-react";
@@ -127,17 +127,19 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
 
   // Sanitize incoming set data to ensure no undefined values for controlled components
   const sanitizedMcqs = useMemo(() => {
-    if (!set?.mcqs || set.mcqs.length === 0) {
+    const mcqs = set?.mcqs;
+    if (!mcqs || mcqs.length === 0) {
       return [defaultMcqValue];
     }
-    return set.mcqs.map(mcq => ({
-      ...mcq,
+    return mcqs.map(mcq => ({
       question: mcq.question ?? "",
       imageUrl: mcq.imageUrl ?? "",
       options: (mcq.options || []).map(opt => ({
         text: opt.text ?? "",
         imageUrl: opt.imageUrl ?? "",
       })),
+      correctOptionIndex: mcq.correctOptionIndex,
+      id: mcq.id,
     }));
   }, [set]);
 
@@ -396,5 +398,3 @@ export function ReasoningForm({ set }: ReasoningFormProps) {
     </Card>
   );
 }
-
-    
