@@ -24,7 +24,7 @@ const Step = ({ step, title, description }: { step: number; title: string; descr
 );
 
 export default function InviteFriendsPage() {
-    const { user, loading } = useAuth();
+    const { user, dbUser, loading } = useAuth();
     const { toast } = useToast();
     const router = useRouter();
     const [isShareSupported, setIsShareSupported] = useState(false);
@@ -81,13 +81,19 @@ export default function InviteFriendsPage() {
     };
     
     const handleSendProof = () => {
-        if (!user) {
+        if (!user || !dbUser) {
             toast({ title: 'Please Log In', description: 'You need to be logged in to send proof.', variant: 'destructive' });
             router.push('/login');
             return;
         }
 
-        const message = `Hello! I've successfully invited a friend to Topper's Toolkit and would like to claim my reward. Here is the screenshot of the proof:`;
+        const message = `Hello! I've successfully invited a friend to Topper's Toolkit.
+
+*My Details:*
+Name: ${dbUser.name}
+User ID: ${user.uid}
+
+I would like to claim my reward. Here is the screenshot of the proof:`;
         const whatsappUrl = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
