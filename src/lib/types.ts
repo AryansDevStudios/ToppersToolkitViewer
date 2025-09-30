@@ -72,6 +72,13 @@ export interface MCQSet {
   mcqs: MCQ[];
 }
 
+export interface CurrentAffairsSet {
+  id: string;
+  name: string;
+  mcqs: MCQ[];
+  createdAt: number;
+}
+
 export interface AnswerRecord {
   mcqId: string;
   question: string;
@@ -151,6 +158,7 @@ export interface User {
   score?: number;
   showOnLeaderboard?: boolean;
   attemptedQuizzes?: string[];
+  attemptedCurrentAffairs?: string[];
   demoExpiresAt?: number;
   subscriptionExpiresAt?: number;
 }
