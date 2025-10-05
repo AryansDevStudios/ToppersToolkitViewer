@@ -163,7 +163,16 @@ export function RegisterForm() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      await updateProfile(user, { displayName: name });
+      // Auto-login user and navigate immediately
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/pricing");
+      toast({
+        title: "Registration Successful!",
+        description: "Welcome! Please subscribe or start a demo to get access.",
+      });
+
+      // --- Run background tasks without awaiting them ---
+      updateProfile(user, { displayName: name });
       
       const userData: Omit<User, 'id'> = {
         name,
@@ -185,21 +194,15 @@ export function RegisterForm() {
           userData.gender = values.gender as User['gender'];
       }
 
-
-      await setDoc(doc(db, "users", user.uid), {
+      setDoc(doc(db, "users", user.uid), {
         id: user.uid,
         ...userData,
       });
       
-      // Auto-login user
-      await signInWithEmailAndPassword(auth, email, password);
-      
-      // --- Device Info Logging ---
       const { userAgent, platform, hardwareConcurrency, deviceMemory } = navigator;
       const { width, height } = window.screen;
       const { os, browser } = getOSAndBrowser(userAgent);
       const gpuInfo = getGpuInfo();
-
       const deviceType = /Mobi|Android/i.test(userAgent) ? 'Mobile' : /Tablet/i.test(userAgent) ? 'Tablet' : 'Desktop';
 
       const loginLog: Omit<LoginLog, 'timestamp'> = {
@@ -215,13 +218,8 @@ export function RegisterForm() {
         gpuInfo,
       };
       
-      await logUserLogin(userCredential.user.uid, loginLog);
+      logUserLogin(user.uid, loginLog);
 
-      toast({
-        title: "Registration Successful!",
-        description: "Welcome! Please subscribe or start a demo to get access.",
-      });
-      router.push("/pricing");
     } catch (error: any) {
        setIsSubmitting(false);
        if (error.code === 'auth/email-already-in-use') {

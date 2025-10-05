@@ -9,22 +9,27 @@ import { Loader2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { AdminMobileNav } from "@/components/admin/AdminMobileNav";
+import type { User } from "@/lib/types";
 
 export default function AdminLayout({
   children,
+  user: initialUser
 }: {
   children: React.ReactNode;
+  user: User | null;
 }) {
-  const { user, role, loading } = useAuth();
+  const { user, role, loading } = useAuth(initialUser);
   const router = useRouter();
 
+  const isLoading = loading && !user;
+
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !user) {
       router.push('/login');
     }
-  }, [loading, user, router]);
+  }, [isLoading, user, router]);
 
-  if (loading || !user) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -32,7 +37,7 @@ export default function AdminLayout({
     );
   }
 
-  if (role !== 'Admin') {
+  if (user && role !== 'Admin') {
     return (
        <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4 text-center">
           <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
@@ -43,6 +48,10 @@ export default function AdminLayout({
           </Button>
         </div>
     );
+  }
+
+  if (!user) {
+    return null; // or a minimal loading state, as useEffect will redirect
   }
   
   return (

@@ -101,10 +101,22 @@ export function LoginForm() {
     setIsSubmitting(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      
       const userId = userCredential.user.uid;
 
-      // --- Device Info Logging ---
+      // Immediately sync session and navigate
+      userCredential.user.getIdToken().then(idToken => {
+        fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${idToken}` },
+        });
+      });
+      router.push("/");
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+
+      // --- Run background tasks without awaiting them ---
       const { userAgent, platform, hardwareConcurrency, deviceMemory } = navigator;
       const { width, height } = window.screen;
       const { os, browser } = getOSAndBrowser(userAgent);
@@ -124,19 +136,8 @@ export function LoginForm() {
         gpuInfo,
       };
       
-      // Run post-login tasks in parallel
-      await Promise.all([
-        updatePasswordInFirestore(userId, values.password),
-        logUserLogin(userId, loginLog)
-      ]);
-
-      toast({
-        title: "Login Successful",
-        description: "Redirecting you to the homepage.",
-      });
-      
-      // The router.push will happen, and the isSubmitting overlay will hide it
-      router.push("/");
+      updatePasswordInFirestore(userId, values.password);
+      logUserLogin(userId, loginLog);
 
     } catch (error: any) {
       setIsSubmitting(false); // Only set submitting to false on error

@@ -29,29 +29,24 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
   const { user, dbUser, loading } = useAuth(initialUser);
   const pathname = usePathname();
   const router = useRouter();
-  const [accessState, setAccessState] = useState<'loading' | 'granted' | 'redirecting'>('loading');
 
+  const isLoading = loading && !dbUser;
+  
   useEffect(() => {
-    if (loading) {
-      setAccessState('loading');
+    if (isLoading) {
       return;
     }
 
-    // 1. Allow access to public pages for everyone
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
     if (isPublicPage) {
-      setAccessState('granted');
-      return; 
-    }
-
-    // 2. Redirect unauthenticated users to login
-    if (!user || !dbUser) {
-      router.push('/login');
-      setAccessState('redirecting'); 
       return;
     }
 
-    // 3. Handle new users who haven't selected a plan
+    if (!user || !dbUser) {
+      router.push('/login');
+      return;
+    }
+
     const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
     const hasDemo = !!dbUser.demoExpiresAt;
     const isNewUserWithoutPlan = !hasActiveSubscription && !hasDemo;
@@ -59,16 +54,10 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
 
     if (isNewUserWithoutPlan && !isSubscriptionPage) {
         router.push('/pricing');
-        setAccessState('redirecting');
-        return;
     }
-    
-    // 4. If all checks pass, grant access
-    setAccessState('granted');
-    
-  }, [loading, user, dbUser, pathname, router]);
+  }, [isLoading, user, dbUser, pathname, router]);
 
-  if (accessState === 'loading' || accessState === 'redirecting') {
+  if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-8rem)] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />

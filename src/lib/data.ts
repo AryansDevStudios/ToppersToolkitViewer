@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription, CurrentAffairsSet, ReasoningSet, ReasoningQuizAttempt, ReasoningAnswerRecord } from "./types";
@@ -33,11 +32,19 @@ const convertToJsDelivr = (githubUrl: string): string => {
     }
 };
 
-const convertToProxyUrl = (url: string): string => {
-    if (!url) return '';
-    const proxyBase = 'https://topperstoolkitviewer.netlify.app/.netlify/functions/proxy?url=';
+const convertToProxyUrl = (url: string, proxyType: 'netlify' | 'render' | 'none'): string => {
+    if (!url || proxyType === 'none') return url;
+    
+    let proxyBase = '';
+    if (proxyType === 'netlify') {
+        proxyBase = 'https://topperstoolkitviewer.netlify.app/.netlify/functions/proxy?url=';
+    } else if (proxyType === 'render') {
+        proxyBase = 'https://corsproxy-bppd.onrender.com/proxy?url=';
+    } else {
+        return url;
+    }
+
     try {
-        // Avoid double-encoding
         if (url.startsWith(proxyBase)) {
             return url;
         }
@@ -225,8 +232,8 @@ export const getDashboardStats = async () => {
     };
 };
 
-export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; url: string; renderAs: 'pdf' | 'iframe'; linkType?: 'github' | 'other'; serveViaJsDelivr?: boolean; useProxy?: boolean; icon?: string; isPublic?: boolean; }) => {
-    const { id, subjectId, subSubjectId, url: originalUrl, icon, linkType, serveViaJsDelivr, useProxy, isPublic, renderAs } = data;
+export const upsertNote = async (data: { id?: string; subjectId: string; subSubjectId: string; chapterName: string; type: string; url: string; renderAs: 'pdf' | 'iframe'; linkType?: 'github' | 'other'; serveViaJsDelivr?: boolean; proxyType?: 'netlify' | 'render' | 'none'; icon?: string; isPublic?: boolean; }) => {
+    const { id, subjectId, subSubjectId, url: originalUrl, icon, linkType, serveViaJsDelivr, proxyType, isPublic, renderAs } = data;
     const isNewNote = !id;
     const noteId = isNewNote ? uuidv4() : id!;
     const trimmedChapterName = data.chapterName.trim();
@@ -237,7 +244,6 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             const allSubjectsDocs = await getDocs(collection(db, 'subjects'));
             let allSubjects = allSubjectsDocs.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject));
 
-            // --- Read/Find Phase ---
             let oldNoteData: Note | null = null;
             let oldNoteLocation: {subject: Subject, subSubject: SubSubject, chapter: Chapter} | null = null;
 
@@ -264,8 +270,6 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             const targetSubSubject = targetSubject.subSubjects.find(ss => ss.id === subSubjectId);
             if (!targetSubSubject) throw new Error("Target sub-subject not found!");
 
-            // --- Write/Update Phase ---
-            // 1. Remove the old note if it exists.
             if (oldNoteLocation) {
                  const noteIndex = oldNoteLocation.chapter.notes.findIndex(n => n.id === noteId);
                 if (noteIndex > -1) {
@@ -275,7 +279,6 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 transaction.set(sourceSubjectRef, oldNoteLocation.subject);
             }
             
-            // 2. Add the new/updated note to the target location
             if (!targetSubSubject.chapters) targetSubSubject.chapters = [];
             
             let targetChapter = targetSubSubject.chapters.find(c => c.name.trim().toLowerCase() === trimmedChapterName.toLowerCase());
@@ -292,8 +295,8 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
             let finalUrl = originalUrl;
             if (renderAs === 'pdf' && linkType === 'github' && serveViaJsDelivr) {
                 finalUrl = convertToJsDelivr(originalUrl);
-            } else if (renderAs === 'pdf' && linkType === 'other' && useProxy) {
-                finalUrl = convertToProxyUrl(originalUrl);
+            } else if (renderAs === 'pdf' && linkType === 'other' && proxyType) {
+                finalUrl = convertToProxyUrl(originalUrl, proxyType);
             }
             
             const newNote: Partial<Note> = { 
@@ -304,13 +307,12 @@ export const upsertNote = async (data: { id?: string; subjectId: string; subSubj
                 renderAs,
                 linkType: linkType,
                 serveViaJsDelivr: serveViaJsDelivr,
-                useProxy: useProxy,
+                proxyType: proxyType,
                 icon: icon || 'FileText',
                 createdAt: oldNoteData?.createdAt ?? Date.now(),
                 isPublic: isPublic || false,
              };
              
-            // Remove undefined fields before saving
             Object.keys(newNote).forEach(key => (newNote as any)[key] === undefined && delete (newNote as any)[key]);
 
             const existingNoteIndex = targetChapter.notes.findIndex(n => n.id === noteId);
@@ -358,7 +360,6 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
             if (noteIndex !== -1) {
                 chapter.notes.splice(noteIndex, 1);
 
-                // If the chapter is now empty, remove it.
                 if (chapter.notes.length === 0) {
                     subSubject.chapters.splice(chapterIndex, 1);
                 }
@@ -366,7 +367,6 @@ export const deleteNote = async (noteId: string, chapterId: string) => {
                 throw new Error("Note not found to delete.");
             }
             
-             // If the sub-subject is now empty of chapters, remove it
             if (subSubject.chapters.length === 0) {
                 subjectData.subSubjects = subjectData.subSubjects.filter(ss => ss.id !== subSubjectId);
             }
@@ -538,7 +538,6 @@ export const deleteChapter = async (subjectId: string, subSubjectId: string, cha
             if(subSubject.chapters) {
                 subSubject.chapters = subSubject.chapters.filter(c => c.id !== chapterId);
 
-                // If sub-subject is now empty of chapters, remove it.
                 if (subSubject.chapters.length === 0) {
                     subjectData.subSubjects = subjectData.subSubjects.filter(ss => ss.id !== subSubjectId);
                 }
@@ -603,7 +602,6 @@ export const upsertUser = async (userData: Partial<User> & { id: string }, batch
             }
         }
         
-        // Revalidation is handled by the calling function if it's not a batch operation
         if (!batch) {
             revalidatePath('/admin/users', 'layout');
             revalidatePath('/admin/leaderboard');
@@ -668,7 +666,6 @@ export const updateUserPermissions = async (
     }
     const userDocRef = doc(db, "users", userId);
     try {
-        // Construct an update object with only the provided fields
         const dataToUpdate: { [key: string]: any } = {};
         if (permissions.noteAccess !== undefined) {
             dataToUpdate.noteAccess = permissions.noteAccess;
@@ -699,10 +696,6 @@ export const updateUserPermissions = async (
 };
 
 export const deleteUser = async (userId: string) => {
-    // This action is sensitive and has been disabled in the code
-    // as it might require cleaning up Firebase Auth user as well,
-    // which cannot be done from the client-side without admin privileges.
-    // For now, it just deletes the Firestore document.
     if (!userId) {
         return { success: false, error: "Invalid user ID."};
     }
@@ -740,7 +733,6 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
     };
 
     try {
-        // Use setDoc with merge to create the field if it doesn't exist, or update it if it does.
         await setDoc(userDocRef, { loginLogs: arrayUnion(newLog) }, { merge: true });
         return { success: true };
     } catch (e: any) {
@@ -767,7 +759,6 @@ export async function getQuestionOfTheDay(date: string): Promise<QuestionOfTheDa
         return { id: qotdSnapshot.docs[0].id, ...qotdSnapshot.docs[0].data() } as QuestionOfTheDay;
     }
 
-    // If no question for today, get the most recent past or present one
     const pastOrPresentQuery = query(
         qotdCollection,
         where('date', '<=', date),
@@ -788,7 +779,6 @@ export async function upsertQuestionOfTheDay(questionData: Omit<QuestionOfTheDay
 
   try {
     if (isNew) {
-      // Use Firestore serverTimestamp for reliable time, getNotices will convert it
       const docWithMeta = { ...data, id: docId, createdAt: Date.now() };
       await setDoc(qotdDocRef, docWithMeta);
     } else {
@@ -906,7 +896,6 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
 
   try {
     return await runTransaction(db, async (transaction) => {
-      // --- ALL READS MUST GO FIRST ---
       const qotdDoc = await transaction.get(qotdDocRef);
       const answerDoc = await transaction.get(answerDocRef);
       const userDoc = await transaction.get(userDocRef);
@@ -924,7 +913,6 @@ export async function submitUserAnswer(userId: string, questionId: string, selec
       const qotdData = qotdDoc.data() as QuestionOfTheDay;
       const isCorrect = qotdData.correctOptionIndex === selectedOptionIndex;
 
-      // --- ALL WRITES GO AFTER READS ---
       const newAnswer: UserQotdAnswer = {
         questionId,
         question: qotdData.question,
@@ -966,18 +954,15 @@ export async function deleteUserQotdAnswer(userId: string, questionId: string) {
     await runTransaction(db, async (transaction) => {
       const answerDoc = await transaction.get(answerDocRef);
       if (!answerDoc.exists()) {
-        // If the document doesn't exist, there's nothing to delete.
         return;
       }
 
       const docData = answerDoc.data();
       const existingAnswers: UserQotdAnswer[] = docData.answers || [];
       
-      // Find the answer to remove
       const answerToRemove = existingAnswers.find(ans => ans.questionId === questionId);
 
       if (answerToRemove) {
-        // Use arrayRemove to atomically remove the element from the array
         transaction.update(answerDocRef, {
           answers: arrayRemove(answerToRemove)
         });
@@ -1003,7 +988,6 @@ export async function getNotices(): Promise<Notice[]> {
   
   return noticesSnapshot.docs.map(doc => {
     const data = doc.data();
-    // Ensure createdAt is a number. If it's a Timestamp, convert it.
     const createdAt = data.createdAt?.toMillis ? data.createdAt.toMillis() : (data.createdAt || 0);
     return { id: doc.id, ...data, createdAt } as Notice;
   });
@@ -1017,7 +1001,6 @@ export async function upsertNotice(noticeData: Omit<Notice, 'id' | 'createdAt'> 
 
   try {
     if (isNew) {
-      // Use Firestore serverTimestamp for reliable time, getNotices will convert it
       const docWithMeta = { ...data, id: docId, createdAt: serverTimestamp() };
       await setDoc(noticeDocRef, docWithMeta);
     } else {
@@ -1135,7 +1118,6 @@ export async function answerDoubt(doubtId: string, answer: string, adminName: st
                 answeredByAdminId: adminId,
             };
 
-            // Only update status and answeredAt if it's the first time being answered
             if (doubtDoc.data().status !== 'answered') {
                 dataToUpdate.status = 'answered';
                 dataToUpdate.answeredAt = serverTimestamp();
@@ -1548,7 +1530,6 @@ export async function getSettings(): Promise<AppSettings> {
         if (docSnap.exists()) {
             return docSnap.data() as AppSettings;
         }
-        // Return default settings if document doesn't exist
         return { printCostPerPage: 1 };
     } catch (error) {
         console.error("Error fetching settings:", error);
@@ -1683,14 +1664,12 @@ export async function completeSubscription(subscriptionId: string, userId: strin
     const now = new Date();
     const expiresAt = addMonths(now, 1);
 
-    // Update subscription status
     batch.update(subscriptionDocRef, {
         status: 'completed',
         completedAt: serverTimestamp(),
         expiresAt: expiresAt.getTime(),
     });
 
-    // Update user's access rights
     batch.update(userDocRef, {
         hasFullNotesAccess: true,
         hasAiAccess: true,
@@ -1907,44 +1886,5 @@ export async function saveReasoningQuizAttempt(attemptData: Omit<ReasoningQuizAt
         return { success: true, attemptId: attemptId };
     } catch (e: any) {
         return { success: false, error: e.message };
-    }
-}
-
-export async function getReasoningQuizAttemptById(attemptId: string): Promise<ReasoningQuizAttempt | null> {
-    noStore();
-    if (!attemptId) return null;
-    const attemptDocRef = doc(db, 'reasoningAttempts', attemptId);
-    try {
-        const docSnap = await getDoc(attemptDocRef);
-        if (docSnap.exists()) {
-             const data = docSnap.data();
-             return {
-                ...data,
-                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
-             } as ReasoningQuizAttempt;
-        }
-        return null;
-    } catch (error) {
-        console.error("Error fetching reasoning quiz attempt by ID:", error);
-        return null;
-    }
-}
-
-export async function getAllReasoningQuizAttempts(): Promise<ReasoningQuizAttempt[]> {
-    noStore();
-    const attemptsCollection = collection(db, 'reasoningAttempts');
-    const q = query(attemptsCollection, orderBy('createdAt', 'desc'));
-    try {
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                ...data,
-                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
-            } as ReasoningQuizAttempt;
-        });
-    } catch (error) {
-        console.error("Error fetching all reasoning quiz attempts:", error);
-        return [];
     }
 }

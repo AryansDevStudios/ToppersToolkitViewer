@@ -14,10 +14,9 @@ export function useAuth(initialUser?: User | null) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
       setUser(firebaseUser);
       if (firebaseUser) {
-        // If dbUser is not set or differs, fetch it.
+        // Only fetch if dbUser is not already populated or if the user has changed.
         if (!dbUser || dbUser.id !== firebaseUser.uid) {
             const userData = await getUserById(firebaseUser.uid);
             setDbUser(userData);
@@ -36,24 +35,18 @@ export function useAuth(initialUser?: User | null) {
     });
 
     return () => unsubscribe();
-  }, []); // Only runs once on mount
-
-  const role = useMemo(() => dbUser?.role || null, [dbUser]);
+  }, []); // Only runs once on mount, relies on onAuthStateChanged to handle updates.
   
   // This effect ensures that on client-side navigation, the new
-  // server-fetched `initialUser` is immediately reflected.
+  // server-fetched `initialUser` is immediately reflected if available,
+  // preventing a flash of loading state.
   useEffect(() => {
     if (initialUser) {
-      const isSubExpired = initialUser.subscriptionExpiresAt ? initialUser.subscriptionExpiresAt < Date.now() : false;
-      
-      const updatedUser = {
-        ...initialUser,
-        hasFullNotesAccess: isSubExpired ? false : initialUser.hasFullNotesAccess,
-      };
-      
-      setDbUser(updatedUser);
+      setDbUser(initialUser);
     }
   }, [initialUser]);
+
+  const role = useMemo(() => dbUser?.role || null, [dbUser]);
 
   return { user, dbUser, role, loading };
 }

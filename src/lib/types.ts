@@ -25,7 +25,7 @@ export interface Note {
   renderAs?: 'pdf' | 'iframe';
   linkType?: 'github' | 'other';
   serveViaJsDelivr?: boolean;
-  useProxy?: boolean;
+  proxyType?: 'netlify' | 'render' | 'none';
   icon?: string;
   createdAt?: number;
   isPublic?: boolean;

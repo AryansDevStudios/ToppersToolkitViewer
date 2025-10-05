@@ -47,7 +47,7 @@ const noteObjectSchema = z.object({
   renderAs: z.enum(["pdf", "iframe"]),
   linkType: z.enum(["github", "other"]).optional(),
   serveViaJsDelivr: z.boolean().optional(),
-  useProxy: z.boolean().optional(),
+  proxyType: z.enum(["none", "netlify", "render"]).optional(),
   icon: z.string().optional(),
   isPublic: z.boolean().optional(),
 }).refine(data => {
@@ -80,7 +80,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       renderAs: note?.renderAs === 'iframe' ? 'iframe' : 'pdf',
       linkType: note?.linkType || "github",
       serveViaJsDelivr: note?.serveViaJsDelivr === undefined ? true : note.serveViaJsDelivr,
-      useProxy: note?.useProxy === undefined ? true : note.useProxy,
+      proxyType: note?.proxyType || 'render',
       icon: note?.icon || "",
       isPublic: note?.isPublic || false,
     },
@@ -141,7 +141,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
         icon: values.icon,
         linkType: values.renderAs === 'iframe' ? undefined : values.linkType,
         serveViaJsDelivr: values.renderAs === 'iframe' ? undefined : values.serveViaJsDelivr,
-        useProxy: values.renderAs === 'iframe' ? undefined : values.useProxy,
+        proxyType: values.renderAs === 'iframe' ? undefined : values.proxyType,
       };
 
       const result = await upsertNote(dataToSubmit);
@@ -389,25 +389,29 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                           />
                       )}
                       {linkType === 'other' && (
-                          <FormField
+                           <FormField
                               control={form.control}
-                              name="useProxy"
+                              name="proxyType"
                               render={({ field }) => (
-                                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                                      <div className="space-y-0.5">
-                                          <FormLabel>Use Proxy API</FormLabel>
-                                          <FormDescription>
-                                              Route URL through the Netlify proxy to avoid CORS issues.
-                                          </FormDescription>
-                                      </div>
-                                      <FormControl>
-                                          <Switch
-                                              checked={field.value}
-                                              onCheckedChange={field.onChange}
-                                              disabled={isPending}
-                                          />
-                                      </FormControl>
-                                  </FormItem>
+                                <FormItem>
+                                    <FormLabel>Proxy Service</FormLabel>
+                                     <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPending}>
+                                        <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a proxy service" />
+                                        </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="render">Render Proxy (Recommended)</SelectItem>
+                                            <SelectItem value="netlify">Netlify Proxy</SelectItem>
+                                            <SelectItem value="none">No Proxy</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormDescription>
+                                        Use a proxy to avoid potential CORS issues with some URLs.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
                               )}
                           />
                       )}
@@ -448,7 +452,6 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                     )}
                   />
                   <Separator className="!mt-8" />
-                  {/* JSON Editor */}
                   <div className="space-y-2 pt-2">
                       <div className="flex justify-between items-center">
                           <h3 className="text-lg font-semibold">JSON Editor</h3>
