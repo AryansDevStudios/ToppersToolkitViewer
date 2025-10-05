@@ -25,28 +25,33 @@ const publicPaths = [
 ];
 const subscriptionPaths = ['/subscribe', '/subscription-confirmation', '/pricing'];
 
-function AuthWrapper({ children, initialUser }: { children: React.ReactNode, initialUser: User | null }) {
-  const { user, dbUser, loading } = useAuth(initialUser);
+function AuthWrapper({ children }: { children: React.ReactNode }) {
+  const { user, dbUser, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-
-  const isLoading = loading && !dbUser;
   
   useEffect(() => {
-    if (isLoading) {
-      return;
+    if (loading) {
+      return; // Wait for the auth state to be determined
     }
 
     const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
     if (isPublicPage) {
-      return;
+      return; // Always allow access to public pages
     }
 
-    if (!user || !dbUser) {
+    // If it's a protected page and we've finished loading but have no user, redirect to login.
+    if (!user) {
       router.push('/login');
       return;
     }
+    
+    // If user is logged in, but we are still fetching their DB profile, wait.
+    if (!dbUser) {
+        return;
+    }
 
+    // Logic for new users without a subscription or demo
     const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
     const hasDemo = !!dbUser.demoExpiresAt;
     const isNewUserWithoutPlan = !hasActiveSubscription && !hasDemo;
@@ -55,9 +60,10 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
     if (isNewUserWithoutPlan && !isSubscriptionPage) {
         router.push('/pricing');
     }
-  }, [isLoading, user, dbUser, pathname, router]);
+  }, [loading, user, dbUser, pathname, router]);
 
-  if (isLoading) {
+  const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
+  if (loading && !isPublicPage) {
     return (
       <div className="flex h-[calc(100vh-8rem)] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -70,11 +76,9 @@ function AuthWrapper({ children, initialUser }: { children: React.ReactNode, ini
 
 
 export function RootLayoutClient({
-  children,
-  user
+  children
 }: Readonly<{
   children: React.ReactNode;
-  user: User | null;
 }>) {
   const pathname = usePathname();
   const { toast } = useToast();
@@ -143,7 +147,7 @@ export function RootLayoutClient({
       <div className="relative flex min-h-screen flex-col">
         {!isAuthPage && !isSubscriptionFlowPage && <AppHeader />}
         <main className="flex-1 flex flex-col">
-          <AuthWrapper initialUser={user}>
+          <AuthWrapper>
             {children}
           </AuthWrapper>
         </main>

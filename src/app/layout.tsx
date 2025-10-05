@@ -3,7 +3,6 @@ import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-import { getUser } from '@/lib/auth-server';
 import { RootLayoutClient } from '@/components/common/RootLayoutClient';
 import './globals.css';
 
@@ -18,12 +17,11 @@ export const metadata: Metadata = {
   description: 'Your one-stop destination for academic resources.',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getUser();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -36,7 +34,7 @@ export default async function RootLayout({
           inter.variable
         )}
       >
-        <RootLayoutClient user={user}>
+        <RootLayoutClient>
           {children}
         </RootLayoutClient>
         <Toaster />
