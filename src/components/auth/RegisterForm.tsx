@@ -164,7 +164,14 @@ export function RegisterForm() {
       const user = userCredential.user;
 
       // Auto-login user and navigate immediately
-      await signInWithEmailAndPassword(auth, email, password);
+      signInWithEmailAndPassword(auth, email, password).then(cred => {
+          cred.user.getIdToken().then(idToken => {
+            fetch('/api/auth/session', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${idToken}` },
+            });
+        });
+      });
       router.push("/pricing");
       toast({
         title: "Registration Successful!",
