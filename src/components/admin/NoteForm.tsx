@@ -165,8 +165,12 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     if (!selectedSubSubjectId || !chapterNameValue) return new Set();
     const subSubject = subSubjects.find(ss => ss.id === selectedSubSubjectId);
     const chapter = subSubject?.chapters.find(c => c.name === chapterNameValue);
-    return new Set(chapter?.notes?.map(n => n.type) || []);
-  }, [selectedSubSubjectId, chapterNameValue, subSubjects]);
+    
+    // When editing, exclude the current note's original type from the check.
+    const noteIdToExclude = isEditing ? note?.id : null;
+    
+    return new Set(chapter?.notes?.filter(n => n.id !== noteIdToExclude).map(n => n.type) || []);
+  }, [selectedSubSubjectId, chapterNameValue, subSubjects, isEditing, note]);
 
   const filteredNoteTypes = useMemo(() => {
     if (!noteTypeValue) return allNoteTypes;
@@ -195,8 +199,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
         if (isEditing) {
           router.push("/admin/notes");
         } else {
-          router.refresh();
-          form.reset({
+           router.refresh();
+           form.reset({
             ...form.getValues(),
             type: "", 
             url: "", 
@@ -639,3 +643,5 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     </Card>
   );
 }
+
+    
