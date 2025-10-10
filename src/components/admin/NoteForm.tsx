@@ -34,7 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { DeleteNoteDialog } from "./DeleteNoteDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Copy } from "lucide-react";
+import { AlertTriangle, Copy, X } from "lucide-react";
 
 const noteObjectSchema = z.object({
   subjectId: z.string().min(1, "Subject ID is required"),
@@ -289,16 +289,30 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       render={({ field }) => (
                         <FormItem className="relative">
                           <FormLabel>Chapter Name</FormLabel>
-                          <FormControl>
-                            <Input 
-                                placeholder="e.g., Motion" 
-                                {...field} 
-                                disabled={isPending || !selectedSubSubjectId}
-                                onFocus={() => setIsChapterSuggestionsOpen(true)}
-                                onBlur={() => setTimeout(() => setIsChapterSuggestionsOpen(false), 150)}
-                                autoComplete="off"
-                            />
-                          </FormControl>
+                          <div className="relative">
+                            <FormControl>
+                                <Input 
+                                    placeholder="e.g., Motion" 
+                                    {...field} 
+                                    disabled={isPending || !selectedSubSubjectId}
+                                    onFocus={() => setIsChapterSuggestionsOpen(true)}
+                                    onBlur={() => setTimeout(() => setIsChapterSuggestionsOpen(false), 150)}
+                                    autoComplete="off"
+                                    className="pr-8"
+                                />
+                            </FormControl>
+                            {field.value && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                    onClick={() => form.setValue('chapterName', '')}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            )}
+                          </div>
                            {isChapterSuggestionsOpen && filteredChapters.length > 0 && (
                                 <div className="absolute z-10 w-full bg-card border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
                                     {filteredChapters.map((chapter, index) => (
@@ -325,16 +339,30 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       render={({ field }) => (
                         <FormItem className="relative">
                           <FormLabel>Note Type</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="e.g., Handwritten Notes, Question Bank" 
-                              {...field} 
-                              disabled={isPending}
-                              onFocus={() => setIsTypeSuggestionsOpen(true)}
-                              onBlur={() => setTimeout(() => setIsTypeSuggestionsOpen(false), 150)}
-                              autoComplete="off"
-                            />
-                          </FormControl>
+                           <div className="relative">
+                                <FormControl>
+                                    <Input 
+                                        placeholder="e.g., Handwritten Notes, Question Bank" 
+                                        {...field} 
+                                        disabled={isPending}
+                                        onFocus={() => setIsTypeSuggestionsOpen(true)}
+                                        onBlur={() => setTimeout(() => setIsTypeSuggestionsOpen(false), 150)}
+                                        autoComplete="off"
+                                        className="pr-8"
+                                    />
+                                </FormControl>
+                                {field.value && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+                                        onClick={() => form.setValue('type', '')}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
                           {isTypeSuggestionsOpen && filteredNoteTypes.length > 0 && (
                                 <div className="absolute z-10 w-full bg-card border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
                                     {filteredNoteTypes.map((type, index) => (
