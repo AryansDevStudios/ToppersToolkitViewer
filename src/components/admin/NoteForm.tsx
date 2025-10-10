@@ -319,7 +319,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                                         <div
                                             key={index}
                                             className="p-2 hover:bg-accent cursor-pointer text-sm"
-                                            onClick={() => {
+                                            onMouseDown={(e) => {
+                                                e.preventDefault();
                                                 form.setValue("chapterName", chapter);
                                                 setIsChapterSuggestionsOpen(false);
                                             }}
@@ -376,7 +377,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                                                         ? "text-green-600 font-semibold cursor-not-allowed" 
                                                         : "hover:bg-accent cursor-pointer"
                                                 )}
-                                                onClick={() => {
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
                                                     if (!isExisting) {
                                                         form.setValue("type", type);
                                                         setIsTypeSuggestionsOpen(false);
