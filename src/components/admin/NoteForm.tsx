@@ -161,6 +161,13 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     return Array.from(types).sort();
   }, [subjects]);
 
+  const existingNoteTypesInChapter = useMemo(() => {
+    if (!selectedSubSubjectId || !chapterNameValue) return new Set();
+    const subSubject = subSubjects.find(ss => ss.id === selectedSubSubjectId);
+    const chapter = subSubject?.chapters.find(c => c.name === chapterNameValue);
+    return new Set(chapter?.notes?.map(n => n.type) || []);
+  }, [selectedSubSubjectId, chapterNameValue, subSubjects]);
+
   const filteredNoteTypes = useMemo(() => {
     if (!noteTypeValue) return allNoteTypes;
     const lowerCaseQuery = noteTypeValue.toLowerCase();
@@ -333,7 +340,9 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                                     {filteredNoteTypes.map((type, index) => (
                                         <div
                                             key={index}
-                                            className="p-2 hover:bg-accent cursor-pointer text-sm"
+                                            className={cn("p-2 hover:bg-accent cursor-pointer text-sm",
+                                              existingNoteTypesInChapter.has(type) && "text-green-600 font-semibold"
+                                            )}
                                             onClick={() => {
                                                 form.setValue("type", type);
                                                 setIsTypeSuggestionsOpen(false);
@@ -589,5 +598,3 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     </Card>
   );
 }
-
-    
