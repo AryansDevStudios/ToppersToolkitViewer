@@ -371,20 +371,15 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                                             <div
                                                 key={index}
                                                 className={cn(
-                                                    "p-2 text-sm flex justify-between items-center",
-                                                    isExisting 
-                                                        ? "text-muted-foreground italic cursor-not-allowed" 
-                                                        : "hover:bg-accent cursor-pointer"
+                                                    "p-2 text-sm hover:bg-accent cursor-pointer",
+                                                    isExisting && "text-green-600 font-semibold"
                                                 )}
                                                 onClick={() => {
-                                                    if (!isExisting) {
-                                                        form.setValue("type", type);
-                                                        setIsTypeSuggestionsOpen(false);
-                                                    }
+                                                    form.setValue("type", type);
+                                                    setIsTypeSuggestionsOpen(false);
                                                 }}
                                             >
-                                                <span>{type}</span>
-                                                {isExisting && <span className="text-xs">(already exists)</span>}
+                                                {type}
                                             </div>
                                         )
                                     })}
