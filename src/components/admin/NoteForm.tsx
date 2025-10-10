@@ -27,7 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { upsertNote } from "@/lib/data";
 import type { Note, Subject } from "@/lib/types";
-import { useTransition, useState, useEffect, useCallback } from "react";
+import { useTransition, useState, useEffect, useCallback, useMemo } from "react";
 import { iconMap, iconNames } from "@/lib/iconMap";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
@@ -35,8 +35,6 @@ import { DeleteNoteDialog } from "./DeleteNoteDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Copy } from "lucide-react";
-import { ScrollArea } from "../ui/scroll-area";
-import { Separator } from "../ui/separator";
 
 const noteObjectSchema = z.object({
   subjectId: z.string().min(1, "Subject ID is required"),
@@ -68,6 +66,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isEditing = !!note?.id;
+
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -124,12 +124,26 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   };
 
   const selectedSubjectId = formValues.subjectId;
+  const selectedSubSubjectId = formValues.subSubjectId;
+  const chapterNameValue = formValues.chapterName;
   const renderAs = formValues.renderAs;
   const linkType = formValues.linkType;
 
   const subSubjects = selectedSubjectId
     ? subjects.find((s) => s.id === selectedSubjectId)?.subSubjects || []
     : [];
+    
+  const availableChapters = useMemo(() => {
+    if (!selectedSubSubjectId) return [];
+    const subSubject = subSubjects.find(ss => ss.id === selectedSubSubjectId);
+    return subSubject?.chapters.map(c => c.name) || [];
+  }, [selectedSubSubjectId, subSubjects]);
+
+  const filteredChapters = useMemo(() => {
+      if (!chapterNameValue) return availableChapters;
+      const lowerCaseQuery = chapterNameValue.toLowerCase();
+      return availableChapters.filter(name => name.toLowerCase().includes(lowerCaseQuery));
+  }, [chapterNameValue, availableChapters]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
@@ -182,6 +196,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                           onValueChange={(value) => {
                             field.onChange(value);
                             form.setValue("subSubjectId", "");
+                            form.setValue("chapterName", "");
                           }}
                           defaultValue={field.value}
                           disabled={isPending}
@@ -211,7 +226,10 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                         <FormItem>
                           <FormLabel>Sub-Subject</FormLabel>
                           <Select
-                            onValueChange={field.onChange}
+                            onValueChange={(value) => {
+                                field.onChange(value);
+                                form.setValue("chapterName", "");
+                            }}
                             value={field.value}
                             disabled={isPending}
                           >
@@ -239,11 +257,34 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       control={form.control}
                       name="chapterName"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="relative">
                           <FormLabel>Chapter Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Motion" {...field} disabled={isPending} />
+                            <Input 
+                                placeholder="e.g., Motion" 
+                                {...field} 
+                                disabled={isPending || !selectedSubSubjectId}
+                                onFocus={() => setIsSuggestionsOpen(true)}
+                                onBlur={() => setTimeout(() => setIsSuggestionsOpen(false), 150)}
+                                autoComplete="off"
+                            />
                           </FormControl>
+                           {isSuggestionsOpen && filteredChapters.length > 0 && (
+                                <div className="absolute z-10 w-full bg-card border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+                                    {filteredChapters.map((chapter, index) => (
+                                        <div
+                                            key={index}
+                                            className="p-2 hover:bg-accent cursor-pointer"
+                                            onClick={() => {
+                                                form.setValue("chapterName", chapter);
+                                                setIsSuggestionsOpen(false);
+                                            }}
+                                        >
+                                            {chapter}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -451,9 +492,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       </FormItem>
                     )}
                   />
-                  <Separator className="!mt-8" />
-                  <div className="space-y-2 pt-2">
-                      <div className="flex justify-between items-center">
+                  <div className="pt-4">
+                      <div className="flex justify-between items-center mb-2">
                           <h3 className="text-lg font-semibold">JSON Editor</h3>
                           <Button type="button" variant="outline" size="sm" onClick={handleCopyJson}>
                               <Copy className="mr-2 h-4 w-4" /> Copy JSON
@@ -503,3 +543,4 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     </Card>
   );
 }
+
