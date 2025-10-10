@@ -365,20 +365,29 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                             </div>
                           {isTypeSuggestionsOpen && filteredNoteTypes.length > 0 && (
                                 <div className="absolute z-10 w-full bg-card border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-                                    {filteredNoteTypes.map((type, index) => (
-                                        <div
-                                            key={index}
-                                            className={cn("p-2 hover:bg-accent cursor-pointer text-sm",
-                                              existingNoteTypesInChapter.has(type) && "text-green-600 font-semibold"
-                                            )}
-                                            onClick={() => {
-                                                form.setValue("type", type);
-                                                setIsTypeSuggestionsOpen(false);
-                                            }}
-                                        >
-                                            {type}
-                                        </div>
-                                    ))}
+                                    {filteredNoteTypes.map((type, index) => {
+                                        const isExisting = existingNoteTypesInChapter.has(type);
+                                        return (
+                                            <div
+                                                key={index}
+                                                className={cn(
+                                                    "p-2 text-sm flex justify-between items-center",
+                                                    isExisting 
+                                                        ? "text-muted-foreground italic cursor-not-allowed" 
+                                                        : "hover:bg-accent cursor-pointer"
+                                                )}
+                                                onClick={() => {
+                                                    if (!isExisting) {
+                                                        form.setValue("type", type);
+                                                        setIsTypeSuggestionsOpen(false);
+                                                    }
+                                                }}
+                                            >
+                                                <span>{type}</span>
+                                                {isExisting && <span className="text-xs">(already exists)</span>}
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             )}
                           <FormMessage />
