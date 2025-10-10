@@ -79,7 +79,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       type: note?.type || "",
       url: note?.originalUrl || note?.url || note?.pdfUrl || "",
       renderAs: note?.renderAs === 'iframe' ? 'iframe' : 'pdf',
-      linkType: note?.linkType || "github",
+      linkType: note?.linkType || "other",
       serveViaJsDelivr: note?.serveViaJsDelivr === undefined ? true : note.serveViaJsDelivr,
       proxyType: note?.proxyType || 'render',
       icon: note?.icon || "",
@@ -589,3 +589,5 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     </Card>
   );
 }
+
+    
