@@ -139,7 +139,7 @@ export default async function AdminSubjectsPage() {
                                                           </Link>
                                                         </Button>
                                                         <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
-                                                           <a href={note.pdfUrl} target="_blank" rel="noopener noreferrer">
+                                                           <a href={note.url} target="_blank" rel="noopener noreferrer">
                                                             <Eye className="h-4 w-4" />
                                                             <span className="sr-only">View PDF</span>
                                                            </a>
