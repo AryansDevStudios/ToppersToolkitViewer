@@ -195,11 +195,14 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
         if (isEditing) {
           router.push("/admin/notes");
         } else {
+          router.refresh();
           form.reset({
             ...form.getValues(),
-            type: "", url: "", icon: "", isPublic: false
+            type: "", 
+            url: "", 
+            icon: "", 
+            isPublic: false
           });
-          router.refresh();
         }
       } else {
         toast({ title: "Operation Failed", description: result.error || "Could not save the note.", variant: "destructive" });
