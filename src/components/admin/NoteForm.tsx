@@ -67,7 +67,8 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   const [isPending, startTransition] = useTransition();
   const isEditing = !!note?.id;
 
-  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [isChapterSuggestionsOpen, setIsChapterSuggestionsOpen] = useState(false);
+  const [isTypeSuggestionsOpen, setIsTypeSuggestionsOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -126,6 +127,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
   const selectedSubjectId = formValues.subjectId;
   const selectedSubSubjectId = formValues.subSubjectId;
   const chapterNameValue = formValues.chapterName;
+  const noteTypeValue = formValues.type;
   const renderAs = formValues.renderAs;
   const linkType = formValues.linkType;
 
@@ -144,6 +146,27 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
       const lowerCaseQuery = chapterNameValue.toLowerCase();
       return availableChapters.filter(name => name.toLowerCase().includes(lowerCaseQuery));
   }, [chapterNameValue, availableChapters]);
+
+  const allNoteTypes = useMemo(() => {
+    const types = new Set<string>();
+    subjects.forEach(subject => {
+        subject.subSubjects?.forEach(subSubject => {
+            subSubject.chapters?.forEach(chapter => {
+                chapter.notes?.forEach(note => {
+                    types.add(note.type);
+                });
+            });
+        });
+    });
+    return Array.from(types).sort();
+  }, [subjects]);
+
+  const filteredNoteTypes = useMemo(() => {
+    if (!noteTypeValue) return allNoteTypes;
+    const lowerCaseQuery = noteTypeValue.toLowerCase();
+    return allNoteTypes.filter(type => type.toLowerCase().includes(lowerCaseQuery));
+  }, [noteTypeValue, allNoteTypes]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
@@ -264,20 +287,20 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                                 placeholder="e.g., Motion" 
                                 {...field} 
                                 disabled={isPending || !selectedSubSubjectId}
-                                onFocus={() => setIsSuggestionsOpen(true)}
-                                onBlur={() => setTimeout(() => setIsSuggestionsOpen(false), 150)}
+                                onFocus={() => setIsChapterSuggestionsOpen(true)}
+                                onBlur={() => setTimeout(() => setIsChapterSuggestionsOpen(false), 150)}
                                 autoComplete="off"
                             />
                           </FormControl>
-                           {isSuggestionsOpen && filteredChapters.length > 0 && (
+                           {isChapterSuggestionsOpen && filteredChapters.length > 0 && (
                                 <div className="absolute z-10 w-full bg-card border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
                                     {filteredChapters.map((chapter, index) => (
                                         <div
                                             key={index}
-                                            className="p-2 hover:bg-accent cursor-pointer"
+                                            className="p-2 hover:bg-accent cursor-pointer text-sm"
                                             onClick={() => {
                                                 form.setValue("chapterName", chapter);
-                                                setIsSuggestionsOpen(false);
+                                                setIsChapterSuggestionsOpen(false);
                                             }}
                                         >
                                             {chapter}
@@ -293,11 +316,34 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                       control={form.control}
                       name="type"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="relative">
                           <FormLabel>Note Type</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Handwritten Notes, Question Bank" {...field} disabled={isPending}/>
+                            <Input 
+                              placeholder="e.g., Handwritten Notes, Question Bank" 
+                              {...field} 
+                              disabled={isPending}
+                              onFocus={() => setIsTypeSuggestionsOpen(true)}
+                              onBlur={() => setTimeout(() => setIsTypeSuggestionsOpen(false), 150)}
+                              autoComplete="off"
+                            />
                           </FormControl>
+                          {isTypeSuggestionsOpen && filteredNoteTypes.length > 0 && (
+                                <div className="absolute z-10 w-full bg-card border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+                                    {filteredNoteTypes.map((type, index) => (
+                                        <div
+                                            key={index}
+                                            className="p-2 hover:bg-accent cursor-pointer text-sm"
+                                            onClick={() => {
+                                                form.setValue("type", type);
+                                                setIsTypeSuggestionsOpen(false);
+                                            }}
+                                        >
+                                            {type}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -543,4 +589,3 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     </Card>
   );
 }
-
