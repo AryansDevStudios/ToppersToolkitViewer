@@ -123,7 +123,7 @@ export default function BrowseAllNotesPage() {
                     {subjects.map((subject) => {
                         const Icon = (subject.icon && iconMap[subject.icon]) || Library;
                         return (
-                            <Link key={subject.id} href={`/browse/${subject.id}`} className="block transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
+                            <Link key={subject.id} href={`/browse/${subject.id}`} className="block group transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
                                 <Card className="h-full transition-shadow duration-300 hover:shadow-lg hover:border-primary/50">
                                 <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
                                     <div className="p-3 bg-primary/10 rounded-lg">
@@ -172,8 +172,8 @@ export default function BrowseAllNotesPage() {
           {filteredNotes.map((note) => {
             const Icon = (note.icon && iconMap[note.icon]) || FileText;
             return (
-                <Link href={note.slug} key={note.id} className="block group">
-                  <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                <Link href={note.slug} key={note.id} className="block group transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
+                  <Card className="h-full transition-all duration-300 hover:shadow-xl">
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div className="p-3 bg-primary/10 rounded-lg">
