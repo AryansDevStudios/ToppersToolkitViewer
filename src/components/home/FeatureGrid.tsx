@@ -62,14 +62,14 @@ export function FeatureGrid({ notices }: { notices: Notice[] }) {
                 key={feature.title}
                 href={feature.href}
                 {...(feature.href.startsWith('http') ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className="group block relative"
+                className="group block relative transition-transform duration-300 ease-in-out hover:-translate-y-1"
               >
                 {isNoticesCard && newNoticeCount > 0 && (
                   <span className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex h-5 w-5 z-10 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
                     {newNoticeCount}
                   </span>
                 )}
-                <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
+                <Card className="h-full group-hover:shadow-lg overflow-hidden">
                   <CardContent className="p-3 md:p-4 flex flex-col items-center justify-center aspect-square">
                     <div className={cn("bg-primary/10 text-primary p-3 rounded-lg mb-2 md:p-4", feature.iconClassName?.includes('orange') && 'bg-orange-500/10')}>
                       <Icon className={cn("h-8 w-8 md:h-10 md:w-10", feature.iconClassName)} />
