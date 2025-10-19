@@ -30,7 +30,7 @@ export default function ScienceYoutubePage() {
       </header>
       <main className="max-w-4xl mx-auto">
         <Link href="/youtube-learning/science/prashant-kirad" className="block group">
-            <Card className="transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 group-hover:border-primary/50">
+            <Card className="transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:scale-105 active:scale-95 group-hover:border-primary/50">
                 <CardHeader>
                     <CardTitle className="text-2xl">Prashant Kirad</CardTitle>
                     <CardDescription>A passionate educator known for making science engaging and easy to understand.</CardDescription>

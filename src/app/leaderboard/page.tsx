@@ -42,7 +42,7 @@ const TopPlayerCard = ({ user, rank }: { user: User; rank: number }) => {
 
   return (
     <Card
-      className={`relative overflow-hidden shadow-lg transition-transform duration-300 ease-in-out hover:-translate-y-2 ${colorClass}`}
+      className={`relative overflow-hidden shadow-lg transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95 ${colorClass}`}
     >
       <CardContent className="p-6 flex flex-col items-center justify-center text-center">
         <Trophy

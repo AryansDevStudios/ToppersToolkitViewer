@@ -66,7 +66,7 @@ export default async function AdminDashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {stats.map((stat) => (
           <Link href={stat.href} key={stat.title} className="block">
-            <Card className="transition-all hover:shadow-lg hover:-translate-y-1">
+            <Card className="transition-all duration-200 ease-in-out hover:shadow-lg hover:scale-105 active:scale-95">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.title}

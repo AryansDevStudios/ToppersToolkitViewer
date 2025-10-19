@@ -179,7 +179,7 @@ export default function MindmapPage() {
                       const Icon = BrainCircuit;
                       return (
                         <Link href={note.slug} key={note.id} className="block group">
-                          <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
+                          <Card className="h-full transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95">
                             <CardHeader>
                                 <div className="flex items-center gap-4">
                                     <div className="p-3 bg-primary/10 rounded-lg">

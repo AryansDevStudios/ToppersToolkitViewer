@@ -62,7 +62,7 @@ export function FeatureGrid({ notices }: { notices: Notice[] }) {
                 key={feature.title}
                 href={feature.href}
                 {...(feature.href.startsWith('http') ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className="group block relative transition-transform duration-300 ease-in-out hover:-translate-y-1"
+                className="group block relative transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95"
               >
                 {isNoticesCard && newNoticeCount > 0 && (
                   <span className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex h-5 w-5 z-10 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
