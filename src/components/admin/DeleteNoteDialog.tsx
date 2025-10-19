@@ -18,7 +18,7 @@ import { deleteNote } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 
 interface DeleteNoteDialogProps {
   noteId: string;
@@ -85,6 +85,7 @@ export function DeleteNoteDialog({ noteId, chapterId, isTriggerButton = false }:
             disabled={isPending}
             className="bg-destructive hover:bg-destructive/90"
           >
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>

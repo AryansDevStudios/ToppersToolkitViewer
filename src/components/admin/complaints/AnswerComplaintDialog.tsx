@@ -29,7 +29,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
-import { Send } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 
 const formSchema = z.object({
   response: z.string().min(10, "Response must be at least 10 characters."),
@@ -133,6 +133,7 @@ export function AnswerComplaintDialog({ complaint, children }: AnswerComplaintDi
             />
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isPending ? (isEditing ? "Saving..." : "Sending...") : (isEditing ? "Save Changes" : "Send Response")}
               </Button>
             </DialogFooter>

@@ -21,7 +21,7 @@ import { useTransition, useState, useEffect } from "react";
 import { upsertQuestionOfTheDay } from "@/lib/data";
 import type { QuestionOfTheDay, QotdOption } from "@/lib/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -217,7 +217,8 @@ export function QotdForm({ question, children }: QotdFormProps) {
 
             <DialogFooter>
                 <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : isEditing ? "Save Changes" : "Create Question"}
+                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isPending ? "Saving..." : isEditing ? "Save Changes" : "Create Question"}
                 </Button>
             </DialogFooter>
           </form>

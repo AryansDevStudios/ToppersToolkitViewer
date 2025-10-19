@@ -28,6 +28,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
@@ -130,6 +131,7 @@ export function NoticeForm({ notice, children }: NoticeFormProps) {
             />
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isPending
                   ? "Saving..."
                   : isEditing

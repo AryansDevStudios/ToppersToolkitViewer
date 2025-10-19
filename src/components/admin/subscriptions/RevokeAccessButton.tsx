@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { revokeUserFullAccess } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { ShieldOff } from "lucide-react";
+import { Loader2, ShieldOff } from "lucide-react";
 
 interface RevokeAccessButtonProps {
   userId: string;
@@ -68,6 +68,7 @@ export function RevokeAccessButton({ userId, userName }: RevokeAccessButtonProps
             disabled={isPending}
             className="bg-destructive hover:bg-destructive/90"
           >
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isPending ? "Revoking..." : "Confirm Revoke"}
           </AlertDialogAction>
         </AlertDialogFooter>

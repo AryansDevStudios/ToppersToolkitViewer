@@ -34,7 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { DeleteNoteDialog } from "./DeleteNoteDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Copy, X } from "lucide-react";
+import { AlertTriangle, Copy, X, Loader2 } from "lucide-react";
 
 const noteObjectSchema = z.object({
   subjectId: z.string().min(1, "Subject ID is required"),
@@ -634,6 +634,7 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending || !!jsonError}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isPending ? "Submitting..." : isEditing ? "Save Changes" : "Upload Note"}
               </Button>
             </div>
@@ -643,5 +644,3 @@ export function NoteForm({ subjects, note }: NoteFormProps) {
     </Card>
   );
 }
-
-    
