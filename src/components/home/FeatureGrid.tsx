@@ -33,15 +33,17 @@ const features = [
 const LAST_SEEN_NOTICE_KEY = 'lastSeenNoticeTimestamp';
 
 export function FeatureGrid({ notices }: { notices: Notice[] }) {
-  const [hasNewNotice, setHasNewNotice] = useState(false);
+  const [newNoticeCount, setNewNoticeCount] = useState(0);
 
   useEffect(() => {
     if (notices && notices.length > 0) {
-      const latestNoticeTimestamp = notices[0].createdAt;
       const lastSeenTimestamp = localStorage.getItem(LAST_SEEN_NOTICE_KEY);
-      
-      if (!lastSeenTimestamp || latestNoticeTimestamp > parseInt(lastSeenTimestamp, 10)) {
-        setHasNewNotice(true);
+      if (!lastSeenTimestamp) {
+        setNewNoticeCount(notices.length);
+      } else {
+        const lastSeen = parseInt(lastSeenTimestamp, 10);
+        const newNotices = notices.filter(notice => notice.createdAt > lastSeen);
+        setNewNoticeCount(newNotices.length);
       }
     }
   }, [notices]);
@@ -62,10 +64,9 @@ export function FeatureGrid({ notices }: { notices: Notice[] }) {
                 {...(feature.href.startsWith('http') ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className="group block relative"
               >
-                {isNoticesCard && hasNewNotice && (
-                  <span className="absolute top-1 right-1 flex h-3 w-3 z-10">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                {isNoticesCard && newNoticeCount > 0 && (
+                  <span className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 flex h-5 w-5 z-10 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                    {newNoticeCount}
                   </span>
                 )}
                 <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
