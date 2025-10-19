@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Loader2, Maximize, Minimize, Printer, Star } from "lucide-react";
+import { ShieldAlert, Loader2, Maximize, Minimize, Printer, Star, Clock } from "lucide-react";
 import { getNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo, useRef, useCallback } from "react";
@@ -43,6 +43,23 @@ const AccessDenied = () => (
     </div>
 );
 
+const PreviewPrompt = ({ onStartPreview }: { onStartPreview: () => void }) => (
+    <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
+        <Clock className="h-16 w-16 text-primary mb-4" />
+        <h2 className="text-2xl font-bold">
+             Preview This Note
+        </h2>
+        <p className="mt-2 text-muted-foreground max-w-md">
+            You don't have access to this note. You can start a 1-minute preview to see its content.
+        </p>
+        <Button onClick={onStartPreview} className="mt-6">
+            Start 1-Minute Preview
+        </Button>
+        <p className="text-xs text-muted-foreground mt-2">This will use your daily preview for this specific note.</p>
+    </div>
+);
+
+
 const LoadingState = () => (
    <div className="w-full h-[calc(100vh-16rem)] flex flex-col items-center justify-center text-center p-4 border rounded-lg bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary mb-4" />
@@ -66,11 +83,10 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
     const [note, setNote] = useState<Note | null>(null);
     const [isLoadingNote, setIsLoadingNote] = useState(true);
 
-    // Daily preview state
     const [previewTimeLeft, setPreviewTimeLeft] = useState(60);
     const [isPreviewActive, setIsPreviewActive] = useState(false);
+    const [showPreviewPrompt, setShowPreviewPrompt] = useState(false);
 
-    // Fullscreen state
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -119,30 +135,27 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
         if (hasPermanentAccess || isDemoActive) {
             setHasAccess(true);
             setIsPreviewActive(false);
+            setShowPreviewPrompt(false);
         } else {
-            // Per-note daily preview logic
             const today = new Date().toISOString().split('T')[0];
             const storedData = localStorage.getItem(PREVIEW_KEY);
             let sessionData = storedData ? JSON.parse(storedData) : {};
 
-            // If the date has changed, reset everything
             if (sessionData.date !== today) {
                 sessionData = { date: today, notes: {} };
             }
 
-            // Get the time left for the current note, or default to 60
             const timeForThisNote = sessionData.notes?.[noteId] ?? 60;
             
             setPreviewTimeLeft(timeForThisNote);
 
             if (timeForThisNote > 0) {
-                setHasAccess(true);
-                setIsPreviewActive(true);
+                setShowPreviewPrompt(true); // Show the prompt instead of starting automatically
+                setHasAccess(false);
             } else {
                 setHasAccess(false);
+                setShowPreviewPrompt(false);
             }
-            // Store initial state
-            localStorage.setItem(PREVIEW_KEY, JSON.stringify(sessionData));
         }
     }, [authLoading, user, dbUser, noteId, router, note, isLoadingNote]);
     
@@ -169,7 +182,8 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
                 
                 if (newTime <= 0) {
                     clearInterval(timer);
-                    setHasAccess(false); // Revoke access when time runs out
+                    setHasAccess(false);
+                    setIsPreviewActive(false);
                 }
                 return newTime;
             });
@@ -178,11 +192,18 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
         return () => clearInterval(timer);
     }, [isPreviewActive, previewTimeLeft, noteId]);
     
+    const handleStartPreview = () => {
+        setHasAccess(true);
+        setShowPreviewPrompt(false);
+        setIsPreviewActive(true);
+    };
+
     const contentType = note?.renderAs || 'pdf';
     const contentUrl = note?.url || note?.pdfUrl || "";
 
     const renderContent = () => {
         if (hasAccess === null || isLoadingNote) return <LoadingState />;
+        if (showPreviewPrompt) return <PreviewPrompt onStartPreview={handleStartPreview} />;
         if (hasAccess === false) return <AccessDenied />;
         
         if (hasAccess && contentUrl) {
@@ -268,3 +289,6 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
 };
 
 export const NoteViewer = memo(NoteViewerComponent);
+
+
+    
