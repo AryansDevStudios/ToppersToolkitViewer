@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import type { Subject, Note, Chapter, User, SubSubject, LoginLog, QuestionOfTheDay, UserQotdAnswer, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription, CurrentAffairsSet, ReasoningSet, ReasoningQuizAttempt, ReasoningAnswerRecord } from "./types";
@@ -1886,5 +1887,24 @@ export async function saveReasoningQuizAttempt(attemptData: Omit<ReasoningQuizAt
         return { success: true, attemptId: attemptId };
     } catch (e: any) {
         return { success: false, error: e.message };
+    }
+}
+
+export async function getAllReasoningQuizAttempts(): Promise<ReasoningQuizAttempt[]> {
+    noStore();
+    const attemptsCollection = collection(db, 'reasoningAttempts');
+    const q = query(attemptsCollection, orderBy('createdAt', 'desc'));
+    try {
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+            } as ReasoningQuizAttempt;
+        });
+    } catch (error) {
+        console.error("Error fetching all reasoning quiz attempts:", error);
+        return [];
     }
 }
