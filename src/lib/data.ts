@@ -1801,6 +1801,7 @@ export async function getCurrentAffairsSets(): Promise<CurrentAffairsSet[]> {
 // --- Reasoning Management ---
 
 export async function getReasoningSets(): Promise<ReasoningSet[]> {
+    noStore();
     const setsCollection = collection(db, 'reasoning');
     const q = query(setsCollection, orderBy('createdAt', 'desc'));
     try {
@@ -1906,5 +1907,26 @@ export async function getAllReasoningQuizAttempts(): Promise<ReasoningQuizAttemp
     } catch (error) {
         console.error("Error fetching all reasoning quiz attempts:", error);
         return [];
+    }
+}
+
+
+export async function getReasoningQuizAttemptById(attemptId: string): Promise<ReasoningQuizAttempt | null> {
+    noStore();
+    if (!attemptId) return null;
+    const attemptDocRef = doc(db, 'reasoningAttempts', attemptId);
+    try {
+        const docSnap = await getDoc(attemptDocRef);
+        if (docSnap.exists()) {
+             const data = docSnap.data();
+             return {
+                ...data,
+                createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt
+             } as ReasoningQuizAttempt;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching reasoning quiz attempt by ID:", error);
+        return null;
     }
 }
