@@ -162,7 +162,7 @@ export default async function BrowsePage({ params }: { params: { slug: string[] 
         {children.map((item) => {
           const Icon = (item.icon && iconMap[item.icon]) || Folder;
           return (
-          <Link key={item.id} href={`/browse/${slug.join("/")}/${item.id}`} className="block">
+          <Link key={item.id} href={`/browse/${slug.join("/")}/${item.id}`} className="block transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
             <Card className="h-full transition-shadow duration-300 hover:shadow-lg hover:border-primary/50">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 p-4">
                 <div className="p-3 bg-primary/10 rounded-lg">
