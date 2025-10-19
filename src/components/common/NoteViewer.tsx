@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Loader2, Maximize, Minimize, Printer, Star } from "lucide-react";
-import { fetchNoteById } from "@/lib/data";
+import { getNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo, useRef, useCallback } from "react";
 import dynamic from 'next/dynamic';
@@ -98,7 +98,7 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
     useEffect(() => {
         async function loadNote() {
             setIsLoadingNote(true);
-            const noteData = await fetchNoteById(noteId);
+            const noteData = await getNoteById(noteId);
             setNote(noteData);
             setIsLoadingNote(false);
         }
@@ -253,3 +253,5 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
 };
 
 export const NoteViewer = memo(NoteViewerComponent);
+
+    
