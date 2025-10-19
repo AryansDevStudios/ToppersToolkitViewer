@@ -18,7 +18,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Check, Clock, Edit } from "lucide-react";
+import { MoreVertical, Check, X, Clock, Edit } from "lucide-react";
 import { format } from 'date-fns';
 import { useTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -83,6 +83,7 @@ const SubscriptionCard = ({ subscription }: { subscription: Subscription }) => {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button size="sm" disabled={isPending}>
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {isPending ? 'Approving...' : 'Approve Subscription'}
                 </Button>
               </AlertDialogTrigger>
@@ -90,7 +91,7 @@ const SubscriptionCard = ({ subscription }: { subscription: Subscription }) => {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will grant <strong className="text-foreground">{subscription.userName}</strong> full, permanent access to all notes and mark this subscription as complete. This action cannot be undone.
+                    This will grant <strong className="text-foreground">{subscription.userName}</strong> full access for one month and mark this subscription as complete. This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

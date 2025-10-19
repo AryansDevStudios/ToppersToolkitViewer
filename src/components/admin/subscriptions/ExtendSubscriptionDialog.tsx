@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Loader2, Plus } from "lucide-react";
 import type { User } from "@/lib/types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -120,6 +120,7 @@ export function ExtendSubscriptionDialog({ user }: ExtendSubscriptionDialogProps
             />
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isPending ? "Extending..." : "Confirm Extension"}
               </Button>
             </DialogFooter>

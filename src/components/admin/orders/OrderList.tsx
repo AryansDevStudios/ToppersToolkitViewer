@@ -25,7 +25,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Check, X, Clock, FileText } from "lucide-react";
+import { MoreVertical, Check, X, Clock, FileText, Loader2 } from "lucide-react";
 import { format } from 'date-fns';
 import { useTransition } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -83,6 +83,7 @@ const OrderCard = ({ order }: { order: PrintOrder }) => {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" disabled={isPending}>
+                       {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                        {isPending ? 'Updating...': 'Update Status'} 
                     </Button>
                 </DropdownMenuTrigger>
@@ -146,4 +147,3 @@ export function OrderList({ pending, completed, cancelled }: OrderListProps) {
     </Tabs>
   );
 }
-

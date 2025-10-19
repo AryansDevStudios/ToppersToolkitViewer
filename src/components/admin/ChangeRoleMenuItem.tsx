@@ -7,7 +7,7 @@ import { DropdownMenuItem, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenu
 import { useToast } from "@/hooks/use-toast";
 import { updateUserRole } from '@/lib/data';
 import type { User } from '@/lib/types';
-import { ShieldCheck, UserCheck, GraduationCap, Star } from 'lucide-react';
+import { ShieldCheck, UserCheck, GraduationCap, Loader2 } from 'lucide-react';
 
 interface ChangeRoleMenuItemProps {
     userId: string;
@@ -41,7 +41,8 @@ export function ChangeRoleMenuItem({ userId, currentRole }: ChangeRoleMenuItemPr
 
     return (
         <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger disabled={isPending}>
+                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 <span>Change Role</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>

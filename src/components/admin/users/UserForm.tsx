@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { upsertUser } from "@/lib/data";
 import { User } from "@/lib/types";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Full Name is required." }),
@@ -271,6 +272,7 @@ export function UserForm({ user }: UserFormProps) {
                 Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isPending ? "Saving..." : "Save Changes"}
             </Button>
         </div>
