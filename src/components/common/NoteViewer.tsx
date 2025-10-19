@@ -120,24 +120,29 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
             setHasAccess(true);
             setIsPreviewActive(false);
         } else {
-            // It's a non-subscribed user on a protected note, check daily preview
+            // Per-note daily preview logic
             const today = new Date().toISOString().split('T')[0];
             const storedData = localStorage.getItem(PREVIEW_KEY);
-            let session = storedData ? JSON.parse(storedData) : { date: null, timeLeft: 60 };
+            let sessionData = storedData ? JSON.parse(storedData) : {};
 
-            if (session.date !== today) {
-                session = { date: today, timeLeft: 60 };
+            // If the date has changed, reset everything
+            if (sessionData.date !== today) {
+                sessionData = { date: today, notes: {} };
             }
 
-            setPreviewTimeLeft(session.timeLeft);
-            localStorage.setItem(PREVIEW_KEY, JSON.stringify(session));
+            // Get the time left for the current note, or default to 60
+            const timeForThisNote = sessionData.notes?.[noteId] ?? 60;
+            
+            setPreviewTimeLeft(timeForThisNote);
 
-            if (session.timeLeft > 0) {
+            if (timeForThisNote > 0) {
                 setHasAccess(true);
                 setIsPreviewActive(true);
             } else {
                 setHasAccess(false);
             }
+            // Store initial state
+            localStorage.setItem(PREVIEW_KEY, JSON.stringify(sessionData));
         }
     }, [authLoading, user, dbUser, noteId, router, note, isLoadingNote]);
     
@@ -148,20 +153,30 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
         const timer = setInterval(() => {
             setPreviewTimeLeft(prevTime => {
                 const newTime = prevTime - 1;
+                
                 const today = new Date().toISOString().split('T')[0];
-                localStorage.setItem(PREVIEW_KEY, JSON.stringify({ date: today, timeLeft: newTime }));
+                const storedData = localStorage.getItem(PREVIEW_KEY);
+                let sessionData = storedData ? JSON.parse(storedData) : { date: today, notes: {} };
+                
+                if(sessionData.date !== today) {
+                     sessionData = { date: today, notes: {} };
+                }
+
+                if (!sessionData.notes) sessionData.notes = {};
+                sessionData.notes[noteId] = newTime;
+
+                localStorage.setItem(PREVIEW_KEY, JSON.stringify(sessionData));
                 
                 if (newTime <= 0) {
                     clearInterval(timer);
-                    // Force a re-check of access which will now fail
-                    setHasAccess(false);
+                    setHasAccess(false); // Revoke access when time runs out
                 }
                 return newTime;
             });
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [isPreviewActive, previewTimeLeft]);
+    }, [isPreviewActive, previewTimeLeft, noteId]);
     
     const contentType = note?.renderAs || 'pdf';
     const contentUrl = note?.url || note?.pdfUrl || "";
@@ -253,5 +268,3 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
 };
 
 export const NoteViewer = memo(NoteViewerComponent);
-
-    
