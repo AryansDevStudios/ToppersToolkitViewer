@@ -10,11 +10,11 @@ import { getUserById } from '@/lib/data';
 // A simple in-memory cache for the user data
 let dbUserCache: User | null = null;
 let lastFetchTimestamp = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 
-export function useAuth() {
+export function useAuth(initialUser: User | null = null) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [dbUser, setDbUser] = useState<User | null>(dbUserCache);
+  const [dbUser, setDbUser] = useState<User | null>(dbUserCache || initialUser);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

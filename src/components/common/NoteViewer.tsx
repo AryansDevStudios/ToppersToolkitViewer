@@ -4,14 +4,15 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Loader2, Image as ImageIcon, FileText, Maximize, Minimize, Printer, Star } from "lucide-react";
-import { getUserById, getNoteById as fetchNoteById } from "@/lib/data";
+import { ShieldAlert, Loader2, Maximize, Minimize, Printer, Star } from "lucide-react";
+import { fetchNoteById } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo, useRef, useCallback } from "react";
 import dynamic from 'next/dynamic';
-import type { Note, User } from "@/lib/types";
-import Image from 'next/image';
+import type { Note } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { DailyPreviewTimer } from "./DailyPreviewTimer";
+
 
 const PdfViewerWrapper = dynamic(() => import('@/components/common/PdfViewerWrapper').then(mod => mod.PdfViewerWrapper), {
     ssr: false,
@@ -56,12 +57,18 @@ interface NoteViewerProps {
     renderAs?: 'pdf' | 'iframe';
 }
 
-const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
+const PREVIEW_KEY = 'notePreviewData';
+
+const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
     const { user, dbUser, loading: authLoading } = useAuth(null);
     const router = useRouter();
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
     const [note, setNote] = useState<Note | null>(null);
     const [isLoadingNote, setIsLoadingNote] = useState(true);
+
+    // Daily preview state
+    const [previewTimeLeft, setPreviewTimeLeft] = useState(60);
+    const [isPreviewActive, setIsPreviewActive] = useState(false);
 
     // Fullscreen state
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -85,10 +92,8 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
         };
 
         document.addEventListener("fullscreenchange", onFullscreenChange);
-
         return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
     }, []);
-
 
     useEffect(() => {
         async function loadNote() {
@@ -101,42 +106,69 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
     }, [noteId]);
 
     useEffect(() => {
-        if (authLoading || isLoadingNote || !note) {
-            return;
-        }
-
+        if (authLoading || isLoadingNote || !note) return;
         if (!user) {
             router.push('/login');
             return;
         }
+        if (!dbUser) return;
         
-        if (!dbUser) {
-            return;
-        }
-        
-        setHasAccess(null); // Reset for re-check
-
-        const hasActiveSubscription = dbUser.hasFullNotesAccess === true;
+        const hasPermanentAccess = dbUser.hasFullNotesAccess === true || note.isPublic || (dbUser.noteAccess?.includes(noteId)) || dbUser.role === 'Admin';
         const isDemoActive = dbUser.demoExpiresAt ? dbUser.demoExpiresAt > Date.now() : false;
-        
-        const canAccess = hasActiveSubscription || isDemoActive || note.isPublic || (dbUser.noteAccess?.includes(noteId)) || dbUser.role === 'Admin';
-        
-        setHasAccess(canAccess);
 
+        if (hasPermanentAccess || isDemoActive) {
+            setHasAccess(true);
+            setIsPreviewActive(false);
+        } else {
+            // It's a non-subscribed user on a protected note, check daily preview
+            const today = new Date().toISOString().split('T')[0];
+            const storedData = localStorage.getItem(PREVIEW_KEY);
+            let session = storedData ? JSON.parse(storedData) : { date: null, timeLeft: 60 };
+
+            if (session.date !== today) {
+                session = { date: today, timeLeft: 60 };
+            }
+
+            setPreviewTimeLeft(session.timeLeft);
+            localStorage.setItem(PREVIEW_KEY, JSON.stringify(session));
+
+            if (session.timeLeft > 0) {
+                setHasAccess(true);
+                setIsPreviewActive(true);
+            } else {
+                setHasAccess(false);
+            }
+        }
     }, [authLoading, user, dbUser, noteId, router, note, isLoadingNote]);
     
-    // Determine content type, defaulting to 'pdf' for backward compatibility
+    // Countdown effect for the preview timer
+    useEffect(() => {
+        if (!isPreviewActive || previewTimeLeft <= 0) return;
+
+        const timer = setInterval(() => {
+            setPreviewTimeLeft(prevTime => {
+                const newTime = prevTime - 1;
+                const today = new Date().toISOString().split('T')[0];
+                localStorage.setItem(PREVIEW_KEY, JSON.stringify({ date: today, timeLeft: newTime }));
+                
+                if (newTime <= 0) {
+                    clearInterval(timer);
+                    // Force a re-check of access which will now fail
+                    setHasAccess(false);
+                }
+                return newTime;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [isPreviewActive, previewTimeLeft]);
+    
     const contentType = note?.renderAs || 'pdf';
     const contentUrl = note?.url || note?.pdfUrl || "";
 
     const renderContent = () => {
-        if (hasAccess === null || isLoadingNote) {
-            return <LoadingState />;
-        }
-
-        if (hasAccess === false) {
-            return <AccessDenied />;
-        }
+        if (hasAccess === null || isLoadingNote) return <LoadingState />;
+        if (hasAccess === false) return <AccessDenied />;
         
         if (hasAccess && contentUrl) {
             switch(contentType) {
@@ -176,6 +208,7 @@ const NoteViewerComponent = ({ noteId, url, renderAs }: NoteViewerProps) => {
     
     return (
         <div className="space-y-6">
+            {isPreviewActive && <DailyPreviewTimer timeLeft={previewTimeLeft} />}
             {renderContent()}
              {(hasAccess && !dbUser?.hasFullNotesAccess) && (
                  <Card className="bg-primary/5 border-primary/20 shadow-lg">
