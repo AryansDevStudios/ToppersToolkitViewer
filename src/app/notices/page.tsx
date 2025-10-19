@@ -1,15 +1,35 @@
 
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ClipboardList } from 'lucide-react';
 import { getNotices } from '@/lib/data';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import { useEffect, useState } from 'react';
+import type { Notice } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export const revalidate = 0;
+const LAST_SEEN_NOTICE_KEY = 'lastSeenNoticeTimestamp';
 
-export default async function NoticesPage() {
-  const notices = await getNotices();
+export default function NoticesPage() {
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [loading, setLoading] = useState(true);
   const timeZone = 'Asia/Kolkata';
+
+  useEffect(() => {
+    async function fetchNotices() {
+      setLoading(true);
+      const fetchedNotices = await getNotices();
+      setNotices(fetchedNotices);
+      setLoading(false);
+      
+      if (fetchedNotices.length > 0) {
+        localStorage.setItem(LAST_SEEN_NOTICE_KEY, String(fetchedNotices[0].createdAt));
+      }
+    }
+    fetchNotices();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -25,7 +45,12 @@ export default async function NoticesPage() {
         </p>
       </header>
       <main className="max-w-3xl mx-auto">
-        {notices.length > 0 ? (
+        {loading ? (
+          <div className="space-y-8">
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        ) : notices.length > 0 ? (
           <div className="space-y-8">
             {notices.map((notice) => {
               const zonedDate = toZonedTime(new Date(notice.createdAt), timeZone);

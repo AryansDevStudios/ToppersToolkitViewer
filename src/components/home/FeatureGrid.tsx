@@ -1,8 +1,12 @@
 
+"use client";
+
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { iconMap } from '@/lib/iconMap';
 import { cn } from '@/lib/utils';
+import type { Notice } from '@/lib/types';
+import { useState, useEffect } from 'react';
 
 const features = [
   { title: 'Notices', icon: 'ClipboardList', href: '/notices' },
@@ -26,21 +30,44 @@ const features = [
   { title: 'Rules', icon: 'Gavel', href: '/terms' },
 ];
 
-export function FeatureGrid() {
+const LAST_SEEN_NOTICE_KEY = 'lastSeenNoticeTimestamp';
+
+export function FeatureGrid({ notices }: { notices: Notice[] }) {
+  const [hasNewNotice, setHasNewNotice] = useState(false);
+
+  useEffect(() => {
+    if (notices && notices.length > 0) {
+      const latestNoticeTimestamp = notices[0].createdAt;
+      const lastSeenTimestamp = localStorage.getItem(LAST_SEEN_NOTICE_KEY);
+      
+      if (!lastSeenTimestamp || latestNoticeTimestamp > parseInt(lastSeenTimestamp, 10)) {
+        setHasNewNotice(true);
+      }
+    }
+  }, [notices]);
+
   return (
     <section className="w-full py-12">
       <div className="container px-4">
         <div className="grid grid-cols-3 gap-3 max-w-4xl mx-auto md:gap-4 lg:gap-6">
           {features.map((feature) => {
             const Icon = iconMap[feature.icon] || iconMap['Puzzle'];
-            const LinkComponent = feature.isExternal ? 'a' : Link;
+            const LinkComponent = feature.href.startsWith('http') ? 'a' : Link;
+            const isNoticesCard = feature.title === 'Notices';
+
             return (
               <LinkComponent
                 key={feature.title}
                 href={feature.href}
-                {...(feature.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className="group block"
+                {...(feature.href.startsWith('http') ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className="group block relative"
               >
+                {isNoticesCard && hasNewNotice && (
+                  <span className="absolute top-1 right-1 flex h-3 w-3 z-10">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                )}
                 <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-lg group-hover:-translate-y-1 overflow-hidden">
                   <CardContent className="p-3 md:p-4 flex flex-col items-center justify-center aspect-square">
                     <div className={cn("bg-primary/10 text-primary p-3 rounded-lg mb-2 md:p-4", feature.iconClassName?.includes('orange') && 'bg-orange-500/10')}>

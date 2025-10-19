@@ -8,6 +8,7 @@ import { Mail, Send, Smartphone, Instagram, ArrowRight } from "lucide-react";
 import { Testimonials } from "@/components/home/Testimonials";
 import { iconMap } from "@/lib/iconMap";
 import { cn } from "@/lib/utils";
+import { getNotices } from "@/lib/data";
 
 
 const YoutubeIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -71,7 +72,9 @@ function ContactSection() {
 }
 
 
-export default function Home() {
+export default async function Home() {
+  const notices = await getNotices();
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
@@ -87,7 +90,7 @@ export default function Home() {
         </section>
 
         <Suspense>
-            <FeatureGrid />
+            <FeatureGrid notices={notices} />
         </Suspense>
 
         <Testimonials />
