@@ -71,7 +71,7 @@ export function SidebarNav() {
         href={link.href}
         {...(link.isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         onClick={() => setIsOpen(false)}
-        className="flex items-center gap-4 p-3 rounded-md text-base font-medium hover:bg-accent"
+        className="flex items-center gap-4 p-3 rounded-md text-base font-medium hover:bg-accent transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
       >
         <Icon className="h-5 w-5" />
         {link.title}
@@ -107,7 +107,7 @@ export function SidebarNav() {
                     {userNavLinks.map(renderNavLink)}
                  </nav>
                 <Separator />
-                <Button variant="ghost" className="w-full justify-start gap-4 p-3 text-base font-medium" onClick={handleLogout}>
+                <Button variant="ghost" className="w-full justify-start gap-4 p-3 text-base font-medium transition-all duration-200 ease-in-out hover:scale-105 active:scale-95" onClick={handleLogout}>
                   <LogOut className="h-5 w-5" />
                   Logout
                 </Button>
