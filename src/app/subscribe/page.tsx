@@ -3,8 +3,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Check, Star, Copy, ExternalLink, Loader2 } from 'lucide-react';
+import { Check, Star, Copy, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
@@ -26,15 +25,12 @@ const includedFeatures = [
 ];
 
 const UPI_ID = "nitish545454@ybl";
-const OWNER_WHATSAPP_NUMBER = "917754000411";
 
 export default function SubscribePage() {
     const { toast } = useToast();
     const { user, dbUser } = useAuth(null);
     const router = useRouter();
-    const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cash'>('upi');
     const [isPending, startTransition] = useTransition();
-
 
     const handleCopyToClipboard = (text: string, type: string) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -59,13 +55,11 @@ export default function SubscribePage() {
         }
         
         startTransition(async () => {
-             const paymentMethodFormatted = paymentMethod === 'upi' ? 'UPI' : 'Cash';
-            // Create subscription request in the database
             const result = await createSubscriptionRequest({
                 userId: user.uid,
                 userName: dbUser.name,
                 userEmail: dbUser.email,
-                paymentMethod: paymentMethodFormatted,
+                paymentMethod: 'UPI',
             });
 
             if (result.success && result.subscriptionId) {
@@ -121,45 +115,29 @@ export default function SubscribePage() {
                         <CardHeader>
                             <CardTitle>Payment Instructions</CardTitle>
                              <CardDescription>
-                                Complete your payment using one of the methods below.
+                                Complete your payment using UPI.
                             </CardDescription>
                         </CardHeader>
                          <CardContent>
-                            <Tabs defaultValue={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'upi' | 'cash')} className="w-full">
-                                <TabsList className="grid w-full grid-cols-2">
-                                    <TabsTrigger value="upi">UPI / QR Code</TabsTrigger>
-                                    <TabsTrigger value="cash">Cash Payment</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="upi" className="mt-6">
-                                    <div className="flex flex-col items-center text-center space-y-4">
-                                        <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100. <strong className="text-blue-500">After paying, you must click the "Confirm" button below.</strong></p>
-                                        <div className="p-2 border-4 border-primary rounded-lg bg-white">
-                                             <Image
-                                                src="/images/payment_qr.png"
-                                                alt="UPI QR Code"
-                                                width={200}
-                                                height={200}
-                                                data-ai-hint="qr code"
-                                            />
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">Or copy the UPI ID:</p>
-                                        <div className="w-full flex items-center p-2 rounded-md bg-muted border">
-                                            <p className="flex-1 font-mono text-sm">{UPI_ID}</p>
-                                            <Button variant="ghost" size="icon" onClick={() => handleCopyToClipboard(UPI_ID, 'UPI ID')}>
-                                                <Copy className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </TabsContent>
-                                <TabsContent value="cash" className="mt-6">
-                                    <div className="text-center p-8 border rounded-lg bg-muted/50">
-                                         <p className="font-semibold">Pay in Person</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            You can pay ₹100 in cash directly to the owner, Kuldeep Singh, at school.
-                                        </p>
-                                    </div>
-                                </TabsContent>
-                            </Tabs>
+                            <div className="flex flex-col items-center text-center space-y-4">
+                                <p className="text-sm text-muted-foreground">Scan the QR code with any UPI app to pay ₹100. <strong className="text-blue-500">After paying, you must click the "Confirm" button below.</strong></p>
+                                <div className="p-2 border-4 border-primary rounded-lg bg-white">
+                                     <Image
+                                        src="/images/payment_qr.png"
+                                        alt="UPI QR Code"
+                                        width={200}
+                                        height={200}
+                                        data-ai-hint="qr code"
+                                    />
+                                </div>
+                                <p className="text-sm text-muted-foreground">Or copy the UPI ID:</p>
+                                <div className="w-full flex items-center p-2 rounded-md bg-muted border">
+                                    <p className="flex-1 font-mono text-sm">{UPI_ID}</p>
+                                    <Button variant="ghost" size="icon" onClick={() => handleCopyToClipboard(UPI_ID, 'UPI ID')}>
+                                        <Copy className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         </CardContent>
                          <CardFooter className="flex-col gap-4 !p-6 border-t">
                             <h3 className="font-bold text-center">Step 2: Confirm Your Payment</h3>
