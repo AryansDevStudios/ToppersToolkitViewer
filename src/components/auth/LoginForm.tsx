@@ -20,6 +20,15 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { auth, signInWithEmailAndPassword } from "@/lib/firebase";
@@ -81,12 +90,14 @@ const getGpuInfo = () => {
     return "Unknown";
 };
 
+const OWNER_WHATSAPP_NUMBER = "917754000411";
 
 export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,6 +107,20 @@ export function LoginForm() {
       agreeToTerms: false,
     },
   });
+
+  const handlePasswordReset = () => {
+    if (!resetEmail) {
+        toast({
+            title: "Email Required",
+            description: "Please enter your email address.",
+            variant: "destructive"
+        });
+        return;
+    }
+    const message = `Hello, I'd like to request a password reset for my Topper's Toolkit account. My email address is: ${resetEmail}`;
+    const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
@@ -193,7 +218,35 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <div className="flex justify-between items-center">
+                    <FormLabel>Password</FormLabel>
+                     <Dialog>
+                       <DialogTrigger asChild>
+                         <Button variant="link" type="button" className="p-0 h-auto text-xs">Forgot password?</Button>
+                       </DialogTrigger>
+                       <DialogContent>
+                         <DialogHeader>
+                           <DialogTitle>Reset Password</DialogTitle>
+                           <DialogDescription>
+                             Enter your email address below to request a password reset. You will be redirected to WhatsApp to send a message to the owner.
+                           </DialogDescription>
+                         </DialogHeader>
+                         <div className="space-y-2">
+                           <Label htmlFor="reset-email">Email Address</Label>
+                           <Input
+                             id="reset-email"
+                             type="email"
+                             placeholder="name@example.com"
+                             value={resetEmail}
+                             onChange={(e) => setResetEmail(e.target.value)}
+                           />
+                         </div>
+                         <DialogFooter>
+                           <Button onClick={handlePasswordReset}>Send Reset Request</Button>
+                         </DialogFooter>
+                       </DialogContent>
+                     </Dialog>
+                  </div>
                   <div className="relative">
                     <FormControl>
                       <Input
