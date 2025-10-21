@@ -97,38 +97,76 @@ const ForgotEmailDialog = () => {
     const [name, setName] = useState('');
     const [userClass, setUserClass] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
+    const [isRedirecting, setIsRedirecting] = useState(false);
+    const [countdown, setCountdown] = useState(10);
+    const [whatsAppUrl, setWhatsAppUrl] = useState('');
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (isRedirecting && countdown > 0) {
+            timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+        } else if (isRedirecting && countdown === 0) {
+            window.open(whatsAppUrl, '_blank');
+        }
+        return () => clearTimeout(timer);
+    }, [isRedirecting, countdown, whatsAppUrl]);
+
 
     const handleSendRequest = () => {
         const message = `Hello, I've forgotten my registered email address. Here are my details:\n\n*Full Name:* ${name}\n*Class:* ${userClass}\n*WhatsApp Number:* ${whatsapp}\n\nPlease help me recover my account.`;
         const url = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-        window.open(url, '_blank');
+        setWhatsAppUrl(url);
+        setIsRedirecting(true);
     };
     
     return (
          <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Forgot Your Email?</DialogTitle>
-                <DialogDescription>
-                    Please provide the details you used during registration. We'll use this to help you recover your account. This is a manual process and may take some time.
-                </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="rec-name">Full Name</Label>
-                    <Input id="rec-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="rec-class">Class & Section</Label>
-                    <Input id="rec-class" value={userClass} onChange={(e) => setUserClass(e.target.value)} placeholder="e.g., 9th A, 11th Commerce" />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="rec-whatsapp">WhatsApp Number</Label>
-                    <Input id="rec-whatsapp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Your WhatsApp number" />
-                </div>
-            </div>
-            <DialogFooter>
-                <Button onClick={handleSendRequest} disabled={!name || !userClass || !whatsapp}>Send Recovery Request</Button>
-            </DialogFooter>
+             {isRedirecting ? (
+                <>
+                    <DialogHeader>
+                        <DialogTitle>Redirecting to WhatsApp</DialogTitle>
+                        <DialogDescription>A new tab will open to WhatsApp with your recovery request.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 text-center">
+                        <p className="text-sm text-muted-foreground">Redirecting in...</p>
+                        <p className="text-5xl font-bold">{countdown}</p>
+                         <p className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
+                            Once the new tab opens, simply press "Send" to message the owner. As this is a manual process, please allow up to 1 hour or more for your request to be reviewed.
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => window.open(whatsAppUrl, '_blank')}>
+                            Send Now <ExternalLink className="ml-2 h-4 w-4" />
+                        </Button>
+                    </DialogFooter>
+                </>
+             ) : (
+                <>
+                    <DialogHeader>
+                        <DialogTitle>Forgot Your Email?</DialogTitle>
+                        <DialogDescription>
+                            Please provide the details you used during registration. We'll use this to help you recover your account. This is a manual process and may take some time.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="rec-name">Full Name</Label>
+                            <Input id="rec-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="rec-class">Class & Section</Label>
+                            <Input id="rec-class" value={userClass} onChange={(e) => setUserClass(e.target.value)} placeholder="e.g., 9th A, 11th Commerce" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="rec-whatsapp">WhatsApp Number</Label>
+                            <Input id="rec-whatsapp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Your WhatsApp number" />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={handleSendRequest} disabled={!name || !userClass || !whatsapp}>Send Recovery Request</Button>
+                    </DialogFooter>
+                </>
+             )}
         </DialogContent>
     );
 };
