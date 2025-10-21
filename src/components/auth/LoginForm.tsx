@@ -252,7 +252,7 @@ export function LoginForm() {
                                     <p className="text-sm text-muted-foreground">Redirecting in...</p>
                                     <p className="text-5xl font-bold">{countdown}</p>
                                     <p className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
-                                        Once the new tab opens, simply press "Send" to message the owner with your email address for the password reset request.
+                                        Once the new tab opens, simply press "Send" to message the owner. As this is a manual process, please allow up to 1 hour or more for your password to be reset.
                                     </p>
                                 </div>
                                 <DialogFooter>
@@ -266,7 +266,7 @@ export function LoginForm() {
                                 <DialogHeader>
                                     <DialogTitle>Reset Password</DialogTitle>
                                     <DialogDescription>
-                                        Enter your email address below. You will be redirected to WhatsApp to send a reset request to the owner.
+                                        Enter your email address below. You will be redirected to WhatsApp to send a reset request to the owner. Please note that this is a manual process and may take up to 1 hour or more to complete.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-2">
