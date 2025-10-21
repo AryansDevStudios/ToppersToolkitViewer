@@ -37,8 +37,8 @@ import { updatePasswordInFirestore, logUserLogin } from "@/lib/data";
 import type { LoginLog } from "@/lib/types";
 import { Checkbox } from "../ui/checkbox";
 import Link from "next/link";
-import { useState } from "react";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Loader2, Eye, EyeOff, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
@@ -99,6 +99,9 @@ export function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [whatsAppUrl, setWhatsAppUrl] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -108,6 +111,16 @@ export function LoginForm() {
       agreeToTerms: false,
     },
   });
+  
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isRedirecting && countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    } else if (isRedirecting && countdown === 0) {
+      window.location.href = whatsAppUrl;
+    }
+    return () => clearTimeout(timer);
+  }, [isRedirecting, countdown, whatsAppUrl]);
 
   const handlePasswordReset = () => {
     if (!resetEmail) {
@@ -119,8 +132,9 @@ export function LoginForm() {
         return;
     }
     const message = `Hello, I'd like to request a password reset for my Topper's Toolkit account. My email address is: ${resetEmail}`;
-    const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const url = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    setWhatsAppUrl(url);
+    setIsRedirecting(true);
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -208,7 +222,7 @@ export function LoginForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} disabled={isSubmitting} />
+                    <Input placeholder="name@example.com" {...field} disabled={isSubmitting} onChange={(e) => { field.onChange(e); setResetEmail(e.target.value); }}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -226,25 +240,50 @@ export function LoginForm() {
                          <Button variant="link" type="button" className="p-0 h-auto text-xs">Forgot password?</Button>
                        </DialogTrigger>
                        <DialogContent>
-                         <DialogHeader>
-                           <DialogTitle>Reset Password</DialogTitle>
-                           <DialogDescription>
-                             Enter your email address below to request a password reset. You will be redirected to WhatsApp to send a message to the owner.
-                           </DialogDescription>
-                         </DialogHeader>
-                         <div className="space-y-2">
-                           <Label htmlFor="reset-email">Email Address</Label>
-                           <Input
-                             id="reset-email"
-                             type="email"
-                             placeholder="name@example.com"
-                             value={resetEmail}
-                             onChange={(e) => setResetEmail(e.target.value)}
-                           />
-                         </div>
-                         <DialogFooter>
-                           <Button onClick={handlePasswordReset}>Send Reset Request</Button>
-                         </DialogFooter>
+                        {isRedirecting ? (
+                            <>
+                                <DialogHeader>
+                                    <DialogTitle>Redirecting to WhatsApp</DialogTitle>
+                                    <DialogDescription>
+                                        Please wait. You will be redirected to send your password reset request.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4 text-center">
+                                    <p className="text-sm text-muted-foreground">You will be redirected in...</p>
+                                    <p className="text-5xl font-bold">{countdown}</p>
+                                    <p className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
+                                        Once redirected, simply press "Send" to message the owner with your email address for the password reset request.
+                                    </p>
+                                </div>
+                                <DialogFooter>
+                                    <Button onClick={() => window.location.href = whatsAppUrl}>
+                                        Redirect Now <ExternalLink className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </DialogFooter>
+                            </>
+                        ) : (
+                            <>
+                                <DialogHeader>
+                                    <DialogTitle>Reset Password</DialogTitle>
+                                    <DialogDescription>
+                                        Enter your email address below. You will be redirected to WhatsApp to send a reset request to the owner.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-2">
+                                    <Label htmlFor="reset-email">Email Address</Label>
+                                    <Input
+                                        id="reset-email"
+                                        type="email"
+                                        placeholder="name@example.com"
+                                        value={resetEmail}
+                                        onChange={(e) => setResetEmail(e.target.value)}
+                                    />
+                                </div>
+                                <DialogFooter>
+                                    <Button onClick={handlePasswordReset}>Send Reset Request</Button>
+                                </DialogFooter>
+                            </>
+                        )}
                        </DialogContent>
                      </Dialog>
                   </div>
