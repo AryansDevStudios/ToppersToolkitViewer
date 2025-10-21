@@ -93,6 +93,46 @@ const getGpuInfo = () => {
 
 const OWNER_WHATSAPP_NUMBER = "917754000411";
 
+const ForgotEmailDialog = () => {
+    const [name, setName] = useState('');
+    const [userClass, setUserClass] = useState('');
+    const [whatsapp, setWhatsapp] = useState('');
+
+    const handleSendRequest = () => {
+        const message = `Hello, I've forgotten my registered email address. Here are my details:\n\n*Full Name:* ${name}\n*Class:* ${userClass}\n*WhatsApp Number:* ${whatsapp}\n\nPlease help me recover my account.`;
+        const url = `https://wa.me/${OWNER_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    };
+    
+    return (
+         <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Forgot Your Email?</DialogTitle>
+                <DialogDescription>
+                    Please provide the details you used during registration. We'll use this to help you recover your account. This is a manual process and may take some time.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="rec-name">Full Name</Label>
+                    <Input id="rec-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="rec-class">Class & Section</Label>
+                    <Input id="rec-class" value={userClass} onChange={(e) => setUserClass(e.target.value)} placeholder="e.g., 9th A, 11th Commerce" />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="rec-whatsapp">WhatsApp Number</Label>
+                    <Input id="rec-whatsapp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="Your WhatsApp number" />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button onClick={handleSendRequest} disabled={!name || !userClass || !whatsapp}>Send Recovery Request</Button>
+            </DialogFooter>
+        </DialogContent>
+    );
+};
+
 export function LoginForm() {
   const { toast } = useToast();
   const router = useRouter();
@@ -220,7 +260,15 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <div className="flex justify-between items-center">
+                    <FormLabel>Email</FormLabel>
+                    <Dialog>
+                       <DialogTrigger asChild>
+                         <Button variant="link" type="button" className="p-0 h-auto text-xs">Forgot email?</Button>
+                       </DialogTrigger>
+                       <ForgotEmailDialog />
+                    </Dialog>
+                  </div>
                   <FormControl>
                     <Input placeholder="name@example.com" {...field} disabled={isSubmitting} onChange={(e) => { field.onChange(e); setResetEmail(e.target.value); }}/>
                   </FormControl>
