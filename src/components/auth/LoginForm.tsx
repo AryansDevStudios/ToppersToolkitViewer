@@ -117,7 +117,7 @@ export function LoginForm() {
     if (isRedirecting && countdown > 0) {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000);
     } else if (isRedirecting && countdown === 0) {
-      window.location.href = whatsAppUrl;
+      window.open(whatsAppUrl, '_blank');
     }
     return () => clearTimeout(timer);
   }, [isRedirecting, countdown, whatsAppUrl]);
@@ -245,18 +245,18 @@ export function LoginForm() {
                                 <DialogHeader>
                                     <DialogTitle>Redirecting to WhatsApp</DialogTitle>
                                     <DialogDescription>
-                                        Please wait. You will be redirected to send your password reset request.
+                                        A new tab will open to WhatsApp with your password reset request.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4 text-center">
-                                    <p className="text-sm text-muted-foreground">You will be redirected in...</p>
+                                    <p className="text-sm text-muted-foreground">Redirecting in...</p>
                                     <p className="text-5xl font-bold">{countdown}</p>
                                     <p className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
-                                        Once redirected, simply press "Send" to message the owner with your email address for the password reset request.
+                                        Once the new tab opens, simply press "Send" to message the owner with your email address for the password reset request.
                                     </p>
                                 </div>
                                 <DialogFooter>
-                                    <Button onClick={() => window.location.href = whatsAppUrl}>
+                                    <Button onClick={() => window.open(whatsAppUrl, '_blank')}>
                                         Redirect Now <ExternalLink className="ml-2 h-4 w-4" />
                                     </Button>
                                 </DialogFooter>
