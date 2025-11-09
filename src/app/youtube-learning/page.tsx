@@ -21,7 +21,7 @@ export default function YouTubeLearningPage() {
           <YoutubeIcon className="h-12 w-12" />
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-2">
-          Learn from YouTube
+          Youtube Learning
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Hand-picked educational videos to supplement your learning. Select a subject to begin.

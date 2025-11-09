@@ -34,7 +34,7 @@ const mainNavLinks = [
   { title: 'Reasoning', icon: 'BrainCircuit', href: '/reasoning' },
   { title: 'Mindmap', icon: 'BrainCircuit', href: '/mindmap' },
   { title: 'Current Affairs', icon: 'Newspaper', href: '/current-affairs' },
-  { title: 'Learn from YouTube', icon: 'Youtube', href: '/youtube-learning' },
+  { title: 'Youtube Learning', icon: 'Youtube', href: '/youtube-learning' },
 ];
 
 const secondaryNavLinks = [

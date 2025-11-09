@@ -21,7 +21,7 @@ const features = [
   { title: 'Reasoning', icon: 'BrainCircuit', href: '/reasoning' },
   { title: 'Current Affairs', icon: 'Newspaper', href: '/current-affairs' },
 
-  { title: 'Learn from YouTube', icon: 'Youtube', href: '/youtube-learning' },
+  { title: 'Youtube Learning', icon: 'Youtube', href: '/youtube-learning' },
   { title: 'Doubt Box', icon: 'MessageSquare', href: '/doubt-box' },
   { title: 'Complaints', icon: 'FileQuestion', href: '/complaints' },
   
