@@ -25,14 +25,17 @@ const includedFeatures = [
         ]
     },
     'Unlimited AI Doubt Solver',
-    'All MCQ & Quiz Practice Sets',
-    'Compete on the Leaderboard',
-    'Access All Mind Maps',
-    'YouTube Learning Guides',
-    'Priority Doubt Resolution',
-    'Submit Complaints',
-    'View Full Notice Board',
-    'Personalized Order History'
+    'Unlimited Flashcard Generator',
+    'Chapter-wise MCQ Practice',
+    'Daily Current Affairs & Sets',
+    'Daily Reasoning Sets',
+    'Chapter-wise Mind Maps',
+    'Doubt Box - Ask Experts',
+    'Educational YouTube Learning',
+    'Compete on Leaderboard',
+    'Print on Demand Section',
+    'Notice Board Updates',
+    'Complaint Section (Customer Care)',
 ];
 
 const UPI_ID = "nitish545454@ybl";
