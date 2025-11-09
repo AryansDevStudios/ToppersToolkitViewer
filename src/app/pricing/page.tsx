@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { startUserDemo } from '@/lib/data';
 
 const includedFeatures = [
-    'Full Access to All Notes',
+    'Access to Premium Notes',
     'Unlimited AI Doubt Solver',
     'All MCQ & Quiz Practice Sets',
     'Compete on the Leaderboard',

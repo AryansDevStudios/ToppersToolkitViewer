@@ -12,7 +12,7 @@ import { useState, useTransition } from 'react';
 import { createSubscriptionRequest } from '@/lib/data';
 
 const includedFeatures = [
-    'Full Access to All Notes',
+    'Access to Premium Notes',
     'Unlimited AI Doubt Solver',
     'All MCQ & Quiz Practice Sets',
     'Compete on the Leaderboard',
