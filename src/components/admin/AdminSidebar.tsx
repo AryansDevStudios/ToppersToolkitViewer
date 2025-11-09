@@ -21,6 +21,7 @@ import {
   CheckCircle,
   Newspaper,
   BrainCircuit,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/activity", icon: Activity, label: "Activity" },
   { href: "/admin/subjects", icon: Library, label: "Subjects" },
   { href: "/admin/notes", icon: FileText, label: "Notes" },
   { href: "/admin/mcqs", icon: BookCheck, label: "MCQs" },
