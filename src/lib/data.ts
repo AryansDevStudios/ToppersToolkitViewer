@@ -1,7 +1,7 @@
 
 'use server';
 
-import type { Subject, Note, Chapter, User, SubSubject, LoginLog, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription, CurrentAffairsSet, ReasoningSet, ReasoningQuizAttempt, ReasoningAnswerRecord } from "./types";
+import type { Subject, Note, Chapter, User, SubSubject, LoginLog, Notice, Doubt, MCQ, MCQSet, PrintOrder, AppSettings, QuizAttempt, Complaint, Subscription, CurrentAffairsSet, ReasoningSet, ReasoningQuizAttempt, ReasoningAnswerRecord, NoteViewLog } from "./types";
 import { revalidatePath } from "next/cache";
 import { db } from './firebase';
 import { collection, getDocs, doc, runTransaction, writeBatch, getDoc, deleteDoc, updateDoc, setDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, type WriteBatch } from "firebase/firestore";
@@ -740,6 +740,37 @@ export const logUserLogin = async (userId: string, loginData: Omit<LoginLog, 'ti
     }
 };
 
+export async function logNoteView(userId: string, noteId: string) {
+    if (!userId || !noteId) {
+        return { success: false, error: "User ID and Note ID are required." };
+    }
+
+    const noteDetails = await getNoteById(noteId);
+    if (!noteDetails) {
+        return { success: false, error: "Note details not found." };
+    }
+
+    const userDocRef = doc(db, 'users', userId);
+    const newLog: NoteViewLog = {
+        noteId: noteId,
+        noteType: noteDetails.type,
+        chapterName: noteDetails.chapterName,
+        timestamp: Date.now(),
+    };
+
+    try {
+        await updateDoc(userDocRef, {
+            viewedNotes: arrayUnion(newLog)
+        });
+        // We don't need to revalidate paths for a background logging action
+        return { success: true };
+    } catch (e: any) {
+        console.error("Error logging note view:", e);
+        return { success: false, error: e.message };
+    }
+}
+
+
 // --- Notices Management ---
 
 export async function getNotices(): Promise<Notice[]> {
@@ -1402,7 +1433,7 @@ export async function getUserSubscriptions(userId: string): Promise<Subscription
             return {
                 ...data,
                 createdAt: data.createdAt?.toMillis ? data.createdAt.toMillis() : data.createdAt,
-                completedAt: data.completedAt?.toMillis() ? data.completedAt.toMillis() : data.completedAt,
+                completedAt: data.completedAt?.toMillis ? data.completedAt.toMillis() : data.completedAt,
             } as Subscription;
         });
 

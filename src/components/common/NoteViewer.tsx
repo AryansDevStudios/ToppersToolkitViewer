@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Loader2, Maximize, Minimize, Printer, Star, Clock } from "lucide-react";
-import { getNoteById } from "@/lib/data";
+import { getNoteById, logNoteView } from "@/lib/data";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, memo, useRef, useCallback } from "react";
 import dynamic from 'next/dynamic';
@@ -82,6 +82,7 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
     const [hasAccess, setHasAccess] = useState<boolean | null>(null);
     const [note, setNote] = useState<Note | null>(null);
     const [isLoadingNote, setIsLoadingNote] = useState(true);
+    const [hasLoggedView, setHasLoggedView] = useState(false);
 
     const [previewTimeLeft, setPreviewTimeLeft] = useState(60);
     const [isPreviewActive, setIsPreviewActive] = useState(false);
@@ -159,6 +160,14 @@ const NoteViewerComponent = ({ noteId }: NoteViewerProps) => {
         }
     }, [authLoading, user, dbUser, noteId, router, note, isLoadingNote]);
     
+    // Log note view effect
+    useEffect(() => {
+        if (user && hasAccess && !hasLoggedView) {
+            logNoteView(user.uid, noteId);
+            setHasLoggedView(true); // Prevent re-logging
+        }
+    }, [user, noteId, hasAccess, hasLoggedView]);
+
     // Countdown effect for the preview timer
     useEffect(() => {
         if (!isPreviewActive || previewTimeLeft <= 0) return;

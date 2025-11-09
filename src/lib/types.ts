@@ -161,6 +161,13 @@ export interface Subject {
   subSubjects: SubSubject[];
 }
 
+export interface NoteViewLog {
+  noteId: string;
+  noteType: string;
+  chapterName: string;
+  timestamp: number;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -182,6 +189,7 @@ export interface User {
   attemptedReasoning?: string[];
   demoExpiresAt?: number;
   subscriptionExpiresAt?: number;
+  viewedNotes?: NoteViewLog[];
 }
 
 export interface Notice {
