@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { formatDistanceToNow } from 'date-fns';
 import { Input } from '@/components/ui/input';
-import { Search, RefreshCw, Loader2, Trash2 } from 'lucide-react';
+import { Search, RefreshCw, Loader2, Trash2, FileJson } from 'lucide-react';
 import { NoteDetailsDialog } from './NoteDetailsDialog';
 import { Button } from '@/components/ui/button';
 import { Subject } from '@/lib/types';
@@ -60,6 +60,19 @@ export function LogTable({ logs, subjects }: LogTableProps) {
             }
         });
     };
+    
+    const handleExportJson = () => {
+        const jsonString = JSON.stringify(filteredLogs, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `activity_logs_${new Date().toISOString()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     const filteredLogs = useMemo(() => {
         if (!searchQuery) {
@@ -76,7 +89,7 @@ export function LogTable({ logs, subjects }: LogTableProps) {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
                 <div className="relative max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -86,14 +99,20 @@ export function LogTable({ logs, subjects }: LogTableProps) {
                         className="pl-10 h-9"
                     />
                 </div>
-                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
-                    {isRefreshing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <Trash2 className="mr-2 h-4 w-4" />
-                    )}
-                    Clear Cache & Refresh
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleExportJson}>
+                        <FileJson className="mr-2 h-4 w-4" />
+                        Export as JSON
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+                        {isRefreshing ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Trash2 className="mr-2 h-4 w-4" />
+                        )}
+                        Clear Cache & Refresh
+                    </Button>
+                </div>
             </div>
             <div className="border rounded-lg">
                 <Table>
