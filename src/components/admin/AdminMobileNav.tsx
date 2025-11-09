@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Users, Library, Trophy, HelpCircle, ClipboardList, MessageSquare, BookCheck, Printer, Settings, Menu, LogOut, Star, CheckCircle, Newspaper, BrainCircuit } from "lucide-react";
+import { FileText, LayoutDashboard, Users, Library, Trophy, ClipboardList, MessageSquare, BookCheck, Printer, Settings, Menu, LogOut, Star, CheckCircle, Newspaper, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,6 @@ const navItems = [
   { href: "/admin/active-subscriptions", icon: CheckCircle, label: "Active Subscriptions" },
   { href: "/admin/users", icon: Users, label: "Users" },
   { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
-  { href: "/admin/qotd", icon: HelpCircle, label: "QoTD" },
   { href: "/admin/notices", icon: ClipboardList, label: "Notices" },
   { href: "/admin/doubts", icon: MessageSquare, label: "Doubts" },
   { href: "/admin/complaints", icon: FileText, label: "Complaints" },

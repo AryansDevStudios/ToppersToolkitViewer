@@ -81,7 +81,7 @@ export function MobileBottomNav() {
     const pathname = usePathname();
     const { user, loading } = useAuth();
 
-    const isDoubtSolverPage = pathname === '/solve-doubts';
+    const isDoubtSolverPage = pathname === '/solve-doubts' || pathname === '/flashcard-ai';
 
     if (isDoubtSolverPage) {
         return null;
@@ -92,7 +92,7 @@ export function MobileBottomNav() {
       { href: "/browse", icon: Compass, label: "Notes" },
       { href: "/solve-doubts", icon: Sparkles, label: "AI Help", iconClassName: "text-orange-500" },
       { href: "/mcqs", icon: BookCheck, label: "MCQ" },
-      { href: "/puzzle-quiz", icon: Puzzle, label: "Quiz" },
+      { href: "/flashcard-ai", icon: Sparkles, label: "Flashcards", iconClassName: "text-yellow-500"},
     ];
     
     return (

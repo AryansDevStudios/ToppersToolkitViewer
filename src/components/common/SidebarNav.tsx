@@ -9,7 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, Compass, Home, BookUser, History, Star } from "lucide-react";
+import { Menu, LogOut, Compass, Home, BookUser, History, Star, Sparkles } from "lucide-react";
 import { iconMap } from "@/lib/iconMap";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,7 +24,7 @@ const mainNavLinks = [
   { title: 'Home', icon: 'Home', href: '/' },
   { title: 'Notes', icon: 'Compass', href: '/browse' },
   { title: 'Leaderboard', icon: 'Swords', href: '/leaderboard' },
-  { title: 'Daily Quiz', icon: 'Puzzle', href: '/puzzle-quiz' },
+  { title: 'FlashcardAI', icon: 'Sparkles', href: '/flashcard-ai' },
   { title: 'Notices', icon: 'ClipboardList', href: '/notices' },
   { title: 'AI Help', icon: 'Bot', href: '/solve-doubts' },
   { title: 'Doubt Box', icon: 'MessageSquare', href: '/doubt-box' },

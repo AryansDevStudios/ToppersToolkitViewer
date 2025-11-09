@@ -14,7 +14,7 @@ const features = [
   { title: 'Notes', icon: 'Compass', href: '/browse' },
   
   { title: 'Leaderboard', icon: 'Swords', href: '/leaderboard' },
-  { title: 'Daily Quiz', icon: 'Puzzle', href: '/puzzle-quiz' },
+  { title: 'FlashcardAI', icon: 'Sparkles', href: '/flashcard-ai', iconClassName: 'text-yellow-500' },
   { title: 'Mindmap', icon: 'BrainCircuit', href: '/mindmap' },
 
   { title: 'MCQs', icon: 'BookCheck', href: '/mcqs' },
@@ -71,7 +71,7 @@ export function FeatureGrid({ notices }: { notices: Notice[] }) {
                 )}
                 <Card className="h-full group-hover:shadow-lg overflow-hidden">
                   <CardContent className="p-3 md:p-4 flex flex-col items-center justify-center aspect-square">
-                    <div className={cn("bg-primary/10 text-primary p-3 rounded-lg mb-2 md:p-4", feature.iconClassName?.includes('orange') && 'bg-orange-500/10')}>
+                    <div className={cn("bg-primary/10 text-primary p-3 rounded-lg mb-2 md:p-4", feature.iconClassName?.includes('orange') && 'bg-orange-500/10', feature.iconClassName?.includes('yellow') && 'bg-yellow-500/10')}>
                       <Icon className={cn("h-8 w-8 md:h-10 md:w-10", feature.iconClassName)} />
                     </div>
                     <CardTitle className="text-xs md:text-sm font-semibold text-center truncate">

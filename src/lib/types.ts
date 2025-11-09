@@ -161,27 +161,6 @@ export interface Subject {
   subSubjects: SubSubject[];
 }
 
-export interface QotdOption {
-  text: string;
-}
-
-export interface QuestionOfTheDay {
-  id: string;
-  question: string;
-  options: QotdOption[];
-  correctOptionIndex: number;
-  date: string; // YYYY-MM-DD
-  createdAt: number;
-}
-
-export interface UserQotdAnswer {
-  questionId: string;
-  question: string;
-  selectedOptionIndex: number;
-  isCorrect: boolean;
-  answeredAt: number;
-}
-
 export interface User {
   id: string;
   name: string;

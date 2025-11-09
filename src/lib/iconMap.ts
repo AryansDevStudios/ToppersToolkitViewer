@@ -1,5 +1,5 @@
 
-import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book, Library, Folder, FileText, Calculator, PenSquare, Code, Palette, Music, BrainCircuit, Swords, Puzzle, ClipboardList, MessageSquare, Users, Bot, Send, FileQuestion, BookCheck, Menu, Gavel, Gift, HelpCircle, History, LogOut, Trophy, Home, BookUser, Printer, ShoppingCart, Settings, UserPlus, Copy, ClipboardCheck, User, ShieldAlert, ArrowRight, Newspaper } from "lucide-react";
+import { Atom, Dna, FlaskConical, Sigma, BookOpen, Landmark, Scale, Globe, Book, Library, Folder, FileText, Calculator, PenSquare, Code, Palette, Music, BrainCircuit, Swords, Puzzle, ClipboardList, MessageSquare, Users, Bot, Send, FileQuestion, BookCheck, Menu, Gavel, Gift, HelpCircle, History, LogOut, Trophy, Home, BookUser, Printer, ShoppingCart, Settings, UserPlus, Copy, ClipboardCheck, User, ShieldAlert, ArrowRight, Newspaper, Sparkles } from "lucide-react";
 import React from 'react';
 
 const YoutubeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -65,7 +65,8 @@ export const iconMap: { [key: string]: React.FC<any> } = {
   Youtube: YoutubeIcon,
   BookCopy: BookOpen,
   ArrowRight,
-  Newspaper
+  Newspaper,
+  Sparkles
 };
 
 export const iconNames = Object.keys(iconMap).sort();
