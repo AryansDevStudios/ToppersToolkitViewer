@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useMemo, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import type { AggregatedLog } from '@/app/admin/activity/page';
 import {
   Table,
@@ -14,12 +13,13 @@ import {
 } from "@/components/ui/table";
 import { formatDistanceToNow } from 'date-fns';
 import { Input } from '@/components/ui/input';
-import { Search, RefreshCw, Loader2, Trash2, FileJson } from 'lucide-react';
+import { Search, Loader2, Trash2, FileJson } from 'lucide-react';
 import { NoteDetailsDialog } from './NoteDetailsDialog';
 import { Button } from '@/components/ui/button';
 import { Subject } from '@/lib/types';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { JsonViewerDialog } from '../subjects/JsonViewerDialog';
 
 interface LogTableProps {
     logs: AggregatedLog[];
@@ -61,31 +61,41 @@ export function LogTable({ logs, subjects }: LogTableProps) {
         });
     };
     
-    const handleExportJson = () => {
-        const jsonString = JSON.stringify(filteredLogs, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `activity_logs_${new Date().toISOString()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    };
+    const enrichedLogs = useMemo(() => {
+        return logs.map(log => {
+             if (!log.noteId) return log;
+
+            for (const subject of subjects) {
+                for (const subSubject of subject.subSubjects) {
+                    for (const chapter of subSubject.chapters) {
+                        const note = chapter.notes.find(n => n.id === log.noteId);
+                        if (note) {
+                            return {
+                                ...log,
+                                subjectName: subject.name,
+                                subSubjectName: subSubject.name
+                            };
+                        }
+                    }
+                }
+            }
+            return log;
+        })
+    }, [logs, subjects]);
+
 
     const filteredLogs = useMemo(() => {
         if (!searchQuery) {
-            return logs;
+            return enrichedLogs;
         }
         const lowercasedQuery = searchQuery.toLowerCase();
-        return logs.filter(log =>
+        return enrichedLogs.filter(log =>
             log.userName.toLowerCase().includes(lowercasedQuery) ||
             (log.action && log.action.toLowerCase().includes(lowercasedQuery)) ||
             (log.noteType && log.noteType.toLowerCase().includes(lowercasedQuery)) ||
             (log.chapterName && log.chapterName.toLowerCase().includes(lowercasedQuery))
         );
-    }, [logs, searchQuery]);
+    }, [enrichedLogs, searchQuery]);
 
     return (
         <div>
@@ -100,10 +110,12 @@ export function LogTable({ logs, subjects }: LogTableProps) {
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleExportJson}>
-                        <FileJson className="mr-2 h-4 w-4" />
-                        Export as JSON
-                    </Button>
+                    <JsonViewerDialog data={filteredLogs} title="Activity Logs">
+                        <Button variant="outline" size="sm">
+                            <FileJson className="mr-2 h-4 w-4" />
+                            Export as JSON
+                        </Button>
+                    </JsonViewerDialog>
                     <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
                         {isRefreshing ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
