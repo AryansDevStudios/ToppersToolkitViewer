@@ -12,7 +12,18 @@ import { useState, useTransition } from 'react';
 import { createSubscriptionRequest } from '@/lib/data';
 
 const includedFeatures = [
-    'Access to Premium Notes',
+    {
+        title: 'Access to Premium Notes',
+        details: [
+            "→ Allen Notes",
+            "→ Byjus Notes",
+            "→ Padhle Notes",
+            "→ Digraj Sir's Slides",
+            "→ Prasht Sir's Notes",
+            "→ Educart question Bank",
+            "→ PW Notes (Hindi & English)",
+        ]
+    },
     'Unlimited AI Doubt Solver',
     'All MCQ & Quiz Practice Sets',
     'Compete on the Leaderboard',
@@ -95,12 +106,29 @@ export default function SubscribePage() {
                         </CardHeader>
                         <CardContent>
                              <ul className="space-y-4">
-                                {includedFeatures.map((feature) => (
-                                    <li key={feature} className="flex items-start gap-3">
-                                        <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                                        <span>{feature}</span>
-                                    </li>
-                                ))}
+                                {includedFeatures.map((feature, index) => {
+                                    if (typeof feature === 'string') {
+                                        return (
+                                            <li key={index} className="flex items-center gap-3">
+                                                <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <span>{feature}</span>
+                                            </li>
+                                        );
+                                    }
+                                    return (
+                                        <li key={index}>
+                                            <div className="flex items-start gap-3 font-semibold">
+                                                <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                                                <span>{feature.title}</span>
+                                            </div>
+                                            <ul className="pl-8 mt-1 space-y-1 text-sm text-muted-foreground">
+                                                {feature.details.map((detail, i) => (
+                                                    <li key={i}>{detail}</li>
+                                                ))}
+                                            </ul>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                              <div className="mt-8 p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
                                 <p className="font-bold text-primary">₹100 per month</p>

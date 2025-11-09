@@ -13,7 +13,18 @@ import { Loader2 } from 'lucide-react';
 import { startUserDemo } from '@/lib/data';
 
 const includedFeatures = [
-    'Access to Premium Notes',
+    {
+        title: 'Access to Premium Notes',
+        details: [
+            "→ Allen Notes",
+            "→ Byjus Notes",
+            "→ Padhle Notes",
+            "→ Digraj Sir's Slides",
+            "→ Prasht Sir's Notes",
+            "→ Educart question Bank",
+            "→ PW Notes (Hindi & English)",
+        ]
+    },
     'Unlimited AI Doubt Solver',
     'All MCQ & Quiz Practice Sets',
     'Compete on the Leaderboard',
@@ -223,12 +234,29 @@ export default function PricingPage() {
                            <span className="text-xl font-normal text-muted-foreground">/month</span>
                         </div>
                         <ul className="space-y-3 text-sm">
-                            {includedFeatures.map((feature) => (
-                                <li key={feature} className="flex items-center gap-2">
-                                    <Check className="h-5 w-5 text-green-500" />
-                                    <span>{feature}</span>
-                                </li>
-                            ))}
+                            {includedFeatures.map((feature, index) => {
+                                if (typeof feature === 'string') {
+                                    return (
+                                        <li key={index} className="flex items-center gap-2">
+                                            <Check className="h-5 w-5 text-green-500" />
+                                            <span>{feature}</span>
+                                        </li>
+                                    );
+                                }
+                                return (
+                                    <li key={index}>
+                                        <div className="flex items-center gap-2 font-semibold">
+                                            <Check className="h-5 w-5 text-green-500" />
+                                            <span>{feature.title}</span>
+                                        </div>
+                                        <ul className="pl-7 mt-1 space-y-1 text-xs text-muted-foreground">
+                                            {feature.details.map((detail, i) => (
+                                                <li key={i}>{detail}</li>
+                                            ))}
+                                        </ul>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </CardContent>
                     <CardFooter>
