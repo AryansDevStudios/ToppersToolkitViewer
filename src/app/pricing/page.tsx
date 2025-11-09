@@ -99,6 +99,11 @@ export default function PricingPage() {
                 <p className="mt-6 text-lg leading-8 text-muted-foreground">
                     Get full access to all our premium study materials and tools by subscribing, or start a free demo.
                 </p>
+                <div className="mt-6">
+                    <Button asChild variant="outline">
+                        <Link href="/">Go to Homepage</Link>
+                    </Button>
+                </div>
             </div>
             <div className="mt-12 w-full max-w-md">
 
