@@ -14,11 +14,12 @@ import {
 } from "@/components/ui/table";
 import { formatDistanceToNow } from 'date-fns';
 import { Input } from '@/components/ui/input';
-import { Search, RefreshCw, Loader2 } from 'lucide-react';
+import { Search, RefreshCw, Loader2, Trash2 } from 'lucide-react';
 import { NoteDetailsDialog } from './NoteDetailsDialog';
 import { Button } from '@/components/ui/button';
 import { Subject } from '@/lib/types';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 interface LogTableProps {
     logs: AggregatedLog[];
@@ -28,12 +29,35 @@ interface LogTableProps {
 export function LogTable({ logs, subjects }: LogTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [isRefreshing, startTransition] = useTransition();
-    const router = useRouter();
-
+    const { toast } = useToast();
 
     const handleRefresh = () => {
-        startTransition(() => {
-            router.refresh();
+        startTransition(async () => {
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+
+                if ('caches' in window) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(key => caches.delete(key)));
+                }
+
+                toast({
+                    title: "Cache Cleared",
+                    description: "All site caches have been cleared. The page will now reload.",
+                });
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+
+            } catch (error) {
+                toast({
+                    title: "Error",
+                    description: "Could not clear all caches.",
+                    variant: "destructive",
+                });
+            }
         });
     };
 
@@ -66,9 +90,9 @@ export function LogTable({ logs, subjects }: LogTableProps) {
                     {isRefreshing ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
-                        <RefreshCw className="mr-2 h-4 w-4" />
+                        <Trash2 className="mr-2 h-4 w-4" />
                     )}
-                    Refresh
+                    Clear Cache & Refresh
                 </Button>
             </div>
             <div className="border rounded-lg">
