@@ -4,7 +4,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Loader2, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldAlert, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useTheme } from "next-themes";
@@ -16,10 +16,13 @@ const AccessDenied = () => (
             <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
             <h2 className="text-2xl font-bold text-destructive">Access Denied</h2>
             <p className="mt-2 text-muted-foreground max-w-md">
-                You do not have permission to view this page. Please contact an administrator to request access.
+                This feature is available for subscribers only. Please subscribe to gain access.
             </p>
             <Button asChild className="mt-6">
-                <Link href="/">Back to Home</Link>
+                <Link href="/pricing">
+                  <Star className="mr-2 h-4 w-4" />
+                  View Subscription Plans
+                </Link>
             </Button>
         </div>
     </div>
@@ -51,7 +54,7 @@ export default function FlashcardAIPage() {
             return;
         }
 
-        if (dbUser.role === 'Admin' || dbUser.hasAiAccess !== false) {
+        if (dbUser.role === 'Admin' || dbUser.hasFullNotesAccess === true) {
             setHasAccess(true);
         } else {
             setHasAccess(false);
