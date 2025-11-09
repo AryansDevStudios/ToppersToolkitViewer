@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { AggregatedLog } from '@/app/admin/activity/page';
 import {
   Table,
@@ -11,9 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, RefreshCw, Loader2 } from 'lucide-react';
 import { NoteDetailsDialog } from './NoteDetailsDialog';
 import { Button } from '@/components/ui/button';
 import { Subject } from '@/lib/types';
@@ -26,6 +27,15 @@ interface LogTableProps {
 
 export function LogTable({ logs, subjects }: LogTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
+    const [isRefreshing, startTransition] = useTransition();
+    const router = useRouter();
+
+
+    const handleRefresh = () => {
+        startTransition(() => {
+            router.refresh();
+        });
+    };
 
     const filteredLogs = useMemo(() => {
         if (!searchQuery) {
@@ -34,22 +44,32 @@ export function LogTable({ logs, subjects }: LogTableProps) {
         const lowercasedQuery = searchQuery.toLowerCase();
         return logs.filter(log =>
             log.userName.toLowerCase().includes(lowercasedQuery) ||
-            log.action.toLowerCase().includes(lowercasedQuery) ||
-            log.noteType.toLowerCase().includes(lowercasedQuery) ||
-            log.chapterName.toLowerCase().includes(lowercasedQuery)
+            (log.action && log.action.toLowerCase().includes(lowercasedQuery)) ||
+            (log.noteType && log.noteType.toLowerCase().includes(lowercasedQuery)) ||
+            (log.chapterName && log.chapterName.toLowerCase().includes(lowercasedQuery))
         );
     }, [logs, searchQuery]);
 
     return (
         <div>
-            <div className="relative max-w-sm mb-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search logs by user, action, or note..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-9"
-                />
+            <div className="flex justify-between items-center mb-4">
+                <div className="relative max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search logs by user, action, or note..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10 h-9"
+                    />
+                </div>
+                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+                    {isRefreshing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                    )}
+                    Refresh
+                </Button>
             </div>
             <div className="border rounded-lg">
                 <Table>
@@ -71,7 +91,7 @@ export function LogTable({ logs, subjects }: LogTableProps) {
                                         </Button>
                                     </TableCell>
                                     <TableCell>
-                                        <span className="font-semibold">{log.action}</span>
+                                        <span className="font-semibold">{log.action || 'Viewed Note'}</span>
                                     </TableCell>
                                     <TableCell className="hidden md:table-cell">
                                         <NoteDetailsDialog log={log} subjects={subjects} />

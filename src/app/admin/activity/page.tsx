@@ -1,5 +1,5 @@
 
-import { getUsers, getNoteById, getSubjects } from "@/lib/data";
+import { getUsers, getSubjects } from "@/lib/data";
 import { Activity } from "lucide-react";
 import type { NoteViewLog, User } from "@/lib/types";
 import { LogTable } from "@/components/admin/activity/LogTable";
