@@ -3,8 +3,7 @@ import { getUsers, getNoteById, getSubjects } from "@/lib/data";
 import { Activity } from "lucide-react";
 import type { NoteViewLog, User } from "@/lib/types";
 import { LogTable } from "@/components/admin/activity/LogTable";
-
-export const revalidate = 0;
+import { unstable_noStore as noStore } from 'next/cache';
 
 export interface AggregatedLog extends NoteViewLog {
     userName: string;
@@ -12,6 +11,7 @@ export interface AggregatedLog extends NoteViewLog {
 }
 
 export default async function AdminActivityPage() {
+    noStore(); // Opt out of caching for this page
     const users = await getUsers();
     const allSubjects = await getSubjects();
 
